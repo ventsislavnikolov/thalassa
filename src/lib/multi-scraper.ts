@@ -16,7 +16,7 @@ export async function fetchCalendarData(
 
   try {
     console.log(`🌐 Fetching data from ${hotel.name} (${hotel.baseUrl})`);
-    
+
     const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -25,12 +25,12 @@ export async function fetchCalendarData(
       },
       timeout: 15000,
     });
-    
+
     console.log(`✅ Successfully fetched data from ${hotel.name}`);
     console.log(`📄 Response size: ${response.data.length} characters`);
 
     lastRawHtmlCache.set(hotelId, response.data);
-    
+
     // Save raw HTML for debugging (commented out for now)
     // if (process.env.NODE_ENV === 'development') {
     //   const fs = await import('fs');
@@ -43,11 +43,11 @@ export async function fetchCalendarData(
     //   fs.writeFileSync(filename, response.data);
     //   console.log(`💾 Saved raw HTML to: ${filename}`);
     // }
-    
+
     return parseCalendarHTML(response.data, params, hotel);
   } catch (error) {
     console.error(`❌ Error fetching ${hotel.name}:`, error);
-    
+
     // Log more details about the error
     if (axios.isAxiosError(error)) {
       console.error(`🔍 Axios error details:`, {
@@ -59,7 +59,7 @@ export async function fetchCalendarData(
         timeout: error.config?.timeout,
       });
     }
-    
+
     throw new Error(
       `Failed to fetch calendar data for ${hotel.name}: ${error}`
     );
@@ -208,7 +208,9 @@ function parseCalendarHTML(
   // Check if calendar exists
   const calendarCount = $(".calendar").length;
   const availableCells = $(".calendar .avl").length;
-  console.log(`📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`);
+  console.log(
+    `📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`
+  );
 
   // Extract price data
   $(".calendar .avl").each((_, el) => {
@@ -217,16 +219,18 @@ function parseCalendarHTML(
     const title = $cell.attr("data-title") || "";
 
     if (date) {
-      const cellHtml = $cell.html() || "";
+      // const cellHtml = $cell.html() || "";
       const cellText = $cell.text() || "";
-      
+
       // Try to extract price from title attribute first (old format)
       let priceMatch = title.match(/([\d\s,]+\.?\d*)\s*(BGN|лв)/);
-      
+
       // If no title price, extract from cell content (new format)
       if (!priceMatch) {
         // Look for "Общ престой:" (Total stay:) followed by price
-        const totalStayMatch = cellText.match(/Общ престой:.*?([\d\s,]+\.?\d*)\s*(лв|BGN)/);
+        const totalStayMatch = cellText.match(
+          /Общ престой:.*?([\d\s,]+\.?\d*)\s*(лв|BGN)/
+        );
         if (totalStayMatch) {
           priceMatch = totalStayMatch;
         } else {
@@ -278,7 +282,7 @@ function parseCalendarHTML(
   });
 
   console.log(`✅ Parsing complete: Found ${prices.length} prices`);
-  
+
   return {
     month,
     year: parseInt(year),
