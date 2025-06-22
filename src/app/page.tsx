@@ -1,103 +1,215 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { SearchForm } from "@/components/search-form";
+import { PriceResults } from "@/components/price-results";
+import { WeatherAnalysis } from "@/components/weather-analysis";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+
+interface SearchParams {
+  checkin: string;
+  nights: number;
+  adults: number;
+  children: number;
+  room: string;
+  months: number;
+  hotelIds: string[];
+  includeWeather: boolean;
+  isYearSearch: boolean;
+}
+
+interface SearchResults {
+  prices: any[];
+  roomOptions: any[];
+  weatherAnalysis: any[] | null;
+  searchParams: any;
+  meta: {
+    totalResults: number;
+    monthsChecked: number;
+    hotelsSearched: string[];
+  };
+}
+
+export default function HomePage() {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<SearchResults | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSearch = async (params: SearchParams) => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      const response = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch prices');
+      }
+
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      console.error('Search error:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExport = () => {
+    if (!results?.prices) return;
+
+    // Convert results to CSV
+    const csvHeaders = [
+      'Date',
+      'Day of Week',
+      'Hotel',
+      'Average Per Night (BGN)',
+      'Total Stay (BGN)',
+      'Lowest Rate',
+      'Nights'
+    ];
+
+    const csvRows = results.prices.map(price => [
+      price.date,
+      price.dayOfWeek,
+      price.hotelName,
+      price.averagePerNight.toFixed(2),
+      price.stayTotal.toFixed(2),
+      price.isLowestRate ? 'Yes' : 'No',
+      price.nights.toString()
+    ]);
+
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pefkohori_hotel_prices_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            🏖️ Pefkohori Hotels Price Finder
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Find the best deals at Blue Carpet Suites and Cocooning Suites in Greece
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Search Form */}
+        <div className="mb-8">
+          <SearchForm onSearch={handleSearch} loading={loading} />
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6">
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-lg font-medium">Searching for the best prices...</p>
+              <p className="text-sm text-muted-foreground">This may take a few moments</p>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {results && !loading && (
+          <div className="space-y-8">
+            {/* Search Summary */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <span>📅 Check-in: {results.searchParams.checkin}</span>
+                <span>🛏️ {results.searchParams.nights} nights</span>
+                <span>👥 {results.searchParams.adults} adults</span>
+                {results.searchParams.children > 0 && (
+                  <span>👶 {results.searchParams.children} children</span>
+                )}
+                <span>🏨 {results.meta.hotelsSearched.length} hotel{results.meta.hotelsSearched.length > 1 ? 's' : ''}</span>
+                <span>📊 {results.meta.totalResults} dates found</span>
+              </div>
+            </div>
+
+            {/* Price Results */}
+            {results.prices.length > 0 ? (
+              <PriceResults 
+                prices={results.prices}
+                isMultiHotel={results.meta.hotelsSearched.length > 1}
+                onExport={handleExport}
+              />
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  No prices found for your search criteria. Try adjusting your dates or expanding the search period.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Weather Analysis */}
+            {results.weatherAnalysis && results.weatherAnalysis.length > 0 && (
+              <>
+                <Separator className="my-8" />
+                <WeatherAnalysis analyses={results.weatherAnalysis} />
+              </>
+            )}
+
+            {/* Room Options */}
+            {results.roomOptions.length > 0 && (
+              <>
+                <Separator className="my-8" />
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold mb-3">Available Room Types</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {results.roomOptions.map((room: any) => (
+                      <div key={room.value} className="text-sm p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                        <span className="font-medium">{room.value}</span> - {room.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-16 text-center text-sm text-gray-500">
+          <p>
+            Built with ❤️ for finding the best vacation deals in Pefkohori, Greece
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

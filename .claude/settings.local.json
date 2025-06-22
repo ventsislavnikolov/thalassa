@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(npx tsx:*)",
+      "Bash(grep:*)",
+      "Bash(rm:*)",
+      "Bash(npm run cli:*)",
+      "Bash(ls:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(cp:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(mv:*)",
+      "Bash(true)",
+      "Bash(npm uninstall:*)",
+      "Bash(pnpm build)"
+    ],
+    "deny": []
+  }
+}

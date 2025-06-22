@@ -1,36 +1,161 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏖️ Pefkohori Hotels Price Finder
+
+A modern web application for finding the best hotel prices at Blue Carpet Suites and Cocooning Suites in Pefkohori, Greece. Built with Next.js 15, TypeScript, and shadcn/ui.
+
+## Features
+
+- 🔍 **Hotel Selection**: Choose between Blue Carpet Suites, Cocooning Suites, or both
+- 📅 **Date Picker**: Select check-in dates with an intuitive calendar interface
+- 🛏️ **Flexible Search**: Configure nights, adults, children, and room types
+- 📊 **Time Range Options**: Search single months, multiple months, or entire year
+- 🌤️ **Weather Integration**: Optional weather analysis for top price dates
+- 💾 **CSV Export**: Download search results for offline analysis
+- 📱 **Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- 🎨 **Modern UI**: Beautiful interface with dark mode support
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **APIs**: Custom scraping endpoints
+- **Weather Data**: Open-Meteo API
+- **Date Handling**: date-fns
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- pnpm (recommended) or npm/yarn
+
+### Installation
+
+1. **Install pnpm** (if not already installed):
+   ```bash
+   npm install -g pnpm
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pnpm install
+   ```
+
+3. **Start development server**:
+   ```bash
+   pnpm dev
+   ```
+
+4. **Open your browser**:
+   ```
+   http://localhost:3000
+   ```
+
+### Building for Production
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm build
+pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to Use
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Hotel Selection
+- Choose individual hotels (Blue Carpet or Cocooning) or search both
+- Each hotel checkbox enables/disables that property in the search
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Search Configuration
+- **Check-in Date**: Use the calendar picker to select your arrival date
+- **Nights**: Specify how many nights you'll be staying (1-30)
+- **Guests**: Set number of adults (1-8) and children (0-6)
+- **Room Type**: Choose specific room types or leave blank for all options
 
-## Learn More
+### 3. Search Scope
+- **Single/Multi-Month**: Search 1-12 months from your check-in date
+- **Year Search**: Toggle to search the entire year for best deals
+- **Weather Analysis**: Enable to get weather forecasts for top price dates
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Results
+- **Price Table**: View sorted results with hotel comparison
+- **Hotel Comparison**: Side-by-side price analysis when searching multiple hotels
+- **Monthly Summary**: For year searches, see price ranges by month
+- **Weather Cards**: Detailed weather analysis with beach suitability scores
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 5. Export Options
+- **CSV Download**: Export all results for spreadsheet analysis
+- **Data Includes**: Dates, prices, hotels, weather scores, and recommendations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Endpoints
 
-## Deploy on Vercel
+### `POST /api/scrape`
+Main scraping endpoint that accepts search parameters and returns price data.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### `GET /api/hotels`
+Returns available hotel configurations.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── scrape/route.ts     # Main scraping API
+│   │   └── hotels/route.ts     # Hotels configuration API
+│   ├── layout.tsx              # Root layout
+│   └── page.tsx                # Main page component
+├── components/
+│   ├── ui/                     # shadcn/ui components
+│   ├── search-form.tsx         # Search form component
+│   ├── price-results.tsx       # Price display component
+│   └── weather-analysis.tsx    # Weather analysis component
+└── lib/
+    ├── multi-scraper.ts        # Multi-hotel scraping engine
+    ├── analyzer.ts             # Price + weather analysis
+    ├── weather.ts              # Weather API integration
+    ├── hotels.ts               # Hotel configurations
+    ├── types.ts                # TypeScript interfaces
+    └── utils.ts                # Utility functions
+```
+
+## Deployment
+
+### Vercel (Recommended)
+1. Push to GitHub
+2. Connect to Vercel
+3. Deploy automatically
+
+### Other Platforms
+1. Build the project: `pnpm build`
+2. Deploy the `.next` folder
+3. Ensure Node.js 18+ runtime
+
+## Development
+
+### Adding Components
+```bash
+pnpm dlx shadcn@latest add [component-name]
+```
+
+### Available Scripts
+```bash
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+pnpm lint:fix     # Auto-fix linting issues
+pnpm type-check   # Run TypeScript checks
+pnpm clean        # Clean build cache
+pnpm setup        # Install deps + build
+```
+
+### Package Management
+This project uses **pnpm** for faster, more efficient package management:
+- 📦 **Disk efficient**: Shared packages across projects
+- ⚡ **Faster installs**: Parallel dependency resolution  
+- 🔒 **Strict**: Prevents phantom dependencies
+- 🎯 **Compatible**: Works with npm/yarn projects
+
+---
+
+Built with ❤️ for finding the best vacation deals in Pefkohori, Greece 🇬🇷
