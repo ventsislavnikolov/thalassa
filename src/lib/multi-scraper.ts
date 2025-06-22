@@ -1,7 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { format, parse, addDays } from "date-fns";
-// chalk removed - no longer needed for web API
 import { SearchParams, PriceInfo, RoomOption, CalendarResponse } from "./types";
 import { HotelConfig, getHotelConfig, getDefaultHotels } from "./hotels";
 
@@ -27,7 +26,9 @@ export class MultiHotelScraper {
       this.lastRawHtml.set(hotelId, response.data);
       return this.parseCalendarHTML(response.data, params, hotel);
     } catch (error) {
-      throw new Error(`Failed to fetch calendar data for ${hotel.name}: ${error}`);
+      throw new Error(
+        `Failed to fetch calendar data for ${hotel.name}: ${error}`
+      );
     }
   }
 
@@ -56,14 +57,15 @@ export class MultiHotelScraper {
     hotelIds?: string[]
   ): Promise<PriceInfo[]> {
     const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
-    const allPrices: PriceInfo[] = [];
     const priceMap = new Map<string, PriceInfo>(); // date + hotel as key
 
-    console.log(`Scanning ${monthsToCheck} months across ${hotels.length} hotels...`);
+    console.log(
+      `Scanning ${monthsToCheck} months across ${hotels.length} hotels...`
+    );
 
     for (const hotel of hotels) {
       console.log(`\n${hotel.displayName}:`);
-      
+
       // First, get prices from the initial search
       try {
         const initialResponse = await this.fetchCalendarData(params, hotel.id);
@@ -73,7 +75,10 @@ export class MultiHotelScraper {
         });
         process.stdout.write("█");
       } catch (error) {
-        console.error(`\nError fetching initial month for ${hotel.name}:`, error);
+        console.error(
+          `\nError fetching initial month for ${hotel.name}:`,
+          error
+        );
         process.stdout.write("░");
       }
 
@@ -97,9 +102,11 @@ export class MultiHotelScraper {
               priceMap.set(key, price);
             }
           });
-          process.stdout.write("█");
         } catch (error) {
-          process.stdout.write("░");
+          console.error(
+            `\nError fetching additional month for ${hotel.name}:`,
+            error
+          );
         }
 
         // Add a small delay to avoid hammering the server

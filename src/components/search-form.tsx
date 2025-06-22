@@ -2,16 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Search, Hotel, Users, Moon, Download } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Search,
+  Hotel,
+  Users,
+  Moon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface SearchFormProps {
   onSearch: (params: SearchParams) => void;
@@ -79,7 +101,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     // Convert "ALL" back to empty string for the API
     const apiFormData = {
       ...formData,
-      room: formData.room === "ALL" ? "" : formData.room
+      room: formData.room === "ALL" ? "" : formData.room,
     };
     onSearch(apiFormData);
   };
@@ -87,27 +109,27 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        checkin: format(date, "yyyy-MM-dd")
+        checkin: format(date, "yyyy-MM-dd"),
       }));
     }
   };
 
   const handleHotelChange = (hotelId: string, checked: boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      hotelIds: checked 
+      hotelIds: checked
         ? [...prev.hotelIds, hotelId]
-        : prev.hotelIds.filter(id => id !== hotelId)
+        : prev.hotelIds.filter((id) => id !== hotelId),
     }));
   };
 
   const handleYearToggle = (checked: boolean) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       isYearSearch: checked,
-      months: checked ? 12 : 3
+      months: checked ? 12 : 3,
     }));
   };
 
@@ -119,7 +141,8 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           Pefkohori Hotels Price Search
         </CardTitle>
         <CardDescription>
-          Find the best prices at Blue Carpet Suites and Cocooning Suites in Greece
+          Find the best prices at Blue Carpet Suites and Cocooning Suites in
+          Greece
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -158,13 +181,23 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                 min="1"
                 max="30"
                 value={formData.nights}
-                onChange={(e) => setFormData(prev => ({ ...prev, nights: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    nights: parseInt(e.target.value),
+                  }))
+                }
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="room">Room Type</Label>
-              <Select value={formData.room} onValueChange={(value) => setFormData(prev => ({ ...prev, room: value }))}>
+              <Select
+                value={formData.room}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, room: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -192,7 +225,12 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                 min="1"
                 max="8"
                 value={formData.adults}
-                onChange={(e) => setFormData(prev => ({ ...prev, adults: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    adults: parseInt(e.target.value),
+                  }))
+                }
               />
             </div>
 
@@ -204,7 +242,12 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                 min="0"
                 max="6"
                 value={formData.children}
-                onChange={(e) => setFormData(prev => ({ ...prev, children: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    children: parseInt(e.target.value),
+                  }))
+                }
               />
             </div>
           </div>
@@ -218,7 +261,9 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                   <Checkbox
                     id={hotel.id}
                     checked={formData.hotelIds.includes(hotel.id)}
-                    onCheckedChange={(checked) => handleHotelChange(hotel.id, checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      handleHotelChange(hotel.id, checked as boolean)
+                    }
                   />
                   <Label htmlFor={hotel.id} className="text-sm font-normal">
                     {hotel.displayName}
@@ -246,9 +291,14 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
             {!formData.isYearSearch && (
               <div className="space-y-2">
                 <Label htmlFor="months">Months to Check</Label>
-                <Select 
-                  value={formData.months.toString()} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, months: parseInt(value) }))}
+                <Select
+                  value={formData.months.toString()}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      months: parseInt(value),
+                    }))
+                  }
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue />
@@ -256,7 +306,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                   <SelectContent>
                     {[1, 2, 3, 4, 5, 6, 9, 12].map((month) => (
                       <SelectItem key={month} value={month.toString()}>
-                        {month} month{month > 1 ? 's' : ''}
+                        {month} month{month > 1 ? "s" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -276,15 +326,17 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               </div>
               <Switch
                 checked={formData.includeWeather}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, includeWeather: checked }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, includeWeather: checked }))
+                }
               />
             </div>
           </div>
 
           {/* Submit Button */}
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full"
             disabled={loading || formData.hotelIds.length === 0}
             size="lg"
           >

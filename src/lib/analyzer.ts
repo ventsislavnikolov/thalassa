@@ -1,6 +1,5 @@
 import { PriceInfo } from "./types";
 import { WeatherAnalyzer, WeatherData } from "./weather";
-// chalk and cli-table3 removed - no longer needed for web API
 
 export interface CombinedAnalysis {
   priceInfo: PriceInfo;
@@ -44,15 +43,27 @@ export class VacationAnalyzer {
     });
 
     // Sort by total score and assign rankings
-    const sortedByTotalScore = analyses.sort((a, b) => b.totalScore - a.totalScore);
-    const sortedByPrice = [...analyses].sort((a, b) => a.priceInfo.stayTotal - b.priceInfo.stayTotal);
-    const sortedByWeather = [...analyses].sort((a, b) => b.weatherData.score - a.weatherData.score);
+    const sortedByTotalScore = analyses.sort(
+      (a, b) => b.totalScore - a.totalScore
+    );
+    const sortedByPrice = [...analyses].sort(
+      (a, b) => a.priceInfo.stayTotal - b.priceInfo.stayTotal
+    );
+    const sortedByWeather = [...analyses].sort(
+      (a, b) => b.weatherData.score - a.weatherData.score
+    );
 
     // Assign rankings
     sortedByTotalScore.forEach((analysis, index) => {
       analysis.overallRank = index + 1;
-      analysis.priceRank = sortedByPrice.findIndex(a => a.priceInfo.date === analysis.priceInfo.date) + 1;
-      analysis.weatherRank = sortedByWeather.findIndex(a => a.priceInfo.date === analysis.priceInfo.date) + 1;
+      analysis.priceRank =
+        sortedByPrice.findIndex(
+          (a) => a.priceInfo.date === analysis.priceInfo.date
+        ) + 1;
+      analysis.weatherRank =
+        sortedByWeather.findIndex(
+          (a) => a.priceInfo.date === analysis.priceInfo.date
+        ) + 1;
     });
 
     return sortedByTotalScore;
@@ -76,9 +87,7 @@ export class VacationAnalyzer {
     const recommendation = this.generateRecommendation(
       totalScore,
       weatherData.score,
-      valueScore,
-      priceInfo,
-      weatherData
+      valueScore
     );
 
     return {
@@ -97,9 +106,7 @@ export class VacationAnalyzer {
   private generateRecommendation(
     totalScore: number,
     weatherScore: number,
-    valueScore: number,
-    priceInfo: PriceInfo,
-    weatherData: WeatherData
+    valueScore: number
   ): string {
     if (totalScore >= 80) {
       return "🌟 HIGHLY RECOMMENDED - Excellent value and weather";

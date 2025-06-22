@@ -2,12 +2,36 @@
 
 import { useState } from "react";
 import { format, parse } from "date-fns";
-import { Star, TrendingDown, TrendingUp, Calendar, MapPin, Download } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Star,
+  TrendingDown,
+  TrendingUp,
+  Calendar,
+  Download,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface PriceInfo {
   date: string;
@@ -27,14 +51,20 @@ interface PriceResultsProps {
   onExport?: () => void;
 }
 
-export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsProps) {
-  const [sortBy, setSortBy] = useState<'date' | 'price' | 'hotel'>('price');
+export function PriceResults({
+  prices,
+  isMultiHotel,
+  onExport,
+}: PriceResultsProps) {
+  const [sortBy, setSortBy] = useState<"date" | "price" | "hotel">("price");
 
   if (!prices || prices.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-32">
-          <p className="text-muted-foreground">No prices found for your search criteria.</p>
+          <p className="text-muted-foreground">
+            No prices found for your search criteria.
+          </p>
         </CardContent>
       </Card>
     );
@@ -42,20 +72,21 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
 
   const sortedPrices = [...prices].sort((a, b) => {
     switch (sortBy) {
-      case 'date':
+      case "date":
         return new Date(a.date).getTime() - new Date(b.date).getTime();
-      case 'hotel':
+      case "hotel":
         return a.hotelName.localeCompare(b.hotelName);
-      case 'price':
+      case "price":
       default:
         return a.stayTotal - b.stayTotal;
     }
   });
 
   const displayPrices = sortedPrices.slice(0, 20);
-  const lowestPrice = Math.min(...prices.map(p => p.stayTotal));
-  const highestPrice = Math.max(...prices.map(p => p.stayTotal));
-  const averagePrice = prices.reduce((sum, p) => sum + p.stayTotal, 0) / prices.length;
+  const lowestPrice = Math.min(...prices.map((p) => p.stayTotal));
+  const highestPrice = Math.max(...prices.map((p) => p.stayTotal));
+  const averagePrice =
+    prices.reduce((sum, p) => sum + p.stayTotal, 0) / prices.length;
 
   // Hotel comparison data
   const hotelStats = isMultiHotel ? getHotelComparisonStats(prices) : null;
@@ -106,7 +137,9 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
         <Card>
           <CardHeader>
             <CardTitle>Hotel Comparison</CardTitle>
-            <CardDescription>Price comparison across selected hotels</CardDescription>
+            <CardDescription>
+              Price comparison across selected hotels
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -114,9 +147,22 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
                 <div key={hotelId} className="p-4 border rounded-lg">
                   <h3 className="font-semibold mb-2">{stats.name}</h3>
                   <div className="space-y-1 text-sm">
-                    <p>Lowest: <span className="font-medium">{stats.lowest.toFixed(2)} BGN</span></p>
-                    <p>Average: <span className="font-medium">{stats.average.toFixed(2)} BGN</span></p>
-                    <p>Results: <span className="font-medium">{stats.count}</span></p>
+                    <p>
+                      Lowest:{" "}
+                      <span className="font-medium">
+                        {stats.lowest.toFixed(2)} BGN
+                      </span>
+                    </p>
+                    <p>
+                      Average:{" "}
+                      <span className="font-medium">
+                        {stats.average.toFixed(2)} BGN
+                      </span>
+                    </p>
+                    <p>
+                      Results:{" "}
+                      <span className="font-medium">{stats.count}</span>
+                    </p>
                   </div>
                   {stats.savings > 0 && (
                     <Badge variant="secondary" className="mt-2">
@@ -137,7 +183,8 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
             <div>
               <CardTitle>Best Prices Found</CardTitle>
               <CardDescription>
-                Showing top {displayPrices.length} results from {prices.length} total dates
+                Showing top {displayPrices.length} results from {prices.length}{" "}
+                total dates
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -173,10 +220,10 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayPrices.map((price, index) => {
-                  const dateObj = parse(price.date, 'yyyy-MM-dd', new Date());
-                  const formattedDate = format(dateObj, 'MMM d, yyyy');
-                  
+                {displayPrices.map((price) => {
+                  const dateObj = parse(price.date, "yyyy-MM-dd", new Date());
+                  const formattedDate = format(dateObj, "MMM d, yyyy");
+
                   return (
                     <TableRow key={`${price.date}-${price.hotelId}`}>
                       <TableCell className="font-medium">
@@ -186,7 +233,7 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
                       {isMultiHotel && (
                         <TableCell>
                           <Badge variant="outline">
-                            {price.hotelName.replace(' Suites', '')}
+                            {price.hotelName.replace(" Suites", "")}
                           </Badge>
                         </TableCell>
                       )}
@@ -217,7 +264,8 @@ export function PriceResults({ prices, isMultiHotel, onExport }: PriceResultsPro
 
           {prices.length > 20 && (
             <p className="text-sm text-muted-foreground mt-4 text-center">
-              Showing top 20 results. Use export to see all {prices.length} dates.
+              Showing top 20 results. Use export to see all {prices.length}{" "}
+              dates.
             </p>
           )}
         </CardContent>
@@ -252,8 +300,9 @@ function getHotelComparisonStats(prices: PriceInfo[]) {
 
   const stats = Object.entries(hotelGroups).reduce((acc, [hotelId, data]) => {
     const lowest = Math.min(...data.prices);
-    const average = data.prices.reduce((sum, p) => sum + p, 0) / data.prices.length;
-    
+    const average =
+      data.prices.reduce((sum, p) => sum + p, 0) / data.prices.length;
+
     acc[hotelId] = {
       name: data.name,
       lowest,
@@ -265,8 +314,8 @@ function getHotelComparisonStats(prices: PriceInfo[]) {
   }, {} as Record<string, any>);
 
   // Calculate savings compared to other hotels
-  const globalLowest = Math.min(...Object.values(stats).map(s => s.lowest));
-  Object.values(stats).forEach(stat => {
+  const globalLowest = Math.min(...Object.values(stats).map((s) => s.lowest));
+  Object.values(stats).forEach((stat) => {
     if (stat.lowest > globalLowest) {
       stat.savings = stat.lowest - globalLowest;
     }
@@ -285,27 +334,42 @@ function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
     return acc;
   }, {} as Record<string, number[]>);
 
-  const monthlyStats = Object.entries(monthlyData).map(([month, prices]) => ({
-    month,
-    lowest: Math.min(...prices),
-    highest: Math.max(...prices),
-    average: prices.reduce((sum, p) => sum + p, 0) / prices.length,
-    count: prices.length,
-  })).sort((a, b) => a.month.localeCompare(b.month));
+  const monthlyStats = Object.entries(monthlyData)
+    .map(([month, prices]) => ({
+      month,
+      lowest: Math.min(...prices),
+      highest: Math.max(...prices),
+      average: prices.reduce((sum, p) => sum + p, 0) / prices.length,
+      count: prices.length,
+    }))
+    .sort((a, b) => a.month.localeCompare(b.month));
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {monthlyStats.map(({ month, lowest, highest, average, count }) => {
-        const monthName = format(new Date(month + '-01'), 'MMMM yyyy');
-        
+        const monthName = format(new Date(month + "-01"), "MMMM yyyy");
+
         return (
           <Card key={month}>
             <CardContent className="p-4">
               <h4 className="font-semibold mb-2">{monthName}</h4>
               <div className="space-y-1 text-sm">
-                <p>Lowest: <span className="font-medium text-green-600">{lowest.toFixed(2)} BGN</span></p>
-                <p>Average: <span className="font-medium">{average.toFixed(2)} BGN</span></p>
-                <p>Highest: <span className="font-medium text-red-600">{highest.toFixed(2)} BGN</span></p>
+                <p>
+                  Lowest:{" "}
+                  <span className="font-medium text-green-600">
+                    {lowest.toFixed(2)} BGN
+                  </span>
+                </p>
+                <p>
+                  Average:{" "}
+                  <span className="font-medium">{average.toFixed(2)} BGN</span>
+                </p>
+                <p>
+                  Highest:{" "}
+                  <span className="font-medium text-red-600">
+                    {highest.toFixed(2)} BGN
+                  </span>
+                </p>
                 <p className="text-muted-foreground">{count} dates available</p>
               </div>
             </CardContent>
