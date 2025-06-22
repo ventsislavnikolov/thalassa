@@ -13,6 +13,7 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
+      "no-console": "off",
       "@typescript-eslint/no-explicit-any": "off",
     },
   },

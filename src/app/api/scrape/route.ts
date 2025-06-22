@@ -1,36 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { MultiHotelScraper } from '@/lib/multi-scraper';
-import { VacationAnalyzer } from '@/lib/analyzer';
-import { SearchParams } from '@/lib/types';
-import { format, addDays } from 'date-fns';
+import { NextRequest, NextResponse } from "next/server";
+import { fetchAllHotels, findLowestPricesAllHotels } from "@/lib/multi-scraper";
+import { analyzeTopDeals } from "@/lib/analyzer";
+import { SearchParams } from "@/lib/types";
+import { format, addDays } from "date-fns";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       checkin,
       nights = 5,
       adults = 2,
       children = 0,
-      room = '',
+      room = "",
       months = 3,
-      hotelIds = ['bluecarpet', 'cocooning'],
+      hotelIds = ["bluecarpet", "cocooning"],
       includeWeather = false,
-      isYearSearch = false
+      isYearSearch = false,
     } = body;
 
     // Validate required fields
     if (!checkin) {
       return NextResponse.json(
-        { error: 'Check-in date is required' },
+        { error: "Check-in date is required" },
         { status: 400 }
       );
     }
 
     const checkoutDate = format(
       addDays(new Date(checkin), nights),
-      'yyyy-MM-dd'
+      "yyyy-MM-dd"
     );
 
     const searchParams: SearchParams = {
@@ -41,10 +41,9 @@ export async function POST(request: NextRequest) {
       children: parseInt(children),
       infants: 0,
       room,
-      currency: 'BGN',
+      currency: "BGN",
     };
 
-    const scraper = new MultiHotelScraper();
     const monthsToCheck = isYearSearch ? 12 : parseInt(months);
 
     let allPrices: any[] = [];
@@ -52,33 +51,32 @@ export async function POST(request: NextRequest) {
 
     if (monthsToCheck === 1) {
       // Single month search
-      const responses = await scraper.fetchAllHotels(searchParams, hotelIds);
-      
+      const responses = await fetchAllHotels(searchParams, hotelIds);
+
       // Get room options from first response
-      const firstResponse = responses.find(r => r.roomOptions.length > 0);
+      const firstResponse = responses.find((r) => r.roomOptions.length > 0);
       if (firstResponse) {
         roomOptions = firstResponse.roomOptions;
       }
-      
+
       allPrices = [];
-      responses.forEach(response => {
+      responses.forEach((response) => {
         allPrices.push(...response.prices);
       });
-      
+
       allPrices.sort((a, b) => a.stayTotal - b.stayTotal);
     } else {
       // Multi-month search
-      allPrices = await scraper.findLowestPricesAllHotels(
-        searchParams, 
-        monthsToCheck, 
+      allPrices = await findLowestPricesAllHotels(
+        searchParams,
+        monthsToCheck,
         hotelIds
       );
     }
 
     let weatherAnalysis = null;
     if (includeWeather && allPrices.length > 0) {
-      const analyzer = new VacationAnalyzer();
-      weatherAnalysis = await analyzer.analyzeTopDeals(allPrices, 5);
+      weatherAnalysis = await analyzeTopDeals(allPrices, 5);
     }
 
     return NextResponse.json({
@@ -90,13 +88,12 @@ export async function POST(request: NextRequest) {
         totalResults: allPrices.length,
         monthsChecked: monthsToCheck,
         hotelsSearched: hotelIds,
-      }
+      },
     });
-
   } catch (error) {
-    console.error('Scraping error:', error);
+    console.error("Scraping error:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch hotel prices. Please try again.' },
+      { error: "Failed to fetch hotel prices. Please try again." },
       { status: 500 }
     );
   }

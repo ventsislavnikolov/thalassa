@@ -8,14 +8,10 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
+    "lint": "next lint",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "type-check": "tsc --noEmit",
-    "clean": "rm -rf .next node_modules/.cache",
-    "setup": "pnpm install && pnpm build"
+    "dev": "next dev --turbopack"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
