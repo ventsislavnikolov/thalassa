@@ -30,6 +30,20 @@ export async function fetchCalendarData(
     console.log(`📄 Response size: ${response.data.length} characters`);
 
     lastRawHtmlCache.set(hotelId, response.data);
+    
+    // Save raw HTML for debugging (commented out for now)
+    // if (process.env.NODE_ENV === 'development') {
+    //   const fs = await import('fs');
+    //   const path = await import('path');
+    //   const debugDir = path.join(process.cwd(), 'debug');
+    //   if (!fs.existsSync(debugDir)) {
+    //     fs.mkdirSync(debugDir);
+    //   }
+    //   const filename = path.join(debugDir, `${hotel.id}-${Date.now()}.html`);
+    //   fs.writeFileSync(filename, response.data);
+    //   console.log(`💾 Saved raw HTML to: ${filename}`);
+    // }
+    
     return parseCalendarHTML(response.data, params, hotel);
   } catch (error) {
     console.error(`❌ Error fetching ${hotel.name}:`, error);
@@ -172,9 +186,13 @@ function parseCalendarHTML(
   const prices: PriceInfo[] = [];
   const roomOptions: RoomOption[] = [];
 
+  console.log(`🔍 Parsing HTML for ${hotel.name}`);
+  console.log(`📏 HTML length: ${html.length} characters`);
+
   // Extract month and year
   const monthYearText = $(".calendar-controls h2").text().trim();
   const [month, year] = monthYearText.split(" ");
+  console.log(`📅 Month/Year: ${monthYearText}`);
 
   // Extract room options
   $('select[name="room"] option').each((_, el) => {
@@ -185,6 +203,12 @@ function parseCalendarHTML(
       roomOptions.push({ value, name });
     }
   });
+  console.log(`🏨 Found ${roomOptions.length} room options`);
+
+  // Check if calendar exists
+  const calendarCount = $(".calendar").length;
+  const availableCells = $(".calendar .avl").length;
+  console.log(`📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`);
 
   // Extract price data
   $(".calendar .avl").each((_, el) => {
@@ -193,30 +217,45 @@ function parseCalendarHTML(
     const title = $cell.attr("data-title") || "";
 
     if (date) {
-      // Extract price from title attribute - handle both BGN and лв (Bulgarian lev)
-      const priceMatch = title.match(/([\d\s,]+\.?\d*)\s*(BGN|лв)/);
-      // Extract total from the cell's HTML content
       const cellHtml = $cell.html() || "";
-      const totalMatch = cellHtml.match(/([\d\s,]+\.?\d*)\s*(BGN|лв)/g);
+      const cellText = $cell.text() || "";
+      
+      // Try to extract price from title attribute first (old format)
+      let priceMatch = title.match(/([\d\s,]+\.?\d*)\s*(BGN|лв)/);
+      
+      // If no title price, extract from cell content (new format)
+      if (!priceMatch) {
+        // Look for "Общ престой:" (Total stay:) followed by price
+        const totalStayMatch = cellText.match(/Общ престой:.*?([\d\s,]+\.?\d*)\s*(лв|BGN)/);
+        if (totalStayMatch) {
+          priceMatch = totalStayMatch;
+        } else {
+          // Fallback to any price in the cell
+          priceMatch = cellText.match(/([\d\s,]+\.?\d*)\s*(лв|BGN)/);
+        }
+      }
 
       if (priceMatch) {
         // Price is in index 1 because index 0 is the full match
-        const avgPerNight = parseFloat(
+        const priceValue = parseFloat(
           priceMatch[1].replace(/[\s]/g, "").replace(",", ".")
         );
 
-        // For total, we'll calculate it if we can't find it
-        let stayTotal = avgPerNight * params.nights;
+        let stayTotal: number;
+        let avgPerNight: number;
 
-        if (totalMatch && totalMatch.length > 0) {
-          // Get the last amount which should be the total
-          const lastTotal = totalMatch[totalMatch.length - 1];
-          stayTotal = parseFloat(
-            lastTotal
-              .replace(/\s*(BGN|лв)\s*/g, "")
-              .replace(/[\s]/g, "")
-              .replace(",", ".")
-          );
+        // If we found "Общ престой:" it's the total price
+        if (cellText.includes("Общ престой:")) {
+          stayTotal = priceValue;
+          avgPerNight = stayTotal / params.nights;
+        } else if (title) {
+          // Old format - price in title is per night
+          avgPerNight = priceValue;
+          stayTotal = avgPerNight * params.nights;
+        } else {
+          // Assume it's total if no title
+          stayTotal = priceValue;
+          avgPerNight = stayTotal / params.nights;
         }
 
         const isLowestRate = $cell.find(".fa-star").length > 0;
@@ -238,6 +277,8 @@ function parseCalendarHTML(
     }
   });
 
+  console.log(`✅ Parsing complete: Found ${prices.length} prices`);
+  
   return {
     month,
     year: parseInt(year),
