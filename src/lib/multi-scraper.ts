@@ -15,17 +15,37 @@ export async function fetchCalendarData(
   const formData = buildFormData(params);
 
   try {
+    console.log(`🌐 Fetching data from ${hotel.name} (${hotel.baseUrl})`);
+    
     const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       },
+      timeout: 15000,
     });
+    
+    console.log(`✅ Successfully fetched data from ${hotel.name}`);
+    console.log(`📄 Response size: ${response.data.length} characters`);
 
     lastRawHtmlCache.set(hotelId, response.data);
     return parseCalendarHTML(response.data, params, hotel);
   } catch (error) {
+    console.error(`❌ Error fetching ${hotel.name}:`, error);
+    
+    // Log more details about the error
+    if (axios.isAxiosError(error)) {
+      console.error(`🔍 Axios error details:`, {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        timeout: error.config?.timeout,
+      });
+    }
+    
     throw new Error(
       `Failed to fetch calendar data for ${hotel.name}: ${error}`
     );
