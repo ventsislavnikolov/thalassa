@@ -22,7 +22,8 @@
       "WebFetch(domain:open-meteo.com)",
       "Bash(pnpm dev:*)",
       "Bash(pnpm lint:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
