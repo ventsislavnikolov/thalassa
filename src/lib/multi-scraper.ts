@@ -189,16 +189,35 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 	const calendarCount = $('.calendar').length;
 	const availableCells = $('.calendar .avl').length;
 	console.log(`📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`);
+	
+	// Save first available cell HTML for debugging
+	if (availableCells > 0) {
+		const firstAvailableCell = $('.calendar .avl').first();
+		console.log('🔍 First available cell sample:');
+		console.log('   HTML:', firstAvailableCell.html()?.slice(0, 500) || 'NO HTML');
+		console.log('   Attributes:', {
+			'data-date': firstAvailableCell.attr('data-date'),
+			'data-title': firstAvailableCell.attr('data-title'),
+			'class': firstAvailableCell.attr('class'),
+		});
+	}
 
 	// Extract price data
 	$('.calendar .avl').each((_, el) => {
 		const $cell = $(el);
 		const date = $cell.attr('data-date');
 		const title = $cell.attr('data-title') || '';
+		const cellHtml = $cell.html() || '';
 
 		if (date) {
 			// const cellHtml = $cell.html() || "";
 			const cellText = $cell.text() || '';
+			
+			// Debug logging
+			console.log(`📅 Processing cell for ${date}`);
+			console.log(`   Title: ${title}`);
+			console.log(`   Text: ${cellText.slice(0, 100)}...`);
+			console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
 
 			// First, try to extract total price from "Общ престой:" (Total stay:)
 			const totalPriceMatch = cellText.match(/Общ престой:.*?([\d\s,]+\.?\d*)\s*(лв|BGN)/);
@@ -213,6 +232,9 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			if (!priceMatch) {
 				priceMatch = cellText.match(/([\d\s,]+\.?\d*)\s*(лв|BGN)/);
 			}
+			
+			console.log(`   Price match: ${priceMatch ? priceMatch[0] : 'NO MATCH'}`);
+			console.log(`   ---`)
 
 			if (priceMatch) {
 				// Price is in index 1 because index 0 is the full match

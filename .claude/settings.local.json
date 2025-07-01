@@ -23,7 +23,10 @@
       "Bash(pnpm dev:*)",
       "Bash(pnpm lint:*)",
       "Bash(curl:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
