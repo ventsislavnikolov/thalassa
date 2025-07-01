@@ -219,18 +219,42 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			console.log(`   Text: ${cellText.slice(0, 100)}...`);
 			console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
 
-			// First, try to extract total price from "Общ престой:" (Total stay:)
-			const totalPriceMatch = cellText.match(/Общ престой:.*?([\d\s,]+\.?\d*)\s*(лв|BGN)/);
+			// Updated regex patterns to handle BGN/лв BEFORE the number
+			// Pattern 1: "Stay total:BGN 3,293.62" or "Общ престой:лв 3,293.62"
+			const totalPricePatterns = [
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
+				/(?:Stay total:|Общ престой:).*?(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
+			];
+			
+			// Pattern 2: General patterns for "BGN 3,293.62" or "лв 3,293.62"
+			const generalPricePatterns = [
+				/(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
+				/([\d,]+(?:\.\d{2})?)[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
+			];
 
-			// Also extract per-night price from title for reference
-			const perNightMatch = title.match(/([\d\s,]+\.?\d*)\s*(BGN|лв)/);
+			// Try to match total price first
+			let totalPriceMatch = null;
+			for (const pattern of totalPricePatterns) {
+				totalPriceMatch = cellText.match(pattern);
+				if (totalPriceMatch) break;
+			}
+
+			// Try to match any price in title
+			let perNightMatch = null;
+			for (const pattern of generalPricePatterns) {
+				perNightMatch = title.match(pattern);
+				if (perNightMatch) break;
+			}
 
 			// Use total price if available, otherwise use per-night price
 			let priceMatch = totalPriceMatch || perNightMatch;
 
-			// If still no match, try any price in the cell
+			// If still no match, try any price pattern in the cell text
 			if (!priceMatch) {
-				priceMatch = cellText.match(/([\d\s,]+\.?\d*)\s*(лв|BGN)/);
+				for (const pattern of generalPricePatterns) {
+					priceMatch = cellText.match(pattern);
+					if (priceMatch) break;
+				}
 			}
 			
 			console.log(`   Price match: ${priceMatch ? priceMatch[0] : 'NO MATCH'}`);
@@ -238,7 +262,8 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 
 			if (priceMatch) {
 				// Price is in index 1 because index 0 is the full match
-				const priceValue = parseFloat(priceMatch[1].replace(/[\s]/g, '').replace(',', '.'));
+				// Replace both regular spaces and non-breaking spaces, then convert comma to dot for parsing
+				const priceValue = parseFloat(priceMatch[1].replace(/[\s\u00A0]/g, '').replace(',', '.'));
 
 				let stayTotal: number;
 				let avgPerNight: number;
