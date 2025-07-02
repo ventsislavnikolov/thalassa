@@ -221,15 +221,17 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 
 			// Updated regex patterns to handle BGN/лв BEFORE the number
 			// Pattern 1: "Stay total:BGN 3,293.62" or "Общ престой:лв 3,293.62"
+			// Bulgarian format uses space as thousands separator and comma as decimal separator
 			const totalPricePatterns = [
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
-				/(?:Stay total:|Общ престой:).*?(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i, // Match inside <b> tags
 			];
 			
 			// Pattern 2: General patterns for "BGN 3,293.62" or "лв 3,293.62"
 			const generalPricePatterns = [
-				/(?:BGN|лв)[\s\u00A0]*([\d,]+(?:\.\d{2})?)/i,
-				/([\d,]+(?:\.\d{2})?)[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
+				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
+				/([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
 			];
 
 			// Try to match total price first
