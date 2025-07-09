@@ -82,7 +82,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     children: 0,
     room: "ALL",
     months: 3,
-    hotelIds: ["bluecarpet", "cocooning"],
+    hotelIds: ["bluecarpet", "cocooning", "myra"],
     includeWeather: false,
     isYearSearch: false,
   });

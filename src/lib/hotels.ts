@@ -18,6 +18,12 @@ const HOTELS: Record<string, HotelConfig> = {
     displayName: "Cocooning Suites",
     baseUrl: "https://cocooningsuites.reserve-online.net",
   },
+  myra: {
+    id: "myra",
+    name: "Myra Hotel",
+    displayName: "Myra Hotel",
+    baseUrl: "https://myrahotel.reserve-online.net",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {

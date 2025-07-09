@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a modern web application for finding the best hotel prices at Blue Carpet Suites and Cocooning Suites in Pefkohori, Greece. Built with Next.js 15, TypeScript, and shadcn/ui, it provides a comprehensive hotel price comparison tool with weather analysis.
+This is a modern web application for finding the best hotel prices at Blue Carpet Suites, Cocooning Suites, and Myra Hotel in Pefkohori, Greece. Built with Next.js 15, TypeScript, and shadcn/ui, it provides a comprehensive hotel price comparison tool with weather analysis.
 
 ## Key Commands
 
@@ -46,7 +46,7 @@ This is a modern web application for finding the best hotel prices at Blue Carpe
 
 ### Key Features
 
-- **Multi-Hotel Support**: Search Blue Carpet Suites, Cocooning Suites, or both
+- **Multi-Hotel Support**: Search Blue Carpet Suites, Cocooning Suites, Myra Hotel, or any combination
 - **Weather Integration**: Beach suitability scoring with temperature, precipitation, wind analysis
 - **Smart Recommendations**: Combined price + weather scoring (60/40 weighting)
 - **Export Functionality**: CSV download of search results
@@ -69,6 +69,7 @@ This is a modern web application for finding the best hotel prices at Blue Carpe
 The application scrapes hotel data from:
 - **Blue Carpet Suites**: `https://bluecarpetsuites.reserve-online.net/calendar`
 - **Cocooning Suites**: `https://cocooningsuites.reserve-online.net/calendar`
+- **Myra Hotel**: `https://myrahotel.reserve-online.net/calendar`
 - **Weather API**: Open-Meteo API for weather forecasting
 
 ### Search Parameters
