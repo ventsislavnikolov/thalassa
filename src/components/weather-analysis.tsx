@@ -145,7 +145,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
               <h4 className="font-semibold mb-2">💡 Recommendation</h4>
               <p className="text-sm">
                 {sortedAnalyses[0]?.recommendation ||
-                  "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Pefkohori."}
+                  "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece."}
               </p>
             </div>
           </div>

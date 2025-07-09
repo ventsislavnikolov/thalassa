@@ -57,4 +57,4 @@ pnpm dlx shadcn@latest add [component-name]
 
 ---
 
-🏖️ You're ready to find the best hotel deals in Pefkohori, Greece!
+🏖️ You're ready to find the best hotel deals in Greece!

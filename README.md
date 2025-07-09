@@ -1,6 +1,6 @@
-# 🏖️ Pefkohori Hotels Price Finder
+# 🏖️ Greece Hotels Price Finder
 
-A modern web application for finding the best hotel prices at Blue Carpet Suites and Cocooning Suites in Pefkohori, Greece. Built with Next.js 15, TypeScript, and shadcn/ui.
+A modern web application for finding the best hotel prices at Blue Carpet Suites and Cocooning Suites in Greece. Built with Next.js 15, TypeScript, and shadcn/ui.
 
 ## Features
 
@@ -27,22 +27,25 @@ A modern web application for finding the best hotel prices at Blue Carpet Suites
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (recommended) or npm/yarn
 
 ### Installation
 
 1. **Install pnpm** (if not already installed):
+
    ```bash
    npm install -g pnpm
    ```
 
 2. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
 
 3. **Start development server**:
+
    ```bash
    pnpm dev
    ```
@@ -62,36 +65,43 @@ pnpm start
 ## How to Use
 
 ### 1. Hotel Selection
+
 - Choose individual hotels (Blue Carpet or Cocooning) or search both
 - Each hotel checkbox enables/disables that property in the search
 
 ### 2. Search Configuration
+
 - **Check-in Date**: Use the calendar picker to select your arrival date
 - **Nights**: Specify how many nights you'll be staying (1-30)
 - **Guests**: Set number of adults (1-8) and children (0-6)
 - **Room Type**: Choose specific room types or leave blank for all options
 
 ### 3. Search Scope
+
 - **Single/Multi-Month**: Search 1-12 months from your check-in date
 - **Year Search**: Toggle to search the entire year for best deals
 - **Weather Analysis**: Enable to get weather forecasts for top price dates
 
 ### 4. Results
+
 - **Price Table**: View sorted results with hotel comparison
 - **Hotel Comparison**: Side-by-side price analysis when searching multiple hotels
 - **Monthly Summary**: For year searches, see price ranges by month
 - **Weather Cards**: Detailed weather analysis with beach suitability scores
 
 ### 5. Export Options
+
 - **CSV Download**: Export all results for spreadsheet analysis
 - **Data Includes**: Dates, prices, hotels, weather scores, and recommendations
 
 ## API Endpoints
 
 ### `POST /api/scrape`
+
 Main scraping endpoint that accepts search parameters and returns price data.
 
 ### `GET /api/hotels`
+
 Returns available hotel configurations.
 
 ## Project Structure
@@ -121,11 +131,13 @@ src/
 ## Deployment
 
 ### Vercel (Recommended)
+
 1. Push to GitHub
 2. Connect to Vercel
 3. Deploy automatically
 
 ### Other Platforms
+
 1. Build the project: `pnpm build`
 2. Deploy the `.next` folder
 3. Ensure Node.js 18+ runtime
@@ -133,11 +145,13 @@ src/
 ## Development
 
 ### Adding Components
+
 ```bash
 pnpm dlx shadcn@latest add [component-name]
 ```
 
 ### Available Scripts
+
 ```bash
 pnpm dev          # Start development server
 pnpm build        # Build for production
@@ -150,12 +164,14 @@ pnpm setup        # Install deps + build
 ```
 
 ### Package Management
+
 This project uses **pnpm** for faster, more efficient package management:
+
 - 📦 **Disk efficient**: Shared packages across projects
-- ⚡ **Faster installs**: Parallel dependency resolution  
+- ⚡ **Faster installs**: Parallel dependency resolution
 - 🔒 **Strict**: Prevents phantom dependencies
 - 🎯 **Compatible**: Works with npm/yarn projects
 
 ---
 
-Built with ❤️ for finding the best vacation deals in Pefkohori, Greece 🇬🇷
+Built with ❤️ for finding the best vacation deals in Greece 🇬🇷
