@@ -119,8 +119,8 @@ export default function HomePage() {
             🏖️ Greece Hotels Price Finder
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Find the best deals at Blue Carpet Suites and Cocooning Suites in
-            Greece
+            Find the best deals at Blue Carpet Suites, Cocooning Suites, and
+            Myrto Suites in Greece
           </p>
         </div>
 

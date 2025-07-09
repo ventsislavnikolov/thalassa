@@ -141,8 +141,8 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           Pefkohori Hotels Price Search
         </CardTitle>
         <CardDescription>
-          Find the best prices at Blue Carpet Suites and Cocooning Suites in
-          Greece
+          Find the best prices at Blue Carpet Suites, Cocooning Suites, and
+          Myrto Suites in Greece
         </CardDescription>
       </CardHeader>
       <CardContent>
