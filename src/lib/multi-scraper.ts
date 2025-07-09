@@ -176,7 +176,28 @@ export async function findLowestPricesAllHotels(
 	console.log(`Found prices for ${priceMap.size} date-hotel combinations\n`);
 
 	// Convert map to array and sort by total price
-	return Array.from(priceMap.values()).sort((a, b) => a.stayTotal - b.stayTotal);
+	const sortedPrices = Array.from(priceMap.values()).sort((a, b) => a.stayTotal - b.stayTotal);
+	
+	// Debug logging for lowest prices
+	console.log(`🔍 SORTED PRICE DEBUGGING:`);
+	console.log(`   Total prices found: ${sortedPrices.length}`);
+	if (sortedPrices.length > 0) {
+		const lowestPrice = sortedPrices[0];
+		console.log(`   Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`);
+		
+		// Check if 2.34 is in the top 5 lowest prices
+		const top5 = sortedPrices.slice(0, 5);
+		const has234 = top5.find(p => p.stayTotal === 2.34);
+		if (has234) {
+			console.log(`🎯 FOUND 2.34 IN TOP 5 LOWEST PRICES:`);
+			console.log(`   Hotel: ${has234.hotelName}`);
+			console.log(`   Date: ${has234.date}`);
+			console.log(`   Stay total: ${has234.stayTotal}`);
+			console.log(`   Average per night: ${has234.averagePerNight}`);
+		}
+	}
+	
+	return sortedPrices;
 }
 
 function buildFormData(params: SearchParams): URLSearchParams {
@@ -334,8 +355,18 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 						priceString = priceString.replace(/\./g, '').replace(',', '.');
 					}
 				} else if (priceString.includes(',') && !priceString.includes('.')) {
-					// European format with comma as decimal: "1 382,77" or "2 464,35"
-					priceString = priceString.replace(allWhitespace, '').replace(',', '.');
+					// European format with comma as decimal: "1 382,77" or "2 464,35" or "2,34"
+					// Need to check if this is actually a decimal or thousands separator
+					const commaIndex = priceString.lastIndexOf(',');
+					const afterComma = priceString.substring(commaIndex + 1);
+					
+					if (afterComma.length === 2 && /^\d{2}$/.test(afterComma)) {
+						// This looks like a decimal separator (2 digits after comma)
+						priceString = priceString.replace(allWhitespace, '').replace(',', '.');
+					} else {
+						// Might be thousands separator, but less likely with single comma
+						priceString = priceString.replace(allWhitespace, '').replace(',', '');
+					}
 				} else if (priceString.includes('.') && !priceString.includes(',')) {
 					// US format with dot as decimal: "5106.67"
 					priceString = priceString.replace(allWhitespace, '');
@@ -355,6 +386,19 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 					console.log(`   Final value: ${priceValue}`);
 					console.log(`   Hotel: ${hotel.name}`);
 					console.log(`   Cell text: ${cellText.slice(0, 200)}...`);
+				}
+				
+				// Special check for 2.34 value
+				if (priceValue === 2.34) {
+					console.log(`🎯 FOUND 2.34 VALUE:`);
+					console.log(`   Date: ${date}`);
+					console.log(`   Hotel: ${hotel.name}`);
+					console.log(`   Original matched: "${priceMatch[1]}"`);
+					console.log(`   Processed string: "${priceString}"`);
+					console.log(`   Cell text: ${cellText.slice(0, 300)}...`);
+					console.log(`   Title: ${title}`);
+					console.log(`   Total price match: ${totalPriceMatch ? 'YES' : 'NO'}`);
+					console.log(`   Per night match: ${perNightMatch ? 'YES' : 'NO'}`);
 				}
 
 				let stayTotal: number;
@@ -387,8 +431,11 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 					console.log(`   Stay total: ${stayTotal}`);
 					console.log(`   Original price value: ${priceValue}`);
 					console.log(`   Original matched: "${priceMatch[1]}"`);
+					console.log(`   Processed string: "${priceString}"`);
 					console.log(`   Total price match: ${totalPriceMatch ? 'YES' : 'NO'}`);
 					console.log(`   Per night match: ${perNightMatch ? 'YES' : 'NO'}`);
+					console.log(`   Cell text contains: ${cellText.includes('2.34') ? 'YES - HAS 2.34' : 'NO'}`);
+					console.log(`   Title contains: ${title.includes('2.34') ? 'YES - HAS 2.34' : 'NO'}`);
 				}
 
 				prices.push({

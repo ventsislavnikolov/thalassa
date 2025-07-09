@@ -78,6 +78,21 @@ export async function POST(request: NextRequest) {
 
       allPrices.sort((a, b) => a.stayTotal - b.stayTotal);
       console.log(`✅ Total prices found: ${allPrices.length}`);
+      
+      // Debug logging for single-month search
+      if (allPrices.length > 0) {
+        const lowestPrice = allPrices[0];
+        console.log(`🔍 SINGLE MONTH - Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`);
+        
+        const has234 = allPrices.find(p => p.stayTotal === 2.34);
+        if (has234) {
+          console.log(`🎯 SINGLE MONTH - FOUND 2.34 PRICE:`);
+          console.log(`   Hotel: ${has234.hotelName}`);
+          console.log(`   Date: ${has234.date}`);
+          console.log(`   Stay total: ${has234.stayTotal}`);
+          console.log(`   Average per night: ${has234.averagePerNight}`);
+        }
+      }
     } else {
       // Multi-month search
       console.log("📅 Starting multi-month search...");
