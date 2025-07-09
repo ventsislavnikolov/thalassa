@@ -222,16 +222,17 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			// Updated regex patterns to handle BGN/лв BEFORE the number
 			// Pattern 1: "Stay total:BGN 3,293.62" or "Общ престой:лв 3,293.62"
 			// Bulgarian format uses space as thousands separator and comma as decimal separator
+			// Also handle European format with dots as thousands separator: "1.382,77"
 			const totalPricePatterns = [
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i, // Match inside <b> tags
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0\.]+,\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i, // Match inside <b> tags
 			];
 			
 			// Pattern 2: General patterns for "BGN 3,293.62" or "лв 3,293.62"
 			const generalPricePatterns = [
-				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
-				/([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
+				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0\.]+,\d{2})/i,
+				/([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
 			];
 
 			// Try to match total price first
@@ -264,8 +265,22 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 
 			if (priceMatch) {
 				// Price is in index 1 because index 0 is the full match
-				// Replace both regular spaces and non-breaking spaces, then convert comma to dot for parsing
-				const priceValue = parseFloat(priceMatch[1].replace(/[\s\u00A0]/g, '').replace(',', '.'));
+				// Handle European number format: "1.382,77" or Bulgarian format: "1 382,77"
+				let priceString = priceMatch[1];
+				
+				// Remove all whitespace first
+				priceString = priceString.replace(/[\s\u00A0]/g, '');
+				
+				// If there's both a dot and a comma, the dot is thousands separator
+				if (priceString.includes('.') && priceString.includes(',')) {
+					// European format: "1.382,77" -> remove dot, keep comma for decimal
+					priceString = priceString.replace(/\./g, '');
+				}
+				
+				// Convert comma to dot for decimal parsing
+				priceString = priceString.replace(',', '.');
+				
+				const priceValue = parseFloat(priceString);
 
 				let stayTotal: number;
 				let avgPerNight: number;
