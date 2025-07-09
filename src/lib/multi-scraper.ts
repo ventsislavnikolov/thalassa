@@ -291,14 +291,18 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
 				/(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
 				/(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// European format with space as thousands separator and comma as decimal
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// Handle numbers without decimal places (like "2,347" or "2 347" in HTML)
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})*)\b/i,
-				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})*)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})*)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+				// European format with space as thousands separator and comma as decimal (must be exactly 2 digits after comma)
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
+				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+				// Handle numbers without decimal places (like "2,347" or "2 347" in HTML) - must be 3 digits after separator
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
+				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+				// Fallback: simple numbers without separators
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
+				/(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
 			];
 			
 			// Pattern 2: General patterns for both formats
