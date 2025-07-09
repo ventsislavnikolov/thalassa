@@ -295,10 +295,10 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
 				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
 				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// Handle numbers without decimal places (like "2,347")
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+)(?![\d\.,])/i,
-				/(?:Stay total:|Общ престой:).*?([\d,]+)(?![\d\.,])[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d,]+)(?![\d\.,])[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+				// Handle numbers without decimal places (like "2,347" in HTML)
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:,\d{3})*|\d+)(?!\d)/i,
+				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:,\d{3})*|\d+)(?!\d)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:,\d{3})*|\d+)(?!\d)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
 			];
 			
 			// Pattern 2: General patterns for both formats
