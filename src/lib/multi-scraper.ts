@@ -222,25 +222,26 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			// Updated regex patterns to handle both US and European number formats
 			// US format: "Stay total:BGN 5,106.67" (comma = thousands, dot = decimal)
 			// European format: "Общ престой:лв 1 382,77" (space = thousands, comma = decimal)
+			// Handle various Unicode whitespace characters for better compatibility
 			const totalPricePatterns = [
 				// US format with comma as thousands separator and dot as decimal
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d,]+\.\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i,
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
 				// European format with space as thousands separator and comma as decimal
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i,
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
 			];
 			
 			// Pattern 2: General patterns for both formats
 			const generalPricePatterns = [
 				// US format
-				/(?:BGN|лв)[\s\u00A0]*([\d,]+\.\d{2})/i,
-				/([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+				/([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
 				// European format
-				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
-				/([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
+				/([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
 			];
 
 			// Try to match total price first
@@ -275,6 +276,9 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				// Price is in index 1 because index 0 is the full match
 				let priceString = priceMatch[1];
 				
+				// Remove all Unicode whitespace characters (including regular spaces, non-breaking spaces, etc.)
+				const allWhitespace = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
+				
 				// Determine format based on pattern
 				if (priceString.includes(',') && priceString.includes('.')) {
 					// Could be either format - determine by position
@@ -290,15 +294,15 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 						priceString = priceString.replace(/\./g, '').replace(',', '.');
 					}
 				} else if (priceString.includes(',') && !priceString.includes('.')) {
-					// European format with comma as decimal: "1 382,77"
-					priceString = priceString.replace(/[\s\u00A0]/g, '').replace(',', '.');
+					// European format with comma as decimal: "1 382,77" or "2 464,35"
+					priceString = priceString.replace(allWhitespace, '').replace(',', '.');
 				} else if (priceString.includes('.') && !priceString.includes(',')) {
 					// US format with dot as decimal: "5106.67"
-					priceString = priceString.replace(/[\s\u00A0]/g, '');
+					priceString = priceString.replace(allWhitespace, '');
 					// Already has dot as decimal separator
 				} else {
 					// No decimal separator, just remove whitespace
-					priceString = priceString.replace(/[\s\u00A0]/g, '');
+					priceString = priceString.replace(allWhitespace, '');
 				}
 				
 				const priceValue = parseFloat(priceString);
