@@ -274,11 +274,13 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			// const cellHtml = $cell.html() || "";
 			const cellText = $cell.text() || '';
 			
-			// Debug logging
-			console.log(`📅 Processing cell for ${date}`);
-			console.log(`   Title: ${title}`);
-			console.log(`   Text: ${cellText.slice(0, 100)}...`);
-			console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
+			// Minimal debug logging - only for problematic dates
+			if (date === '2025-10-10' || cellText.includes('2.34') || cellHtml.includes('2.34')) {
+				console.log(`📅 Processing cell for ${date}`);
+				console.log(`   Title: ${title}`);
+				console.log(`   Text: ${cellText.slice(0, 100)}...`);
+				console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
+			}
 
 			// Updated regex patterns to handle both US and European number formats
 			// US format: "Stay total:BGN 5,106.67" (comma = thousands, dot = decimal)
@@ -330,8 +332,11 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				}
 			}
 			
-			console.log(`   Price match: ${priceMatch ? priceMatch[0] : 'NO MATCH'}`);
-			console.log(`   ---`)
+			// Only log price match for problematic dates
+			if (date === '2025-10-10' || cellText.includes('2.34') || cellHtml.includes('2.34') || (priceMatch && priceMatch[0].includes('2.34'))) {
+				console.log(`   Price match: ${priceMatch ? priceMatch[0] : 'NO MATCH'}`);
+				console.log(`   ---`);
+			}
 
 			if (priceMatch) {
 				// Price is in index 1 because index 0 is the full match
