@@ -1,484 +1,559 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
-import { format, parse, addDays } from 'date-fns';
-import { SearchParams, PriceInfo, RoomOption, CalendarResponse } from './types';
-import { HotelConfig, getHotelConfig, getDefaultHotels } from './hotels';
+import axios from "axios";
+import * as cheerio from "cheerio";
+import { format, parse, addDays } from "date-fns";
+import { SearchParams, PriceInfo, RoomOption, CalendarResponse } from "./types";
+import { HotelConfig, getHotelConfig, getDefaultHotels } from "./hotels";
 
 // Store for last raw HTML (using a Map for state management)
 const lastRawHtmlCache = new Map<string, string>();
 
-export async function fetchCalendarData(params: SearchParams, hotelId: string): Promise<CalendarResponse> {
-	const hotel = getHotelConfig(hotelId);
-	const formData = buildFormData(params);
+export async function fetchCalendarData(
+  params: SearchParams,
+  hotelId: string
+): Promise<CalendarResponse> {
+  const hotel = getHotelConfig(hotelId);
+  const formData = buildFormData(params);
 
-	try {
-		console.log(`🌐 Fetching data from ${hotel.name} (${hotel.baseUrl})`);
+  try {
+    console.log(`🌐 Fetching data from ${hotel.name} (${hotel.baseUrl})`);
 
-		const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-			},
-			timeout: 30000, // Increased timeout to 30 seconds for slower servers
-		});
+    const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+      timeout: 30000, // Increased timeout to 30 seconds for slower servers
+    });
 
-		console.log(`✅ Successfully fetched data from ${hotel.name}`);
-		console.log(`📄 Response size: ${response.data.length} characters`);
+    console.log(`✅ Successfully fetched data from ${hotel.name}`);
+    console.log(`📄 Response size: ${response.data.length} characters`);
 
-		lastRawHtmlCache.set(hotelId, response.data);
+    lastRawHtmlCache.set(hotelId, response.data);
 
-		// Save raw HTML for debugging (commented out for now)
-		if (process.env.NODE_ENV === 'development') {
-			const fs = await import('fs');
-			const path = await import('path');
-			const debugDir = path.join(process.cwd(), 'debug');
-			if (!fs.existsSync(debugDir)) {
-				fs.mkdirSync(debugDir);
-			}
-			const filename = path.join(debugDir, `${hotel.id}-${Date.now()}.html`);
-			fs.writeFileSync(filename, response.data);
-			console.log(`💾 Saved raw HTML to: ${filename}`);
-		}
+    // Save raw HTML for debugging (commented out for now)
+    if (process.env.NODE_ENV === "development") {
+      const fs = await import("fs");
+      const path = await import("path");
+      const debugDir = path.join(process.cwd(), "debug");
+      if (!fs.existsSync(debugDir)) {
+        fs.mkdirSync(debugDir);
+      }
+      const filename = path.join(debugDir, `${hotel.id}-${Date.now()}.html`);
+      fs.writeFileSync(filename, response.data);
+      console.log(`💾 Saved raw HTML to: ${filename}`);
+    }
 
-		return parseCalendarHTML(response.data, params, hotel);
-	} catch (error) {
-		console.error(`❌ Error fetching ${hotel.name}:`, error);
+    return parseCalendarHTML(response.data, params, hotel);
+  } catch (error) {
+    console.error(`❌ Error fetching ${hotel.name}:`, error);
 
-		// Log more details about the error
-		if (axios.isAxiosError(error)) {
-			console.error(`🔍 Axios error details:`, {
-				message: error.message,
-				code: error.code,
-				status: error.response?.status,
-				statusText: error.response?.statusText,
-				url: error.config?.url,
-				timeout: error.config?.timeout,
-			});
-		}
+    // Log more details about the error
+    if (axios.isAxiosError(error)) {
+      console.error(`🔍 Axios error details:`, {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        timeout: error.config?.timeout,
+      });
+    }
 
-		throw new Error(`Failed to fetch calendar data for ${hotel.name}: ${error}`);
-	}
+    throw new Error(
+      `Failed to fetch calendar data for ${hotel.name}: ${error}`
+    );
+  }
 }
 
-export async function fetchAllHotels(params: SearchParams, hotelIds?: string[]): Promise<CalendarResponse[]> {
-	const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
-	const responses: CalendarResponse[] = [];
+export async function fetchAllHotels(
+  params: SearchParams,
+  hotelIds?: string[]
+): Promise<CalendarResponse[]> {
+  const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
+  const responses: CalendarResponse[] = [];
 
-	for (const hotel of hotels) {
-		try {
-			const response = await fetchCalendarData(params, hotel.id);
-			responses.push(response);
-		} catch (error) {
-			console.error(`Error fetching ${hotel.name}:`, error);
-		}
-	}
+  for (const hotel of hotels) {
+    try {
+      const response = await fetchCalendarData(params, hotel.id);
+      responses.push(response);
+    } catch (error) {
+      console.error(`Error fetching ${hotel.name}:`, error);
+    }
+  }
 
-	return responses;
+  return responses;
 }
 
 export async function findLowestPricesAllHotels(
-	params: SearchParams,
-	monthsToCheck: number = 3,
-	hotelIds?: string[],
+  params: SearchParams,
+  monthsToCheck: number = 3,
+  hotelIds?: string[]
 ): Promise<PriceInfo[]> {
-	const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
-	const priceMap = new Map<string, PriceInfo>(); // date + hotel as key
+  const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
+  const priceMap = new Map<string, PriceInfo>(); // date + hotel as key
 
-	console.log(`Scanning ${monthsToCheck} months across ${hotels.length} hotels...`);
-	
-	// Set timeout for each hotel processing
-	const hotelTimeout = process.env.VERCEL ? 15000 : 30000; // 15s on Vercel, 30s locally
+  console.log(
+    `Scanning ${monthsToCheck} months across ${hotels.length} hotels...`
+  );
 
-	for (const hotel of hotels) {
-		console.log(`\n${hotel.displayName}:`);
-		console.log(`🔍 Starting scraping for ${hotel.name} (${hotel.baseUrl})`);
+  // Set timeout for each hotel processing
+  const hotelTimeout = process.env.VERCEL ? 15000 : 30000; // 15s on Vercel, 30s locally
 
-		// Wrap hotel processing with timeout
-		const processHotel = async () => {
-			// First, get prices from the initial search
-			try {
-				console.log(`📅 Fetching initial month for ${hotel.name}...`);
-				const initialResponse = await fetchCalendarData(params, hotel.id);
-				console.log(`✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`);
-				
-				initialResponse.prices.forEach((price) => {
-					const key = `${price.date}_${hotel.id}`;
-					priceMap.set(key, price);
-				});
-			} catch (error) {
-				console.error(`❌ Error fetching initial month for ${hotel.name}:`, error);
-				console.error(`🔍 Error details:`, {
-					message: error instanceof Error ? error.message : 'Unknown error',
-					hotelId: hotel.id,
-					hotelName: hotel.name,
-					baseUrl: hotel.baseUrl
-				});
-			}
+  for (const hotel of hotels) {
+    console.log(`\n${hotel.displayName}:`);
+    console.log(`🔍 Starting scraping for ${hotel.name} (${hotel.baseUrl})`);
 
-			// Then check additional months
-			const startDate = parse(params.checkin, 'yyyy-MM-dd', new Date());
-			const daysToSkip = monthsToCheck > 6 ? 25 : 30;
+    // Wrap hotel processing with timeout
+    const processHotel = async () => {
+      // First, get prices from the initial search
+      try {
+        console.log(`📅 Fetching initial month for ${hotel.name}...`);
+        const initialResponse = await fetchCalendarData(params, hotel.id);
+        console.log(
+          `✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`
+        );
 
-			for (let i = 1; i < monthsToCheck; i++) {
-				const currentDate = addDays(startDate, i * daysToSkip);
-				const searchParams: SearchParams = {
-					...params,
-					checkin: format(currentDate, 'yyyy-MM-dd'),
-					checkout: format(addDays(currentDate, params.nights), 'yyyy-MM-dd'),
-				};
+        initialResponse.prices.forEach((price) => {
+          const key = `${price.date}_${hotel.id}`;
+          priceMap.set(key, price);
+        });
+      } catch (error) {
+        console.error(
+          `❌ Error fetching initial month for ${hotel.name}:`,
+          error
+        );
+        console.error(`🔍 Error details:`, {
+          message: error instanceof Error ? error.message : "Unknown error",
+          hotelId: hotel.id,
+          hotelName: hotel.name,
+          baseUrl: hotel.baseUrl,
+        });
+      }
 
-				try {
-					console.log(`📅 Fetching month ${i + 1}/${monthsToCheck} for ${hotel.name} (${searchParams.checkin})...`);
-					const response = await fetchCalendarData(searchParams, hotel.id);
-					
-					let newPrices = 0;
-					response.prices.forEach((price) => {
-						const key = `${price.date}_${hotel.id}`;
-						if (!priceMap.has(key)) {
-							priceMap.set(key, price);
-							newPrices++;
-						}
-					});
-					
-					console.log(`✅ Month ${i + 1} fetched successfully for ${hotel.name}, found ${response.prices.length} prices (${newPrices} new)`);
-				} catch (error) {
-					console.error(`❌ Error fetching month ${i + 1} for ${hotel.name}:`, error);
-					console.error(`🔍 Month ${i + 1} error details:`, {
-						message: error instanceof Error ? error.message : 'Unknown error',
-						checkin: searchParams.checkin,
-						hotelId: hotel.id,
-						hotelName: hotel.name
-					});
-				}
+      // Then check additional months
+      const startDate = parse(params.checkin, "yyyy-MM-dd", new Date());
+      const daysToSkip = monthsToCheck > 6 ? 25 : 30;
 
-				// Add a small delay to avoid hammering the server
-				if (monthsToCheck > 6) {
-					await new Promise((resolve) => setTimeout(resolve, 100));
-				}
-			}
-		};
+      for (let i = 1; i < monthsToCheck; i++) {
+        const currentDate = addDays(startDate, i * daysToSkip);
+        const searchParams: SearchParams = {
+          ...params,
+          checkin: format(currentDate, "yyyy-MM-dd"),
+          checkout: format(addDays(currentDate, params.nights), "yyyy-MM-dd"),
+        };
 
-		// Process hotel with timeout
-		try {
-			await Promise.race([
-				processHotel(),
-				new Promise((_, reject) => setTimeout(() => reject(new Error('Hotel processing timeout')), hotelTimeout))
-			]);
-		} catch (error) {
-			console.error(`⏱️ Hotel processing timed out or failed for ${hotel.name}:`, error);
-			continue; // Skip to next hotel
-		}
-		
-		console.log(`🏁 Completed scraping for ${hotel.name}`);
-	}
+        try {
+          console.log(
+            `📅 Fetching month ${i + 1}/${monthsToCheck} for ${hotel.name} (${
+              searchParams.checkin
+            })...`
+          );
+          const response = await fetchCalendarData(searchParams, hotel.id);
 
-	console.log('\n✅ Complete!');
-	console.log(`Found prices for ${priceMap.size} date-hotel combinations\n`);
+          let newPrices = 0;
+          response.prices.forEach((price) => {
+            const key = `${price.date}_${hotel.id}`;
+            if (!priceMap.has(key)) {
+              priceMap.set(key, price);
+              newPrices++;
+            }
+          });
 
-	// Convert map to array and sort by total price
-	const sortedPrices = Array.from(priceMap.values()).sort((a, b) => a.stayTotal - b.stayTotal);
-	
-	// Debug logging for lowest prices
-	console.log(`🔍 SORTED PRICE DEBUGGING:`);
-	console.log(`   Total prices found: ${sortedPrices.length}`);
-	if (sortedPrices.length > 0) {
-		const lowestPrice = sortedPrices[0];
-		console.log(`   Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`);
-		
-		// Check if 2.34 is in the top 5 lowest prices
-		const top5 = sortedPrices.slice(0, 5);
-		const has234 = top5.find(p => p.stayTotal === 2.34);
-		if (has234) {
-			console.log(`🎯 FOUND 2.34 IN TOP 5 LOWEST PRICES:`);
-			console.log(`   Hotel: ${has234.hotelName}`);
-			console.log(`   Date: ${has234.date}`);
-			console.log(`   Stay total: ${has234.stayTotal}`);
-			console.log(`   Average per night: ${has234.averagePerNight}`);
-		}
-	}
-	
-	return sortedPrices;
+          console.log(
+            `✅ Month ${i + 1} fetched successfully for ${hotel.name}, found ${
+              response.prices.length
+            } prices (${newPrices} new)`
+          );
+        } catch (error) {
+          console.error(
+            `❌ Error fetching month ${i + 1} for ${hotel.name}:`,
+            error
+          );
+          console.error(`🔍 Month ${i + 1} error details:`, {
+            message: error instanceof Error ? error.message : "Unknown error",
+            checkin: searchParams.checkin,
+            hotelId: hotel.id,
+            hotelName: hotel.name,
+          });
+        }
+
+        // Add a small delay to avoid hammering the server
+        if (monthsToCheck > 6) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      }
+    };
+
+    // Process hotel with timeout
+    try {
+      await Promise.race([
+        processHotel(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Hotel processing timeout")),
+            hotelTimeout
+          )
+        ),
+      ]);
+    } catch (error) {
+      console.error(
+        `⏱️ Hotel processing timed out or failed for ${hotel.name}:`,
+        error
+      );
+      continue; // Skip to next hotel
+    }
+
+    console.log(`🏁 Completed scraping for ${hotel.name}`);
+  }
+
+  console.log("\n✅ Complete!");
+  console.log(`Found prices for ${priceMap.size} date-hotel combinations\n`);
+
+  // Convert map to array and sort by total price
+  const sortedPrices = Array.from(priceMap.values()).sort(
+    (a, b) => a.stayTotal - b.stayTotal
+  );
+
+  // Debug logging for lowest prices
+  console.log(`🔍 SORTED PRICE DEBUGGING:`);
+  console.log(`   Total prices found: ${sortedPrices.length}`);
+  if (sortedPrices.length > 0) {
+    const lowestPrice = sortedPrices[0];
+    console.log(
+      `   Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`
+    );
+
+    // Check if 2.34 is in the top 5 lowest prices
+    const top5 = sortedPrices.slice(0, 5);
+    const has234 = top5.find((p) => p.stayTotal === 2.34);
+    if (has234) {
+      console.log(`🎯 FOUND 2.34 IN TOP 5 LOWEST PRICES:`);
+      console.log(`   Hotel: ${has234.hotelName}`);
+      console.log(`   Date: ${has234.date}`);
+      console.log(`   Stay total: ${has234.stayTotal}`);
+      console.log(`   Average per night: ${has234.averagePerNight}`);
+    }
+  }
+
+  return sortedPrices;
 }
 
 function buildFormData(params: SearchParams): URLSearchParams {
-	const checkinDate = parse(params.checkin, 'yyyy-MM-dd', new Date());
+  const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
 
-	const formData = new URLSearchParams({
-		voucher: '',
-		room: params.room || '',
-		bk_code: '',
-		offerid: '',
-		checkin: params.checkin,
-		checkout: params.checkout,
-		cur_iso: params.currency || 'BGN',
-		fromd: format(checkinDate, 'dd/MM/yyyy'),
-		nights: params.nights.toString(),
-		rooms: '1',
-		adults: params.adults.toString(),
-		children: (params.children || 0).toString(),
-		infants: (params.infants || 0).toString(),
-	});
+  const formData = new URLSearchParams({
+    voucher: "",
+    room: params.room || "",
+    bk_code: "",
+    offerid: "",
+    checkin: params.checkin,
+    checkout: params.checkout,
+    cur_iso: params.currency || "BGN",
+    fromd: format(checkinDate, "dd/MM/yyyy"),
+    nights: params.nights.toString(),
+    rooms: "1",
+    adults: params.adults.toString(),
+    children: (params.children || 0).toString(),
+    infants: (params.infants || 0).toString(),
+  });
 
-	return formData;
+  return formData;
 }
 
-function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfig): CalendarResponse {
-	const $ = cheerio.load(html);
-	const prices: PriceInfo[] = [];
-	const roomOptions: RoomOption[] = [];
+function parseCalendarHTML(
+  html: string,
+  params: SearchParams,
+  hotel: HotelConfig
+): CalendarResponse {
+  const $ = cheerio.load(html);
+  const prices: PriceInfo[] = [];
+  const roomOptions: RoomOption[] = [];
 
-	console.log(`🔍 Parsing HTML for ${hotel.name}`);
-	console.log(`📏 HTML length: ${html.length} characters`);
+  console.log(`🔍 Parsing HTML for ${hotel.name}`);
+  console.log(`📏 HTML length: ${html.length} characters`);
 
-	// Extract month and year
-	const monthYearText = $('.calendar-controls h2').text().trim();
-	const [month, year] = monthYearText.split(' ');
-	console.log(`📅 Month/Year: ${monthYearText}`);
+  // Extract month and year
+  const monthYearText = $(".calendar-controls h2").text().trim();
+  const [month, year] = monthYearText.split(" ");
+  console.log(`📅 Month/Year: ${monthYearText}`);
 
-	// Extract room options
-	$('select[name="room"] option').each((_, el) => {
-		const $option = $(el);
-		const value = $option.attr('value');
-		const name = $option.text().trim();
-		if (value && !$option.hasClass('empty')) {
-			roomOptions.push({ value, name });
-		}
-	});
-	console.log(`🏨 Found ${roomOptions.length} room options`);
+  // Extract room options
+  $('select[name="room"] option').each((_, el) => {
+    const $option = $(el);
+    const value = $option.attr("value");
+    const name = $option.text().trim();
+    if (value && !$option.hasClass("empty")) {
+      roomOptions.push({ value, name });
+    }
+  });
+  console.log(`🏨 Found ${roomOptions.length} room options`);
 
-	// Check if calendar exists
-	const calendarCount = $('.calendar').length;
-	const availableCells = $('.calendar .avl').length;
-	console.log(`📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`);
-	
-	// Save first available cell HTML for debugging
-	if (availableCells > 0) {
-		const firstAvailableCell = $('.calendar .avl').first();
-		console.log('🔍 First available cell sample:');
-		console.log('   HTML:', firstAvailableCell.html()?.slice(0, 500) || 'NO HTML');
-		console.log('   Attributes:', {
-			'data-date': firstAvailableCell.attr('data-date'),
-			'data-title': firstAvailableCell.attr('data-title'),
-			'class': firstAvailableCell.attr('class'),
-		});
-	}
+  // Check if calendar exists
+  const calendarCount = $(".calendar").length;
+  const availableCells = $(".calendar .avl").length;
+  console.log(
+    `📊 Calendar elements: ${calendarCount}, Available cells: ${availableCells}`
+  );
 
-	// Extract price data
-	$('.calendar .avl').each((_, el) => {
-		const $cell = $(el);
-		const date = $cell.attr('data-date');
-		const title = $cell.attr('data-title') || '';
-		const cellHtml = $cell.html() || '';
+  // Save first available cell HTML for debugging
+  if (availableCells > 0) {
+    const firstAvailableCell = $(".calendar .avl").first();
+    console.log("🔍 First available cell sample:");
+    console.log(
+      "   HTML:",
+      firstAvailableCell.html()?.slice(0, 500) || "NO HTML"
+    );
+    console.log("   Attributes:", {
+      "data-date": firstAvailableCell.attr("data-date"),
+      "data-title": firstAvailableCell.attr("data-title"),
+      class: firstAvailableCell.attr("class"),
+    });
+  }
 
-		if (date) {
-			// const cellHtml = $cell.html() || "";
-			const cellText = $cell.text() || '';
-			
-			// Minimal debug logging - only for problematic dates
-			if (date === '2025-10-10' || cellText.includes('2.34') || cellHtml.includes('2.34')) {
-				console.log(`📅 Processing cell for ${date}`);
-				console.log(`   Title: ${title}`);
-				console.log(`   Text: ${cellText.slice(0, 100)}...`);
-				console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
-			}
+  // Extract price data
+  $(".calendar .avl").each((_, el) => {
+    const $cell = $(el);
+    const date = $cell.attr("data-date");
+    const title = $cell.attr("data-title") || "";
+    const cellHtml = $cell.html() || "";
 
-			// Updated regex patterns to handle both US and European number formats
-			// US format: "Stay total:BGN 5,106.67" (comma = thousands, dot = decimal)
-			// European format: "Общ престой:лв 1 382,77" (space = thousands, comma = decimal)
-			// Handle various Unicode whitespace characters for better compatibility
-			const totalPricePatterns = [
-				// US format with comma as thousands separator and dot as decimal
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// European format with space as thousands separator and comma as decimal (must be exactly 2 digits after comma)
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
-				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// Handle numbers without decimal places (like "2,347" or "2 347" in HTML) - must be 3 digits after separator
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
-				/(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-				// Fallback: simple numbers without separators
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
-				/(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
-			];
-			
-			// Pattern 2: General patterns for both formats
-			const generalPricePatterns = [
-				// US format
-				/(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-				/([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-				// European format
-				/(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
-				/([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-			];
+    if (date) {
+      // const cellHtml = $cell.html() || "";
+      const cellText = $cell.text() || "";
 
-			// Try to match total price first
-			let totalPriceMatch = null;
-			for (const pattern of totalPricePatterns) {
-				totalPriceMatch = cellText.match(pattern);
-				if (totalPriceMatch) break;
-			}
+      // Minimal debug logging - only for problematic dates
+      if (
+        date === "2025-10-10" ||
+        cellText.includes("2.34") ||
+        cellHtml.includes("2.34")
+      ) {
+        console.log(`📅 Processing cell for ${date}`);
+        console.log(`   Title: ${title}`);
+        console.log(`   Text: ${cellText.slice(0, 100)}...`);
+        console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
+      }
 
-			// Try to match any price in title
-			let perNightMatch = null;
-			for (const pattern of generalPricePatterns) {
-				perNightMatch = title.match(pattern);
-				if (perNightMatch) break;
-			}
+      // Updated regex patterns to handle both US and European number formats
+      // US format: "Stay total:BGN 5,106.67" (comma = thousands, dot = decimal)
+      // European format: "Общ престой:лв 1 382,77" (space = thousands, comma = decimal)
+      // Handle various Unicode whitespace characters for better compatibility
+      const totalPricePatterns = [
+        // US format with comma as thousands separator and dot as decimal
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+        /(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        // European format with space as thousands separator and comma as decimal (must be exactly 2 digits after comma)
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        // Handle numbers without decimal places (like "2,347" or "2 347" in HTML) - must be 3 digits after separator
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        // Fallback: simple numbers without separators
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+      ];
 
-			// Use total price if available, otherwise use per-night price
-			let priceMatch = totalPriceMatch || perNightMatch;
+      // Pattern 2: General patterns for both formats
+      const generalPricePatterns = [
+        // US format
+        /(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+        /([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        // European format
+        /(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
+        /([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+      ];
 
-			// If still no match, try any price pattern in the cell text
-			if (!priceMatch) {
-				for (const pattern of generalPricePatterns) {
-					priceMatch = cellText.match(pattern);
-					if (priceMatch) break;
-				}
-			}
-			
-			// Only log price match for problematic dates
-			if (date === '2025-10-10' || cellText.includes('2.34') || cellHtml.includes('2.34') || (priceMatch && priceMatch[0].includes('2.34'))) {
-				console.log(`   Price match: ${priceMatch ? priceMatch[0] : 'NO MATCH'}`);
-				console.log(`   ---`);
-			}
+      // Try to match total price first
+      let totalPriceMatch = null;
+      for (const pattern of totalPricePatterns) {
+        totalPriceMatch = cellText.match(pattern);
+        if (totalPriceMatch) break;
+      }
 
-			if (priceMatch) {
-				// Price is in index 1 because index 0 is the full match
-				let priceString = priceMatch[1];
-				
-				// Remove all Unicode whitespace characters (including regular spaces, non-breaking spaces, etc.)
-				const allWhitespace = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
-				
-				// Determine format based on pattern
-				if (priceString.includes(',') && priceString.includes('.')) {
-					// Could be either format - determine by position
-					const commaIndex = priceString.indexOf(',');
-					const dotIndex = priceString.indexOf('.');
-					
-					if (commaIndex < dotIndex) {
-						// US format: "5,106.67" (comma = thousands, dot = decimal)
-						priceString = priceString.replace(/,/g, '');
-						// Already has dot as decimal separator
-					} else {
-						// European format: "1.382,77" (dot = thousands, comma = decimal)
-						priceString = priceString.replace(/\./g, '').replace(',', '.');
-					}
-				} else if (priceString.includes(',') && !priceString.includes('.')) {
-					// European format with comma as decimal: "1 382,77" or "2 464,35" or "2,34"
-					// OR thousands separator without decimal: "2,347"
-					const commaIndex = priceString.lastIndexOf(',');
-					const afterComma = priceString.substring(commaIndex + 1);
-					
-					if (afterComma.length === 2 && /^\d{2}$/.test(afterComma)) {
-						// This looks like a decimal separator (2 digits after comma)
-						priceString = priceString.replace(allWhitespace, '').replace(',', '.');
-					} else {
-						// This is likely a thousands separator (like "2,347")
-						// Remove comma and treat as whole number
-						priceString = priceString.replace(allWhitespace, '').replace(',', '');
-					}
-				} else if (priceString.includes('.') && !priceString.includes(',')) {
-					// US format with dot as decimal: "5106.67"
-					priceString = priceString.replace(allWhitespace, '');
-					// Already has dot as decimal separator
-				} else {
-					// No decimal separator, just remove whitespace and treat as whole number
-					priceString = priceString.replace(allWhitespace, '');
-				}
-				
-				const priceValue = parseFloat(priceString);
+      // Try to match any price in title
+      let perNightMatch = null;
+      for (const pattern of generalPricePatterns) {
+        perNightMatch = title.match(pattern);
+        if (perNightMatch) break;
+      }
 
-				// Debug logging for incorrect price parsing
-				if (priceValue < 100 && priceMatch[1].length > 4) {
-					console.log(`🚨 SUSPICIOUS PRICE PARSING:`);
-					console.log(`   Original matched: "${priceMatch[1]}"`);
-					console.log(`   Processed string: "${priceString}"`);
-					console.log(`   Final value: ${priceValue}`);
-					console.log(`   Hotel: ${hotel.name}`);
-					console.log(`   Cell text: ${cellText.slice(0, 200)}...`);
-				}
-				
-				// Special check for 2.34 value
-				if (priceValue === 2.34) {
-					console.log(`🎯 FOUND 2.34 VALUE:`);
-					console.log(`   Date: ${date}`);
-					console.log(`   Hotel: ${hotel.name}`);
-					console.log(`   Original matched: "${priceMatch[1]}"`);
-					console.log(`   Processed string: "${priceString}"`);
-					console.log(`   Cell text: ${cellText.slice(0, 300)}...`);
-					console.log(`   Title: ${title}`);
-					console.log(`   Total price match: ${totalPriceMatch ? 'YES' : 'NO'}`);
-					console.log(`   Per night match: ${perNightMatch ? 'YES' : 'NO'}`);
-				}
+      // Use total price if available, otherwise use per-night price
+      let priceMatch = totalPriceMatch || perNightMatch;
 
-				let stayTotal: number;
-				let avgPerNight: number;
+      // If still no match, try any price pattern in the cell text
+      if (!priceMatch) {
+        for (const pattern of generalPricePatterns) {
+          priceMatch = cellText.match(pattern);
+          if (priceMatch) break;
+        }
+      }
 
-				// If we found "Общ престой:" it's the total price
-				if (totalPriceMatch) {
-					stayTotal = priceValue;
-					avgPerNight = stayTotal / params.nights;
-				} else if (perNightMatch && !totalPriceMatch) {
-					// Price from title is per night - need to multiply
-					avgPerNight = priceValue;
-					stayTotal = avgPerNight * params.nights;
-				} else {
-					// Assume it's total if no specific match
-					stayTotal = priceValue;
-					avgPerNight = stayTotal / params.nights;
-				}
+      // Only log price match for problematic dates
+      if (
+        date === "2025-10-10" ||
+        cellText.includes("2.34") ||
+        cellHtml.includes("2.34") ||
+        (priceMatch && priceMatch[0].includes("2.34"))
+      ) {
+        console.log(
+          `   Price match: ${priceMatch ? priceMatch[0] : "NO MATCH"}`
+        );
+        console.log(`   ---`);
+      }
 
-				const isLowestRate = $cell.find('.fa-star').length > 0;
-				const dateObj = parse(date, 'yyyy-MM-dd', new Date());
-				const dayOfWeek = format(dateObj, 'EEEE');
+      if (priceMatch) {
+        // Price is in index 1 because index 0 is the full match
+        let priceString = priceMatch[1];
 
-				// Debug logging for suspicious final prices
-				if (avgPerNight < 10 || stayTotal < 50) {
-					console.log(`🚨 SUSPICIOUS FINAL PRICE:`);
-					console.log(`   Date: ${date}`);
-					console.log(`   Hotel: ${hotel.name}`);
-					console.log(`   Average per night: ${avgPerNight}`);
-					console.log(`   Stay total: ${stayTotal}`);
-					console.log(`   Original price value: ${priceValue}`);
-					console.log(`   Original matched: "${priceMatch[1]}"`);
-					console.log(`   Processed string: "${priceString}"`);
-					console.log(`   Total price match: ${totalPriceMatch ? 'YES' : 'NO'}`);
-					console.log(`   Per night match: ${perNightMatch ? 'YES' : 'NO'}`);
-					console.log(`   Cell text contains: ${cellText.includes('2.34') ? 'YES - HAS 2.34' : 'NO'}`);
-					console.log(`   Title contains: ${title.includes('2.34') ? 'YES - HAS 2.34' : 'NO'}`);
-				}
+        // Remove all Unicode whitespace characters (including regular spaces, non-breaking spaces, etc.)
+        const allWhitespace = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
 
-				prices.push({
-					date,
-					dayOfWeek,
-					averagePerNight: avgPerNight,
-					stayTotal: stayTotal,
-					isLowestRate,
-					nights: params.nights,
-					currency: params.currency || 'BGN',
-					hotelId: hotel.id,
-					hotelName: hotel.name,
-				});
-			}
-		}
-	});
+        // Determine format based on pattern
+        if (priceString.includes(",") && priceString.includes(".")) {
+          // Could be either format - determine by position
+          const commaIndex = priceString.indexOf(",");
+          const dotIndex = priceString.indexOf(".");
 
-	console.log(`✅ Parsing complete: Found ${prices.length} prices`);
+          if (commaIndex < dotIndex) {
+            // US format: "5,106.67" (comma = thousands, dot = decimal)
+            priceString = priceString.replace(/,/g, "");
+            // Already has dot as decimal separator
+          } else {
+            // European format: "1.382,77" (dot = thousands, comma = decimal)
+            priceString = priceString.replace(/\./g, "").replace(",", ".");
+          }
+        } else if (priceString.includes(",") && !priceString.includes(".")) {
+          // European format with comma as decimal: "1 382,77" or "2 464,35" or "2,34"
+          // OR thousands separator without decimal: "2,347"
+          const commaIndex = priceString.lastIndexOf(",");
+          const afterComma = priceString.substring(commaIndex + 1);
 
-	return {
-		month,
-		year: parseInt(year),
-		prices,
-		roomOptions,
-		hotelId: hotel.id,
-		hotelName: hotel.name,
-	};
+          if (afterComma.length === 2 && /^\d{2}$/.test(afterComma)) {
+            // This looks like a decimal separator (2 digits after comma)
+            priceString = priceString
+              .replace(allWhitespace, "")
+              .replace(",", ".");
+          } else {
+            // This is likely a thousands separator (like "2,347")
+            // Remove comma and treat as whole number
+            priceString = priceString
+              .replace(allWhitespace, "")
+              .replace(",", "");
+          }
+        } else if (priceString.includes(".") && !priceString.includes(",")) {
+          // US format with dot as decimal: "5106.67"
+          priceString = priceString.replace(allWhitespace, "");
+          // Already has dot as decimal separator
+        } else {
+          // No decimal separator, just remove whitespace and treat as whole number
+          priceString = priceString.replace(allWhitespace, "");
+        }
+
+        const priceValue = parseFloat(priceString);
+
+        // Debug logging for incorrect price parsing
+        if (priceValue < 100 && priceMatch[1].length > 4) {
+          console.log(`🚨 SUSPICIOUS PRICE PARSING:`);
+          console.log(`   Original matched: "${priceMatch[1]}"`);
+          console.log(`   Processed string: "${priceString}"`);
+          console.log(`   Final value: ${priceValue}`);
+          console.log(`   Hotel: ${hotel.name}`);
+          console.log(`   Cell text: ${cellText.slice(0, 200)}...`);
+        }
+
+        // Special check for 2.34 value
+        if (priceValue === 2.34) {
+          console.log(`🎯 FOUND 2.34 VALUE:`);
+          console.log(`   Date: ${date}`);
+          console.log(`   Hotel: ${hotel.name}`);
+          console.log(`   Original matched: "${priceMatch[1]}"`);
+          console.log(`   Processed string: "${priceString}"`);
+          console.log(`   Cell text: ${cellText.slice(0, 300)}...`);
+          console.log(`   Title: ${title}`);
+          console.log(
+            `   Total price match: ${totalPriceMatch ? "YES" : "NO"}`
+          );
+          console.log(`   Per night match: ${perNightMatch ? "YES" : "NO"}`);
+        }
+
+        let stayTotal: number;
+        let avgPerNight: number;
+
+        // If we found "Общ престой:" it's the total price
+        if (totalPriceMatch) {
+          stayTotal = priceValue;
+          avgPerNight = stayTotal / params.nights;
+        } else if (perNightMatch && !totalPriceMatch) {
+          // Price from title is per night - need to multiply
+          avgPerNight = priceValue;
+          stayTotal = avgPerNight * params.nights;
+        } else {
+          // Assume it's total if no specific match
+          stayTotal = priceValue;
+          avgPerNight = stayTotal / params.nights;
+        }
+
+        const isLowestRate = $cell.find(".fa-star").length > 0;
+        const dateObj = parse(date, "yyyy-MM-dd", new Date());
+        const dayOfWeek = format(dateObj, "EEEE");
+
+        // Debug logging for suspicious final prices
+        if (avgPerNight < 10 || stayTotal < 50) {
+          console.log(`🚨 SUSPICIOUS FINAL PRICE:`);
+          console.log(`   Date: ${date}`);
+          console.log(`   Hotel: ${hotel.name}`);
+          console.log(`   Average per night: ${avgPerNight}`);
+          console.log(`   Stay total: ${stayTotal}`);
+          console.log(`   Original price value: ${priceValue}`);
+          console.log(`   Original matched: "${priceMatch[1]}"`);
+          console.log(`   Processed string: "${priceString}"`);
+          console.log(
+            `   Total price match: ${totalPriceMatch ? "YES" : "NO"}`
+          );
+          console.log(`   Per night match: ${perNightMatch ? "YES" : "NO"}`);
+          console.log(
+            `   Cell text contains: ${
+              cellText.includes("2.34") ? "YES - HAS 2.34" : "NO"
+            }`
+          );
+          console.log(
+            `   Title contains: ${
+              title.includes("2.34") ? "YES - HAS 2.34" : "NO"
+            }`
+          );
+        }
+
+        prices.push({
+          date,
+          dayOfWeek,
+          averagePerNight: avgPerNight,
+          stayTotal: stayTotal,
+          isLowestRate,
+          nights: params.nights,
+          currency: params.currency || "BGN",
+          hotelId: hotel.id,
+          hotelName: hotel.name,
+        });
+      }
+    }
+  });
+
+  console.log(`✅ Parsing complete: Found ${prices.length} prices`);
+
+  return {
+    month,
+    year: parseInt(year),
+    prices,
+    roomOptions,
+    hotelId: hotel.id,
+    hotelName: hotel.name,
+  };
 }
 
 export function getLastRawHtml(hotelId: string): string {
-	return lastRawHtmlCache.get(hotelId) || '';
+  return lastRawHtmlCache.get(hotelId) || "";
 }

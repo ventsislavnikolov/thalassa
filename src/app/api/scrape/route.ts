@@ -5,11 +5,8 @@ import { SearchParams } from "@/lib/types";
 import { format, addDays } from "date-fns";
 
 export async function POST(request: NextRequest) {
-  console.log("🚀 Scraping API called");
-  
   try {
     const body = await request.json();
-    console.log("📝 Request body:", JSON.stringify(body, null, 2));
 
     const {
       checkin,
@@ -48,60 +45,53 @@ export async function POST(request: NextRequest) {
     };
 
     // Limit months to prevent timeouts on Vercel
-    const maxMonths = process.env.VERCEL ? 6 : (isYearSearch ? 12 : parseInt(months));
-    const monthsToCheck = Math.min(maxMonths, isYearSearch ? 12 : parseInt(months));
-    console.log("🔍 Search params:", searchParams);
-    console.log("📅 Months to check:", monthsToCheck);
-    console.log("🏨 Hotel IDs:", hotelIds);
+    const maxMonths = process.env.VERCEL
+      ? 6
+      : isYearSearch
+      ? 12
+      : parseInt(months);
+    const monthsToCheck = Math.min(
+      maxMonths,
+      isYearSearch ? 12 : parseInt(months)
+    );
 
     let allPrices: any[] = [];
     let roomOptions: any[] = [];
 
     if (monthsToCheck === 1) {
       // Single month search
-      console.log("🎯 Starting single month search...");
       const responses = await fetchAllHotels(searchParams, hotelIds);
-      console.log(`📊 Received ${responses.length} hotel responses`);
 
       // Get room options from first response
       const firstResponse = responses.find((r) => r.roomOptions.length > 0);
       if (firstResponse) {
         roomOptions = firstResponse.roomOptions;
-        console.log(`🏨 Found ${roomOptions.length} room options`);
       }
 
       allPrices = [];
       responses.forEach((response) => {
-        console.log(`💰 Adding ${response.prices.length} prices from ${response.hotelName}`);
+        console.log(
+          `💰 Adding ${response.prices.length} prices from ${response.hotelName}`
+        );
         allPrices.push(...response.prices);
       });
 
       allPrices.sort((a, b) => a.stayTotal - b.stayTotal);
-      console.log(`✅ Total prices found: ${allPrices.length}`);
-      
+
       // Debug logging for single-month search
       if (allPrices.length > 0) {
         const lowestPrice = allPrices[0];
-        console.log(`🔍 SINGLE MONTH - Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`);
-        
-        const has234 = allPrices.find(p => p.stayTotal === 2.34);
-        if (has234) {
-          console.log(`🎯 SINGLE MONTH - FOUND 2.34 PRICE:`);
-          console.log(`   Hotel: ${has234.hotelName}`);
-          console.log(`   Date: ${has234.date}`);
-          console.log(`   Stay total: ${has234.stayTotal}`);
-          console.log(`   Average per night: ${has234.averagePerNight}`);
-        }
+
+        const has234 = allPrices.find((p) => p.stayTotal === 2.34);
+        console.log(has234, lowestPrice);
       }
     } else {
       // Multi-month search
-      console.log("📅 Starting multi-month search...");
       allPrices = await findLowestPricesAllHotels(
         searchParams,
         monthsToCheck,
         hotelIds
       );
-      console.log(`✅ Multi-month search complete: ${allPrices.length} prices found`);
     }
 
     let weatherAnalysis = null;

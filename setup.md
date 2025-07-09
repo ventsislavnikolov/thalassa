@@ -3,6 +3,7 @@
 ## Prerequisites
 
 1. **Install Node.js** (v18 or higher)
+
    - Download from: https://nodejs.org/
 
 2. **Install pnpm** (recommended package manager)
@@ -13,18 +14,21 @@
 ## Setup
 
 1. **Clone/download the project**
+
    ```bash
    # If using git
    git clone <repository-url>
-   cd bluecarpet-cocooning-advisor
+   cd greece-reserve-online-net-booking
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Start development server**
+
    ```bash
    pnpm dev
    ```

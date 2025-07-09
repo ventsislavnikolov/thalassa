@@ -42,24 +42,25 @@ export default function HomePage() {
     setResults(null);
 
     try {
-      const response = await fetch('/api/scrape', {
-        method: 'POST',
+      const response = await fetch("/api/scrape", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(params),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch prices');
+        throw new Error(errorData.error || "Failed to fetch prices");
       }
 
       const data = await response.json();
       setResults(data);
     } catch (err) {
-      console.error('Search error:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -70,37 +71,40 @@ export default function HomePage() {
 
     // Convert results to CSV
     const csvHeaders = [
-      'Date',
-      'Day of Week',
-      'Hotel',
-      'Average Per Night (BGN)',
-      'Total Stay (BGN)',
-      'Lowest Rate',
-      'Nights'
+      "Date",
+      "Day of Week",
+      "Hotel",
+      "Average Per Night (BGN)",
+      "Total Stay (BGN)",
+      "Lowest Rate",
+      "Nights",
     ];
 
-    const csvRows = results.prices.map(price => [
+    const csvRows = results.prices.map((price) => [
       price.date,
       price.dayOfWeek,
       price.hotelName,
       price.averagePerNight.toFixed(2),
       price.stayTotal.toFixed(2),
-      price.isLowestRate ? 'Yes' : 'No',
-      price.nights.toString()
+      price.isLowestRate ? "Yes" : "No",
+      price.nights.toString(),
     ]);
 
     const csvContent = [
-      csvHeaders.join(','),
-      ...csvRows.map(row => row.join(','))
-    ].join('\n');
+      csvHeaders.join(","),
+      ...csvRows.map((row) => row.join(",")),
+    ].join("\n");
 
     // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `pefkohori_hotel_prices_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `pefkohori_hotel_prices_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -115,7 +119,8 @@ export default function HomePage() {
             🏖️ Pefkohori Hotels Price Finder
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Find the best deals at Blue Carpet Suites and Cocooning Suites in Greece
+            Find the best deals at Blue Carpet Suites and Cocooning Suites in
+            Greece
           </p>
         </div>
 
@@ -138,8 +143,12 @@ export default function HomePage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-lg font-medium">Searching for the best prices...</p>
-              <p className="text-sm text-muted-foreground">This may take a few moments</p>
+              <p className="text-lg font-medium">
+                Searching for the best prices...
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This may take a few moments
+              </p>
             </div>
           </div>
         )}
@@ -156,14 +165,17 @@ export default function HomePage() {
                 {results.searchParams.children > 0 && (
                   <span>👶 {results.searchParams.children} children</span>
                 )}
-                <span>🏨 {results.meta.hotelsSearched.length} hotel{results.meta.hotelsSearched.length > 1 ? 's' : ''}</span>
+                <span>
+                  🏨 {results.meta.hotelsSearched.length} hotel
+                  {results.meta.hotelsSearched.length > 1 ? "s" : ""}
+                </span>
                 <span>📊 {results.meta.totalResults} dates found</span>
               </div>
             </div>
 
             {/* Price Results */}
             {results.prices.length > 0 ? (
-              <PriceResults 
+              <PriceResults
                 prices={results.prices}
                 isMultiHotel={results.meta.hotelsSearched.length > 1}
                 onExport={handleExport}
@@ -171,7 +183,8 @@ export default function HomePage() {
             ) : (
               <Alert>
                 <AlertDescription>
-                  No prices found for your search criteria. Try adjusting your dates or expanding the search period.
+                  No prices found for your search criteria. Try adjusting your
+                  dates or expanding the search period.
                 </AlertDescription>
               </Alert>
             )}
@@ -189,11 +202,17 @@ export default function HomePage() {
               <>
                 <Separator className="my-8" />
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold mb-3">Available Room Types</h3>
+                  <h3 className="text-lg font-semibold mb-3">
+                    Available Room Types
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {results.roomOptions.map((room: any) => (
-                      <div key={room.value} className="text-sm p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                        <span className="font-medium">{room.value}</span> - {room.name}
+                      <div
+                        key={room.value}
+                        className="text-sm p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                      >
+                        <span className="font-medium">{room.value}</span> -{" "}
+                        {room.name}
                       </div>
                     ))}
                   </div>
@@ -206,7 +225,8 @@ export default function HomePage() {
         {/* Footer */}
         <footer className="mt-16 text-center text-sm text-gray-500">
           <p>
-            Built with ❤️ for finding the best vacation deals in Pefkohori, Greece
+            Built with ❤️ for finding the best vacation deals in Pefkohori,
+            Greece
           </p>
         </footer>
       </div>
