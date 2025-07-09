@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
       currency: "BGN",
     };
 
-    const monthsToCheck = isYearSearch ? 12 : parseInt(months);
+    // Limit months to prevent timeouts on Vercel
+    const maxMonths = process.env.VERCEL ? 6 : (isYearSearch ? 12 : parseInt(months));
+    const monthsToCheck = Math.min(maxMonths, isYearSearch ? 12 : parseInt(months));
     console.log("🔍 Search params:", searchParams);
     console.log("📅 Months to check:", monthsToCheck);
     console.log("🏨 Hotel IDs:", hotelIds);

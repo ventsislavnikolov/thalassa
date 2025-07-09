@@ -85,71 +85,88 @@ export async function findLowestPricesAllHotels(
 	const priceMap = new Map<string, PriceInfo>(); // date + hotel as key
 
 	console.log(`Scanning ${monthsToCheck} months across ${hotels.length} hotels...`);
+	
+	// Set timeout for each hotel processing
+	const hotelTimeout = process.env.VERCEL ? 15000 : 30000; // 15s on Vercel, 30s locally
 
 	for (const hotel of hotels) {
 		console.log(`\n${hotel.displayName}:`);
 		console.log(`🔍 Starting scraping for ${hotel.name} (${hotel.baseUrl})`);
 
-		// First, get prices from the initial search
-		try {
-			console.log(`📅 Fetching initial month for ${hotel.name}...`);
-			const initialResponse = await fetchCalendarData(params, hotel.id);
-			console.log(`✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`);
-			
-			initialResponse.prices.forEach((price) => {
-				const key = `${price.date}_${hotel.id}`;
-				priceMap.set(key, price);
-			});
-		} catch (error) {
-			console.error(`❌ Error fetching initial month for ${hotel.name}:`, error);
-			console.error(`🔍 Error details:`, {
-				message: error instanceof Error ? error.message : 'Unknown error',
-				hotelId: hotel.id,
-				hotelName: hotel.name,
-				baseUrl: hotel.baseUrl
-			});
-		}
-
-		// Then check additional months
-		const startDate = parse(params.checkin, 'yyyy-MM-dd', new Date());
-		const daysToSkip = monthsToCheck > 6 ? 25 : 30;
-
-		for (let i = 1; i < monthsToCheck; i++) {
-			const currentDate = addDays(startDate, i * daysToSkip);
-			const searchParams: SearchParams = {
-				...params,
-				checkin: format(currentDate, 'yyyy-MM-dd'),
-				checkout: format(addDays(currentDate, params.nights), 'yyyy-MM-dd'),
-			};
-
+		// Wrap hotel processing with timeout
+		const processHotel = async () => {
+			// First, get prices from the initial search
 			try {
-				console.log(`📅 Fetching month ${i + 1}/${monthsToCheck} for ${hotel.name} (${searchParams.checkin})...`);
-				const response = await fetchCalendarData(searchParams, hotel.id);
+				console.log(`📅 Fetching initial month for ${hotel.name}...`);
+				const initialResponse = await fetchCalendarData(params, hotel.id);
+				console.log(`✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`);
 				
-				let newPrices = 0;
-				response.prices.forEach((price) => {
+				initialResponse.prices.forEach((price) => {
 					const key = `${price.date}_${hotel.id}`;
-					if (!priceMap.has(key)) {
-						priceMap.set(key, price);
-						newPrices++;
-					}
+					priceMap.set(key, price);
 				});
-				
-				console.log(`✅ Month ${i + 1} fetched successfully for ${hotel.name}, found ${response.prices.length} prices (${newPrices} new)`);
 			} catch (error) {
-				console.error(`❌ Error fetching month ${i + 1} for ${hotel.name}:`, error);
-				console.error(`🔍 Month ${i + 1} error details:`, {
+				console.error(`❌ Error fetching initial month for ${hotel.name}:`, error);
+				console.error(`🔍 Error details:`, {
 					message: error instanceof Error ? error.message : 'Unknown error',
-					checkin: searchParams.checkin,
 					hotelId: hotel.id,
-					hotelName: hotel.name
+					hotelName: hotel.name,
+					baseUrl: hotel.baseUrl
 				});
 			}
 
-			// Add a small delay to avoid hammering the server
-			if (monthsToCheck > 6) {
-				await new Promise((resolve) => setTimeout(resolve, 100));
+			// Then check additional months
+			const startDate = parse(params.checkin, 'yyyy-MM-dd', new Date());
+			const daysToSkip = monthsToCheck > 6 ? 25 : 30;
+
+			for (let i = 1; i < monthsToCheck; i++) {
+				const currentDate = addDays(startDate, i * daysToSkip);
+				const searchParams: SearchParams = {
+					...params,
+					checkin: format(currentDate, 'yyyy-MM-dd'),
+					checkout: format(addDays(currentDate, params.nights), 'yyyy-MM-dd'),
+				};
+
+				try {
+					console.log(`📅 Fetching month ${i + 1}/${monthsToCheck} for ${hotel.name} (${searchParams.checkin})...`);
+					const response = await fetchCalendarData(searchParams, hotel.id);
+					
+					let newPrices = 0;
+					response.prices.forEach((price) => {
+						const key = `${price.date}_${hotel.id}`;
+						if (!priceMap.has(key)) {
+							priceMap.set(key, price);
+							newPrices++;
+						}
+					});
+					
+					console.log(`✅ Month ${i + 1} fetched successfully for ${hotel.name}, found ${response.prices.length} prices (${newPrices} new)`);
+				} catch (error) {
+					console.error(`❌ Error fetching month ${i + 1} for ${hotel.name}:`, error);
+					console.error(`🔍 Month ${i + 1} error details:`, {
+						message: error instanceof Error ? error.message : 'Unknown error',
+						checkin: searchParams.checkin,
+						hotelId: hotel.id,
+						hotelName: hotel.name
+					});
+				}
+
+				// Add a small delay to avoid hammering the server
+				if (monthsToCheck > 6) {
+					await new Promise((resolve) => setTimeout(resolve, 100));
+				}
 			}
+		};
+
+		// Process hotel with timeout
+		try {
+			await Promise.race([
+				processHotel(),
+				new Promise((_, reject) => setTimeout(() => reject(new Error('Hotel processing timeout')), hotelTimeout))
+			]);
+		} catch (error) {
+			console.error(`⏱️ Hotel processing timed out or failed for ${hotel.name}:`, error);
+			continue; // Skip to next hotel
 		}
 		
 		console.log(`🏁 Completed scraping for ${hotel.name}`);
@@ -330,6 +347,16 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				
 				const priceValue = parseFloat(priceString);
 
+				// Debug logging for incorrect price parsing
+				if (priceValue < 100 && priceMatch[1].length > 4) {
+					console.log(`🚨 SUSPICIOUS PRICE PARSING:`);
+					console.log(`   Original matched: "${priceMatch[1]}"`);
+					console.log(`   Processed string: "${priceString}"`);
+					console.log(`   Final value: ${priceValue}`);
+					console.log(`   Hotel: ${hotel.name}`);
+					console.log(`   Cell text: ${cellText.slice(0, 200)}...`);
+				}
+
 				let stayTotal: number;
 				let avgPerNight: number;
 
@@ -350,6 +377,19 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				const isLowestRate = $cell.find('.fa-star').length > 0;
 				const dateObj = parse(date, 'yyyy-MM-dd', new Date());
 				const dayOfWeek = format(dateObj, 'EEEE');
+
+				// Debug logging for suspicious final prices
+				if (avgPerNight < 10 || stayTotal < 50) {
+					console.log(`🚨 SUSPICIOUS FINAL PRICE:`);
+					console.log(`   Date: ${date}`);
+					console.log(`   Hotel: ${hotel.name}`);
+					console.log(`   Average per night: ${avgPerNight}`);
+					console.log(`   Stay total: ${stayTotal}`);
+					console.log(`   Original price value: ${priceValue}`);
+					console.log(`   Original matched: "${priceMatch[1]}"`);
+					console.log(`   Total price match: ${totalPriceMatch ? 'YES' : 'NO'}`);
+					console.log(`   Per night match: ${perNightMatch ? 'YES' : 'NO'}`);
+				}
 
 				prices.push({
 					date,
