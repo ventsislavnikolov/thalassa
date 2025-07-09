@@ -138,7 +138,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Hotel className="h-5 w-5" />
-          Pefkohori Hotels Price Search
+          Greece Hotels Price Search
         </CardTitle>
         <CardDescription>
           Find the best prices at Blue Carpet Suites, Cocooning Suites, and

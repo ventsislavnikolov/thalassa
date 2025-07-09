@@ -224,10 +224,7 @@ export default function HomePage() {
 
         {/* Footer */}
         <footer className="mt-16 text-center text-sm text-gray-500">
-          <p>
-            Built with ❤️ for finding the best vacation deals in Pefkohori,
-            Greece
-          </p>
+          <p>Built with ❤️ for finding the best vacation deals in Greece</p>
         </footer>
       </div>
     </div>

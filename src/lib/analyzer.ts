@@ -20,13 +20,27 @@ export async function analyzeTopDeals(
   // Get top N lowest prices
   const topPrices = prices.slice(0, topCount);
 
-  // Get weather data for these dates
-  const dates = topPrices.map((p) => p.date);
-  const weatherMap = await getWeatherForDates(dates);
+  // Group dates by hotel to get appropriate weather data
+  const hotelDatesMap = new Map<string, string[]>();
+  topPrices.forEach((priceInfo) => {
+    if (!hotelDatesMap.has(priceInfo.hotelId)) {
+      hotelDatesMap.set(priceInfo.hotelId, []);
+    }
+    hotelDatesMap.get(priceInfo.hotelId)!.push(priceInfo.date);
+  });
+
+  // Get weather data for each hotel's dates
+  const weatherDataMap = new Map<string, WeatherData>();
+  for (const [hotelId, dates] of hotelDatesMap) {
+    const weatherMap = await getWeatherForDates(dates, hotelId);
+    weatherMap.forEach((weather, date) => {
+      weatherDataMap.set(date, weather);
+    });
+  }
 
   // Combine and analyze
   const analyses: CombinedAnalysis[] = topPrices.map((priceInfo) => {
-    const weatherData = weatherMap.get(priceInfo.date)!;
+    const weatherData = weatherDataMap.get(priceInfo.date)!;
     const analysis = createCombinedAnalysis(priceInfo, weatherData, prices);
     return analysis;
   });

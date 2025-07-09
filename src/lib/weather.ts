@@ -19,14 +19,26 @@ export interface WeatherData {
   score: number;
 }
 
-// Pefkohori coordinates (approximate)
-const LOCATION = {
+// Pefkohori coordinates (approximate) - for Blue Carpet and Cocooning
+const PEFKOHORI_LOCATION = {
   latitude: 39.95,
   longitude: 23.35,
 };
 
+// Kavala coordinates (approximate) - for Myra Hotel
+const KAVALA_LOCATION = {
+  latitude: 40.05,
+  longitude: 23.55,
+};
+
+function getLocationForHotel(hotelId?: string) {
+  // Use Kavala location for Myra Hotel, Pefkohori for all others
+  return hotelId === 'myra' ? KAVALA_LOCATION : PEFKOHORI_LOCATION;
+}
+
 export async function getWeatherForDates(
-  dates: string[]
+  dates: string[],
+  hotelId?: string
 ): Promise<Map<string, WeatherData>> {
   const weatherMap = new Map<string, WeatherData>();
 
@@ -35,7 +47,7 @@ export async function getWeatherForDates(
 
   for (const [yearMonth, monthDates] of dateGroups.entries()) {
     try {
-      const monthWeather = await fetchMonthWeather(yearMonth, monthDates);
+      const monthWeather = await fetchMonthWeather(yearMonth, monthDates, hotelId);
       monthWeather.forEach((weather, date) => {
         weatherMap.set(date, weather);
       });
@@ -67,7 +79,8 @@ function groupDatesByMonth(dates: string[]): Map<string, string[]> {
 
 async function fetchMonthWeather(
   yearMonth: string,
-  dates: string[]
+  dates: string[],
+  hotelId?: string
 ): Promise<Map<string, WeatherData>> {
   const [year, month] = yearMonth.split("-");
   const startDate = `${year}-${month}-01`;
@@ -85,13 +98,14 @@ async function fetchMonthWeather(
 
   if (requestStartDate > maxForecastDate) {
     // For future dates beyond forecast range, use historical climate data
-    return await fetchHistoricalClimateData(yearMonth, dates);
+    return await fetchHistoricalClimateData(yearMonth, dates, hotelId);
   }
 
+  const location = getLocationForHotel(hotelId);
   const url = `https://api.open-meteo.com/v1/forecast`;
   const params = {
-    latitude: LOCATION.latitude,
-    longitude: LOCATION.longitude,
+    latitude: location.latitude,
+    longitude: location.longitude,
     start_date: startDate,
     end_date: endDate,
     daily: [
@@ -124,7 +138,8 @@ async function fetchMonthWeather(
 
 async function fetchHistoricalClimateData(
   yearMonth: string,
-  dates: string[]
+  dates: string[],
+  hotelId?: string
 ): Promise<Map<string, WeatherData>> {
   const [year, month] = yearMonth.split("-");
   console.log(year, month);
@@ -142,10 +157,11 @@ async function fetchHistoricalClimateData(
   )}`;
 
   try {
+    const location = getLocationForHotel(hotelId);
     const url = `https://archive-api.open-meteo.com/v1/archive`;
     const params = {
-      latitude: LOCATION.latitude,
-      longitude: LOCATION.longitude,
+      latitude: location.latitude,
+      longitude: location.longitude,
       start_date: startDate,
       end_date: endDate,
       daily: [
@@ -196,7 +212,7 @@ function createClimateBasedWeatherData(
   date: string,
   month: number
 ): WeatherData {
-  // Climate averages for Pefkohori/Chalkidiki region by month
+  // Climate averages for Chalkidiki region by month
   const climateData: Record<
     number,
     {
