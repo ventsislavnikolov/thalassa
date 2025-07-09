@@ -295,6 +295,10 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
 				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
 				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+				// Handle numbers without decimal places (like "2,347")
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+)(?![\d\.,])/i,
+				/(?:Stay total:|Общ престой:).*?([\d,]+)(?![\d\.,])[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d,]+)(?![\d\.,])[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
 			];
 			
 			// Pattern 2: General patterns for both formats
@@ -361,7 +365,7 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 					}
 				} else if (priceString.includes(',') && !priceString.includes('.')) {
 					// European format with comma as decimal: "1 382,77" or "2 464,35" or "2,34"
-					// Need to check if this is actually a decimal or thousands separator
+					// OR thousands separator without decimal: "2,347"
 					const commaIndex = priceString.lastIndexOf(',');
 					const afterComma = priceString.substring(commaIndex + 1);
 					
@@ -369,7 +373,8 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 						// This looks like a decimal separator (2 digits after comma)
 						priceString = priceString.replace(allWhitespace, '').replace(',', '.');
 					} else {
-						// Might be thousands separator, but less likely with single comma
+						// This is likely a thousands separator (like "2,347")
+						// Remove comma and treat as whole number
 						priceString = priceString.replace(allWhitespace, '').replace(',', '');
 					}
 				} else if (priceString.includes('.') && !priceString.includes(',')) {
@@ -377,7 +382,7 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 					priceString = priceString.replace(allWhitespace, '');
 					// Already has dot as decimal separator
 				} else {
-					// No decimal separator, just remove whitespace
+					// No decimal separator, just remove whitespace and treat as whole number
 					priceString = priceString.replace(allWhitespace, '');
 				}
 				
