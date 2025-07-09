@@ -219,20 +219,28 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 			console.log(`   Text: ${cellText.slice(0, 100)}...`);
 			console.log(`   HTML: ${cellHtml.slice(0, 200)}...`);
 
-			// Updated regex patterns to handle BGN/лв BEFORE the number
-			// Pattern 1: "Stay total:BGN 3,293.62" or "Общ престой:лв 3,293.62"
-			// Bulgarian format uses space as thousands separator and comma as decimal separator
-			// Also handle European format with dots as thousands separator: "1.382,77"
+			// Updated regex patterns to handle both US and European number formats
+			// US format: "Stay total:BGN 5,106.67" (comma = thousands, dot = decimal)
+			// European format: "Общ престой:лв 1 382,77" (space = thousands, comma = decimal)
 			const totalPricePatterns = [
-				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0\.]+,\d{2})/i,
-				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
-				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i, // Match inside <b> tags
+				// US format with comma as thousands separator and dot as decimal
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d,]+\.\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i,
+				// European format with space as thousands separator and comma as decimal
+				/(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
+				/(?:Stay total:|Общ престой:).*?([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				/(?:Stay total:|Общ престой:).*?<b>([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)?<\/b>/i,
 			];
 			
-			// Pattern 2: General patterns for "BGN 3,293.62" or "лв 3,293.62"
+			// Pattern 2: General patterns for both formats
 			const generalPricePatterns = [
-				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0\.]+,\d{2})/i,
-				/([\d\s\u00A0\.]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i, // Also keep the old pattern as fallback
+				// US format
+				/(?:BGN|лв)[\s\u00A0]*([\d,]+\.\d{2})/i,
+				/([\d,]+\.\d{2})[\s\u00A0]*(?:BGN|лв)/i,
+				// European format
+				/(?:BGN|лв)[\s\u00A0]*([\d\s\u00A0]+,\d{2})/i,
+				/([\d\s\u00A0]+,\d{2})[\s\u00A0]*(?:BGN|лв)/i,
 			];
 
 			// Try to match total price first
@@ -265,20 +273,33 @@ function parseCalendarHTML(html: string, params: SearchParams, hotel: HotelConfi
 
 			if (priceMatch) {
 				// Price is in index 1 because index 0 is the full match
-				// Handle European number format: "1.382,77" or Bulgarian format: "1 382,77"
 				let priceString = priceMatch[1];
 				
-				// Remove all whitespace first
-				priceString = priceString.replace(/[\s\u00A0]/g, '');
-				
-				// If there's both a dot and a comma, the dot is thousands separator
-				if (priceString.includes('.') && priceString.includes(',')) {
-					// European format: "1.382,77" -> remove dot, keep comma for decimal
-					priceString = priceString.replace(/\./g, '');
+				// Determine format based on pattern
+				if (priceString.includes(',') && priceString.includes('.')) {
+					// Could be either format - determine by position
+					const commaIndex = priceString.indexOf(',');
+					const dotIndex = priceString.indexOf('.');
+					
+					if (commaIndex < dotIndex) {
+						// US format: "5,106.67" (comma = thousands, dot = decimal)
+						priceString = priceString.replace(/,/g, '');
+						// Already has dot as decimal separator
+					} else {
+						// European format: "1.382,77" (dot = thousands, comma = decimal)
+						priceString = priceString.replace(/\./g, '').replace(',', '.');
+					}
+				} else if (priceString.includes(',') && !priceString.includes('.')) {
+					// European format with comma as decimal: "1 382,77"
+					priceString = priceString.replace(/[\s\u00A0]/g, '').replace(',', '.');
+				} else if (priceString.includes('.') && !priceString.includes(',')) {
+					// US format with dot as decimal: "5106.67"
+					priceString = priceString.replace(/[\s\u00A0]/g, '');
+					// Already has dot as decimal separator
+				} else {
+					// No decimal separator, just remove whitespace
+					priceString = priceString.replace(/[\s\u00A0]/g, '');
 				}
-				
-				// Convert comma to dot for decimal parsing
-				priceString = priceString.replace(',', '.');
 				
 				const priceValue = parseFloat(priceString);
 
