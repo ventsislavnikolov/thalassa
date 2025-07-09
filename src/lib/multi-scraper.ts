@@ -19,7 +19,7 @@ export async function fetchCalendarData(params: SearchParams, hotelId: string): 
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
 			},
-			timeout: 15000,
+			timeout: 30000, // Increased timeout to 30 seconds for slower servers
 		});
 
 		console.log(`✅ Successfully fetched data from ${hotel.name}`);
@@ -88,16 +88,26 @@ export async function findLowestPricesAllHotels(
 
 	for (const hotel of hotels) {
 		console.log(`\n${hotel.displayName}:`);
+		console.log(`🔍 Starting scraping for ${hotel.name} (${hotel.baseUrl})`);
 
 		// First, get prices from the initial search
 		try {
+			console.log(`📅 Fetching initial month for ${hotel.name}...`);
 			const initialResponse = await fetchCalendarData(params, hotel.id);
+			console.log(`✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`);
+			
 			initialResponse.prices.forEach((price) => {
 				const key = `${price.date}_${hotel.id}`;
 				priceMap.set(key, price);
 			});
 		} catch (error) {
-			console.error(`\nError fetching initial month for ${hotel.name}:`, error);
+			console.error(`❌ Error fetching initial month for ${hotel.name}:`, error);
+			console.error(`🔍 Error details:`, {
+				message: error instanceof Error ? error.message : 'Unknown error',
+				hotelId: hotel.id,
+				hotelName: hotel.name,
+				baseUrl: hotel.baseUrl
+			});
 		}
 
 		// Then check additional months
@@ -113,16 +123,27 @@ export async function findLowestPricesAllHotels(
 			};
 
 			try {
+				console.log(`📅 Fetching month ${i + 1}/${monthsToCheck} for ${hotel.name} (${searchParams.checkin})...`);
 				const response = await fetchCalendarData(searchParams, hotel.id);
+				
+				let newPrices = 0;
 				response.prices.forEach((price) => {
 					const key = `${price.date}_${hotel.id}`;
 					if (!priceMap.has(key)) {
 						priceMap.set(key, price);
+						newPrices++;
 					}
 				});
-				console.log(`Month ${i + 1} fetched successfully for ${hotel.name}`);
+				
+				console.log(`✅ Month ${i + 1} fetched successfully for ${hotel.name}, found ${response.prices.length} prices (${newPrices} new)`);
 			} catch (error) {
-				console.error(`Error fetching month ${i + 1} for ${hotel.name}:`, error);
+				console.error(`❌ Error fetching month ${i + 1} for ${hotel.name}:`, error);
+				console.error(`🔍 Month ${i + 1} error details:`, {
+					message: error instanceof Error ? error.message : 'Unknown error',
+					checkin: searchParams.checkin,
+					hotelId: hotel.id,
+					hotelName: hotel.name
+				});
 			}
 
 			// Add a small delay to avoid hammering the server
@@ -130,6 +151,8 @@ export async function findLowestPricesAllHotels(
 				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 		}
+		
+		console.log(`🏁 Completed scraping for ${hotel.name}`);
 	}
 
 	console.log('\n✅ Complete!');
