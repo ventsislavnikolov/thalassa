@@ -5,7 +5,7 @@ export interface SearchParams {
   adults: number;
   children?: number;
   infants?: number;
-  room?: string; // Suite type
+  room?: string; // Suite type (optional, defaults to empty for all rooms)
   currency?: string; // Default: BGN
 }
 

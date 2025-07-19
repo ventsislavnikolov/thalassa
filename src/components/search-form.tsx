@@ -45,11 +45,11 @@ interface SearchParams {
   nights: number;
   adults: number;
   children: number;
-  room: string;
   months: number;
   hotelIds: string[];
   includeWeather: boolean;
   isYearSearch: boolean;
+  weatherLocation?: string;
 }
 
 interface Hotel {
@@ -58,20 +58,6 @@ interface Hotel {
   displayName: string;
 }
 
-const ROOM_TYPES = [
-  { value: "ALL", label: "Any Room Type" },
-  { value: "TRIPLE", label: "Triple Suite" },
-  { value: "DBLSV", label: "Double Suite | Sea View" },
-  { value: "TRIPLP", label: "Triple Suite | Private Pool" },
-  { value: "DBLPP", label: "Double Suite Side Sea View | Private Pool" },
-  { value: "2LEVEL", label: "2-Level Suite" },
-  { value: "SUITPP", label: "Double Suite Sea View | Private Pool" },
-  { value: "2LESV", label: "2 Level Suite | Sea View" },
-  { value: "BCARP", label: "Blue Carpet Suite Sea View | Private Pool" },
-  { value: "2LVLJA", label: "2 Level Suite | Outdoor Jacuzzi" },
-  { value: "PART", label: "2 Level Suite Sea View | Outdoor Jacuzzi" },
-  { value: "IND", label: "Deluxe Suite Sea View | Indoor Jacuzzi" },
-];
 
 export function SearchForm({ onSearch, loading }: SearchFormProps) {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -80,13 +66,19 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     nights: 5,
     adults: 2,
     children: 0,
-    room: "ALL",
     months: 3,
-    hotelIds: ["bluecarpet", "cocooning", "myra"],
+    hotelIds: ["bluecarpet", "cocooning", "myra", "portocarras"],
     includeWeather: false,
     isYearSearch: false,
+    weatherLocation: "pefkochori",
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const WEATHER_LOCATIONS = [
+    { value: "pefkochori", label: "Pefkochori (Blue Carpet & Cocooning)" },
+    { value: "kavala", label: "Kavala (Myra Hotel)" },
+    { value: "neosmarmaras", label: "Neos Marmaras (Porto Carras)" },
+  ];
 
   useEffect(() => {
     // Fetch available hotels
@@ -96,14 +88,21 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       .catch((err) => console.error("Failed to fetch hotels:", err));
   }, []);
 
+  // Disable year-long search when only Porto Carras is selected
+  useEffect(() => {
+    const isOnlyPortoCarras = formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras';
+    if (isOnlyPortoCarras && formData.isYearSearch) {
+      setFormData((prev) => ({
+        ...prev,
+        isYearSearch: false,
+        months: 3,
+      }));
+    }
+  }, [formData.hotelIds, formData.isYearSearch]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Convert "ALL" back to empty string for the API
-    const apiFormData = {
-      ...formData,
-      room: formData.room === "ALL" ? "" : formData.room,
-    };
-    onSearch(apiFormData);
+    onSearch(formData);
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -133,6 +132,9 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     }));
   };
 
+  // Check if only Porto Carras is selected
+  const isOnlyPortoCarras = formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras';
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
@@ -148,7 +150,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date and Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="checkin">Check-in Date</Label>
               <Popover>
@@ -190,26 +192,6 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="room">Room Type</Label>
-              <Select
-                value={formData.room}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, room: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ROOM_TYPES.map((room) => (
-                    <SelectItem key={room.value} value={room.value}>
-                      {room.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           {/* Guests */}
@@ -279,12 +261,15 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               <div className="space-y-1">
                 <Label className="text-base">Year-long Search</Label>
                 <p className="text-sm text-muted-foreground">
-                  Search for the best prices throughout the entire year
+                  {formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras'
+                    ? "Year-long search not available for Porto Carras"
+                    : "Search for the best prices throughout the entire year"}
                 </p>
               </div>
               <Switch
                 checked={formData.isYearSearch}
                 onCheckedChange={handleYearToggle}
+                disabled={formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras'}
               />
             </div>
 
@@ -331,6 +316,29 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                 }
               />
             </div>
+
+            {formData.includeWeather && (
+              <div className="space-y-2">
+                <Label htmlFor="weatherLocation">Weather Location</Label>
+                <Select
+                  value={formData.weatherLocation}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, weatherLocation: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {WEATHER_LOCATIONS.map((location) => (
+                      <SelectItem key={location.value} value={location.value}>
+                        {location.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}

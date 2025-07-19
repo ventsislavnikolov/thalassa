@@ -3,6 +3,7 @@ export interface HotelConfig {
   name: string;
   displayName: string;
   baseUrl: string;
+  apiEndpoint?: string;
 }
 
 const HOTELS: Record<string, HotelConfig> = {
@@ -23,6 +24,13 @@ const HOTELS: Record<string, HotelConfig> = {
     name: "Myra Hotel",
     displayName: "Myra Hotel",
     baseUrl: "https://myrahotel.reserve-online.net",
+  },
+  portocarras: {
+    id: "portocarras",
+    name: "Porto Carras",
+    displayName: "Porto Carras",
+    baseUrl: "https://portocarras.reserve-online.net",
+    apiEndpoint: "/avl",
   },
 };
 

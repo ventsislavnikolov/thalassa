@@ -31,14 +31,41 @@ const KAVALA_LOCATION = {
   longitude: 23.55,
 };
 
-function getLocationForHotel(hotelId?: string) {
-  // Use Kavala location for Myra Hotel, Pefkohori for all others
-  return hotelId === 'myra' ? KAVALA_LOCATION : PEFKOHORI_LOCATION;
+// Neos Marmaras coordinates (approximate) - for Porto Carras
+const NEOS_MARMARAS_LOCATION = {
+  latitude: 40.0994,
+  longitude: 23.7778,
+};
+
+function getLocationForHotel(hotelId?: string, location?: string) {
+  // If location is explicitly provided, use it
+  if (location === 'kavala') {
+    return KAVALA_LOCATION;
+  }
+  if (location === 'pefkochori') {
+    return PEFKOHORI_LOCATION;
+  }
+  if (location === 'neosmarmaras') {
+    return NEOS_MARMARAS_LOCATION;
+  }
+  
+  // Map hotel IDs to their locations
+  switch (hotelId) {
+    case 'myra':
+      return KAVALA_LOCATION;
+    case 'portocarras':
+      return NEOS_MARMARAS_LOCATION;
+    case 'bluecarpet':
+    case 'cocooning':
+    default:
+      return PEFKOHORI_LOCATION;
+  }
 }
 
 export async function getWeatherForDates(
   dates: string[],
-  hotelId?: string
+  hotelId?: string,
+  location?: string
 ): Promise<Map<string, WeatherData>> {
   const weatherMap = new Map<string, WeatherData>();
 
@@ -47,7 +74,7 @@ export async function getWeatherForDates(
 
   for (const [yearMonth, monthDates] of dateGroups.entries()) {
     try {
-      const monthWeather = await fetchMonthWeather(yearMonth, monthDates, hotelId);
+      const monthWeather = await fetchMonthWeather(yearMonth, monthDates, hotelId, location);
       monthWeather.forEach((weather, date) => {
         weatherMap.set(date, weather);
       });
@@ -80,7 +107,8 @@ function groupDatesByMonth(dates: string[]): Map<string, string[]> {
 async function fetchMonthWeather(
   yearMonth: string,
   dates: string[],
-  hotelId?: string
+  hotelId?: string,
+  location?: string
 ): Promise<Map<string, WeatherData>> {
   const [year, month] = yearMonth.split("-");
   const startDate = `${year}-${month}-01`;
@@ -101,11 +129,11 @@ async function fetchMonthWeather(
     return await fetchHistoricalClimateData(yearMonth, dates, hotelId);
   }
 
-  const location = getLocationForHotel(hotelId);
+  const locationData = getLocationForHotel(hotelId, location);
   const url = `https://api.open-meteo.com/v1/forecast`;
   const params = {
-    latitude: location.latitude,
-    longitude: location.longitude,
+    latitude: locationData.latitude,
+    longitude: locationData.longitude,
     start_date: startDate,
     end_date: endDate,
     daily: [
@@ -139,7 +167,8 @@ async function fetchMonthWeather(
 async function fetchHistoricalClimateData(
   yearMonth: string,
   dates: string[],
-  hotelId?: string
+  hotelId?: string,
+  location?: string
 ): Promise<Map<string, WeatherData>> {
   const [year, month] = yearMonth.split("-");
   console.log(year, month);
@@ -157,11 +186,11 @@ async function fetchHistoricalClimateData(
   )}`;
 
   try {
-    const location = getLocationForHotel(hotelId);
+    const locationData = getLocationForHotel(hotelId, location);
     const url = `https://archive-api.open-meteo.com/v1/archive`;
     const params = {
-      latitude: location.latitude,
-      longitude: location.longitude,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       start_date: startDate,
       end_date: endDate,
       daily: [

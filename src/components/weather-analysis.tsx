@@ -71,7 +71,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
             Weather Analysis for Best Price Dates
           </CardTitle>
           <CardDescription>
-            Combining price and weather data to find the perfect vacation dates
+            Combining price and weather data to find the perfect vacation dates. Weather data based on your selected location.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -145,7 +145,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
               <h4 className="font-semibold mb-2">💡 Recommendation</h4>
               <p className="text-sm">
                 {sortedAnalyses[0]?.recommendation ||
-                  "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece."}
+                  "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece. Weather data is specific to your selected location."}
               </p>
             </div>
           </div>

@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       hotelIds = ["bluecarpet", "cocooning"],
       includeWeather = false,
       isYearSearch = false,
+      weatherLocation = "pefkochori",
     } = body;
 
     // Validate required fields
@@ -40,7 +41,6 @@ export async function POST(request: NextRequest) {
       adults: parseInt(adults),
       children: parseInt(children),
       infants: 0,
-      room,
       currency: "BGN",
     };
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     let weatherAnalysis = null;
     if (includeWeather && allPrices.length > 0) {
-      weatherAnalysis = await analyzeTopDeals(allPrices, 5);
+      weatherAnalysis = await analyzeTopDeals(allPrices, 5, weatherLocation);
     }
 
     return NextResponse.json({
