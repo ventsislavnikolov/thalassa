@@ -58,7 +58,6 @@ interface Hotel {
   displayName: string;
 }
 
-
 export function SearchForm({ onSearch, loading }: SearchFormProps) {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [formData, setFormData] = useState<SearchParams>({
@@ -90,7 +89,8 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
 
   // Disable year-long search when only Porto Carras is selected
   useEffect(() => {
-    const isOnlyPortoCarras = formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras';
+    const isOnlyPortoCarras =
+      formData.hotelIds.length === 1 && formData.hotelIds[0] === "portocarras";
     if (isOnlyPortoCarras && formData.isYearSearch) {
       setFormData((prev) => ({
         ...prev,
@@ -133,7 +133,9 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
   };
 
   // Check if only Porto Carras is selected
-  const isOnlyPortoCarras = formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isOnlyPortoCarras =
+    formData.hotelIds.length === 1 && formData.hotelIds[0] === "portocarras";
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -191,7 +193,6 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                 }
               />
             </div>
-
           </div>
 
           {/* Guests */}
@@ -261,7 +262,8 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               <div className="space-y-1">
                 <Label className="text-base">Year-long Search</Label>
                 <p className="text-sm text-muted-foreground">
-                  {formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras'
+                  {formData.hotelIds.length === 1 &&
+                  formData.hotelIds[0] === "portocarras"
                     ? "Year-long search not available for Porto Carras"
                     : "Search for the best prices throughout the entire year"}
                 </p>
@@ -269,7 +271,10 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
               <Switch
                 checked={formData.isYearSearch}
                 onCheckedChange={handleYearToggle}
-                disabled={formData.hotelIds.length === 1 && formData.hotelIds[0] === 'portocarras'}
+                disabled={
+                  formData.hotelIds.length === 1 &&
+                  formData.hotelIds[0] === "portocarras"
+                }
               />
             </div>
 

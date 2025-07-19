@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       nights = 5,
       adults = 2,
       children = 0,
-      room = "",
       months = 3,
       hotelIds = ["bluecarpet", "cocooning"],
       includeWeather = false,
