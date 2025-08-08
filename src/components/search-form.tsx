@@ -45,6 +45,7 @@ interface SearchParams {
   nights: number;
   adults: number;
   children: number;
+  room: string;
   months: number;
   hotelIds: string[];
   includeWeather: boolean;
@@ -65,6 +66,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     nights: 5,
     adults: 2,
     children: 0,
+    room: "standard",
     months: 3,
     hotelIds: ["bluecarpet", "cocooning", "myra", "portocarras"],
     includeWeather: false,
