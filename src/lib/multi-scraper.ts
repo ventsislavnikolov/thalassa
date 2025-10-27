@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-require-imports */
 import axios from "axios";
 import * as cheerio from "cheerio";
@@ -704,104 +703,26 @@ function parsePortoCarrasHTML(
   const roomRows = $actual(".data.rmtbl tr");
   console.log(`📋 Found ${roomRows.length} table rows total`);
 
-  let foundRealPrices = false;
+  // ONLY parse real prices from <div class="val"> containers - NO FALLBACKS!
+  // Format: <div class="val">2 845,73 лв / 1 455 €</div>
+  const priceContainerMatches = actualHtml.match(
+    /<div class="val">([^<]+)<\/div>/gi
+  );
+  
+  if (priceContainerMatches && priceContainerMatches.length > 0) {
+    console.log(`🔍 Found ${priceContainerMatches.length} real price containers`);
 
-  // Parse the actual table structure
-  roomRows.each((_, row) => {
-    const $row = $actual(row);
+    priceContainerMatches.forEach((container, index) => {
+      // Extract the BGN price from: "2 845,73 лв / 1 455 €"
+      const priceMatch = container.match(/(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/);
+      if (priceMatch) {
+        // Remove spaces and replace comma with dot: "2 845,73" -> "2845.73"
+        const priceValue = parseFloat(
+          priceMatch[1].replace(/\s/g, "").replace(",", ".")
+        );
 
-    // Skip header rows
-    if ($row.hasClass("hotel-title") || $row.find(".hotel-title").length > 0) {
-      return;
-    }
-
-    // Look for room name
-    let roomName =
-      $row.find(".spec .title a").text().trim() ||
-      $row.find(".name, .title").text().trim() ||
-      $row.find("td").first().text().trim();
-
-    // Look for price in the row
-    const priceCell = $row.find(
-      '.price, .rate, .cost, [class*="price"], [class*="rate"]'
-    );
-    let priceText = priceCell.text().trim() || $row.text().trim();
-
-    // Extract proper price format
-    const priceMatch = priceText.match(
-      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:BGN|лв)/i
-    );
-
-    if (roomName && priceMatch) {
-      const priceValue = parseFloat(priceMatch[1].replace(/,/g, ""));
-
-      // Filter out obviously wrong prices (too low for Porto Carras)
-      if (priceValue >= 50 && priceValue <= 5000) {
-        // Reasonable range for Porto Carras
-        foundRealPrices = true;
-
-        prices.push({
-          date: params.checkin,
-          dayOfWeek: format(
-            parse(params.checkin, "yyyy-MM-dd", new Date()),
-            "EEEE"
-          ),
-          averagePerNight: priceValue / params.nights,
-          stayTotal: priceValue,
-          isLowestRate:
-            $row.find(".best-price, .special, .discount").length > 0,
-          nights: params.nights,
-          currency: "BGN",
-          hotelId: hotel.id,
-          hotelName: hotel.name,
-        });
-
-        roomOptions.push({
-          value: roomName.toLowerCase().replace(/\s+/g, "-"),
-          name: roomName,
-        });
-      }
-    }
-  });
-
-  // Fallback: Look for proper price format in the actual HTML
-  if (!foundRealPrices) {
-    const allPrices = actualHtml.match(
-      /(\d{2,3}(?:,\d{3})*(?:\.\d{2})?)\s*лв/gi
-    );
-    if (allPrices) {
-      console.log(`🔍 Found raw prices:`, allPrices);
-      console.log(
-        `📊 Processing prices:`,
-        allPrices.map((p) => {
-          const raw = parseFloat(p.replace(/[^\d.]/g, ""));
-          let adjusted = raw;
-          if (raw <= 99 && raw >= 1) adjusted = raw * 10 * 1.96;
-          else if (raw <= 999 && raw >= 100) adjusted = raw * 1.96;
-          else adjusted = raw;
-          return { raw, adjusted };
-        })
-      );
-
-      // Try to reconstruct proper prices (handle cases like 03 -> 103, 57 -> 157)
-      allPrices.forEach((priceText, index) => {
-        const priceValue = parseFloat(priceText.replace(/[^\d.]/g, ""));
-
-        // Handle the missing zero issue and EUR to BGN conversion
-        let adjustedPrice = priceValue;
-
-        if (priceValue <= 99 && priceValue >= 1) {
-          // Missing zero issue: 71 -> 710 EUR -> convert to BGN
-          adjustedPrice = priceValue * 10 * 1.96; // Add zero and convert EUR to BGN
-        } else if (priceValue <= 999 && priceValue >= 100) {
-          // Already has 3 digits, assume EUR and convert to BGN
-          adjustedPrice = priceValue * 1.96;
-        } else if (priceValue <= 2000) {
-          // Already reasonable, keep as-is (likely already BGN)
-          adjustedPrice = priceValue;
-        }
-
-        if (adjustedPrice >= 50 && adjustedPrice <= 5000) {
+        // Ensure realistic range for Porto Carras luxury resort
+        if (priceValue >= 500 && priceValue <= 10000) {
           const roomName = `Room ${index + 1}`;
 
           prices.push({
@@ -810,8 +731,8 @@ function parsePortoCarrasHTML(
               parse(params.checkin, "yyyy-MM-dd", new Date()),
               "EEEE"
             ),
-            averagePerNight: adjustedPrice / params.nights,
-            stayTotal: adjustedPrice,
+            averagePerNight: priceValue / params.nights,
+            stayTotal: priceValue,
             isLowestRate: false,
             nights: params.nights,
             currency: "BGN",
@@ -824,8 +745,10 @@ function parsePortoCarrasHTML(
             name: roomName,
           });
         }
-      });
-    }
+      }
+    });
+  } else {
+    console.log(`⚠️ No real price containers found - Porto Carras may have no availability`);
   }
 
   // If we have very short HTML (262 chars), it's likely an error/no availability page
@@ -843,129 +766,7 @@ function parsePortoCarrasHTML(
     };
   }
 
-  // Enhanced parsing for Porto Carras specific structure
-  let foundAnyData = false;
-
-  // Try to find any accommodation listings
-  const accommodations = $(".accommodation, .room, .suite, .apartment");
-
-  accommodations.each((_, element) => {
-    const $el = $(element);
-
-    // Try to extract room name
-    let roomName: string = $el
-      .find(".name, .title, h3, h4, .room-name")
-      .first()
-      .text()
-      .trim();
-    if (!roomName) {
-      const dataName =
-        $el.attr("data-name") ?? $el.find("[data-name]").attr("data-name");
-      roomName = dataName ?? "";
-    }
-
-    // Try to extract price
-    let priceText = $el
-      .find('.price, .rate, .cost, [class*="price"]')
-      .text()
-      .trim();
-    if (!priceText) priceText = $el.text();
-
-    const priceMatch = priceText.match(
-      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:BGN|лв)/i
-    );
-
-    if (roomName && priceMatch) {
-      foundAnyData = true;
-      const priceValue = parseFloat(priceMatch[1].replace(/,/g, ""));
-
-      prices.push({
-        date: params.checkin,
-        dayOfWeek: format(
-          parse(params.checkin, "yyyy-MM-dd", new Date()),
-          "EEEE"
-        ),
-        averagePerNight: priceValue / params.nights,
-        stayTotal: priceValue,
-        isLowestRate: false,
-        nights: params.nights,
-        currency: "BGN",
-        hotelId: hotel.id,
-        hotelName: hotel.name,
-      });
-
-      roomOptions.push({
-        value: roomName.toLowerCase().replace(/\s+/g, "-"),
-        name: roomName,
-      });
-    }
-  });
-
-  // Fallback: Look for any price in the actual HTML with improved heuristic
-  if (!foundAnyData) {
-    const allPrices = actualHtml.match(/(\d{2,4})\s*(?:BGN|лв|€|\$|EUR)/gi);
-    if (allPrices) {
-      console.log(
-        `🔍 Using improved fallback price detection - found:`,
-        allPrices
-      );
-      console.log(
-        `📊 Processing prices:`,
-        allPrices.map((p) => {
-          const raw = parseFloat(p.replace(/[^\d.]/g, ""));
-          let adjusted = raw;
-          if (raw <= 99 && raw >= 1) adjusted = raw * 10 * 1.96;
-          else if (raw <= 999 && raw >= 100) adjusted = raw * 1.96;
-          else adjusted = raw;
-          return { raw, adjusted };
-        })
-      );
-
-      allPrices.forEach((priceText, index) => {
-        const priceValue = parseFloat(priceText.replace(/[^\d.]/g, ""));
-
-        // Handle the missing zero issue and EUR to BGN conversion
-        let adjustedPrice = priceValue;
-
-        // Prices like 71, 88, 05 are likely EUR prices missing a zero
-        if (priceValue <= 99 && priceValue >= 1) {
-          // Missing zero issue: 71 -> 710 EUR -> convert to BGN
-          adjustedPrice = priceValue * 10 * 1.96; // Add zero and convert EUR to BGN
-        } else if (priceValue <= 999 && priceValue >= 100) {
-          // Already has 3 digits, assume EUR and convert to BGN
-          adjustedPrice = priceValue * 1.96;
-        } else if (priceValue <= 2000) {
-          // Already reasonable, keep as-is (likely already BGN)
-          adjustedPrice = priceValue;
-        }
-
-        // Ensure realistic range for Porto Carras luxury resort
-        if (adjustedPrice >= 200 && adjustedPrice <= 5000) {
-          const roomName = `Room ${index + 1}`;
-
-          prices.push({
-            date: params.checkin,
-            dayOfWeek: format(
-              parse(params.checkin, "yyyy-MM-dd", new Date()),
-              "EEEE"
-            ),
-            averagePerNight: adjustedPrice / params.nights,
-            stayTotal: adjustedPrice,
-            isLowestRate: false,
-            nights: params.nights,
-            currency: "BGN",
-            hotelId: hotel.id,
-            hotelName: hotel.name,
-          });
-
-          roomOptions.push({
-            value: roomName.toLowerCase().replace(/\s+/g, "-"),
-            name: roomName,
-          });
-        }
-      });
-    }
-  }
+  // NO FALLBACKS - Porto Carras prices already parsed above from <div class="val"> containers
 
   console.log(
     `✅ Parsed ${prices.length} prices and ${roomOptions.length} room options from Porto Carras`
