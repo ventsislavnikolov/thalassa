@@ -179,6 +179,8 @@ export default function HomePage() {
                 prices={results.prices}
                 isMultiHotel={results.meta.hotelsSearched.length > 1}
                 onExport={handleExport}
+                requestedDate={results.searchParams.checkin}
+                monthsChecked={results.meta.monthsChecked}
               />
             ) : (
               <Alert>
