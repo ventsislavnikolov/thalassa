@@ -14,9 +14,9 @@ export async function fetchCalendarData(
 ): Promise<CalendarResponse> {
   const hotel = getHotelConfig(hotelId);
 
-  // Handle Porto Carras differently - uses /avl endpoint
-  if (hotel.id === "portocarras") {
-    return await fetchPortoCarrasData(params, hotel);
+  // Handle hotels using /avl endpoint (Porto Carras, Eagles Resort)
+  if (hotel.apiEndpoint === "/avl") {
+    return await fetchAvlEndpointData(params, hotel);
   }
 
   const formData = buildFormData(params);
@@ -561,12 +561,12 @@ function parseCalendarHTML(
   };
 }
 
-async function fetchPortoCarrasData(
+async function fetchAvlEndpointData(
   params: SearchParams,
   hotel: HotelConfig
 ): Promise<CalendarResponse> {
   try {
-    console.log(`🌐 Fetching Porto Carras data from ${hotel.baseUrl}/avl`);
+    console.log(`🌐 Fetching ${hotel.name} data from ${hotel.baseUrl}/avl`);
 
     // Parse checkin date and calculate checkout date
     const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
@@ -590,7 +590,7 @@ async function fetchPortoCarrasData(
       voucher: "",
     });
 
-    console.log(`📋 Form data for Porto Carras:`, Object.fromEntries(formData));
+    console.log(`📋 Form data for ${hotel.name}:`, Object.fromEntries(formData));
 
     const response = await axios.post(`${hotel.baseUrl}/avl`, formData, {
       headers: {
@@ -601,7 +601,7 @@ async function fetchPortoCarrasData(
       timeout: 30000,
     });
 
-    console.log(`✅ Successfully fetched Porto Carras data`);
+    console.log(`✅ Successfully fetched ${hotel.name} data`);
 
     // Ensure response.data is a string
     const html =
@@ -611,9 +611,9 @@ async function fetchPortoCarrasData(
     console.log(`📄 Response type:`, typeof response.data);
     console.log(`📏 HTML length:`, html.length);
 
-    return parsePortoCarrasHTML(html, params, hotel);
+    return parseAvlEndpointHTML(html, params, hotel);
   } catch (error) {
-    console.error(`❌ Error fetching Porto Carras:`, error);
+    console.error(`❌ Error fetching ${hotel.name}:`, error);
     if (axios.isAxiosError(error)) {
       console.error(`🔍 Error details:`, {
         message: error.message,
@@ -623,11 +623,11 @@ async function fetchPortoCarrasData(
         data: error.response?.data,
       });
     }
-    throw new Error(`Failed to fetch Porto Carras data: ${error}`);
+    throw new Error(`Failed to fetch ${hotel.name} data: ${error}`);
   }
 }
 
-function parsePortoCarrasHTML(
+function parseAvlEndpointHTML(
   html: string,
   params: SearchParams,
   hotel: HotelConfig
@@ -636,7 +636,7 @@ function parsePortoCarrasHTML(
   const prices: PriceInfo[] = [];
   const roomOptions: RoomOption[] = [];
 
-  console.log(`🔍 Parsing Porto Carras HTML`);
+  console.log(`🔍 Parsing ${hotel.name} HTML`);
   console.log(`📏 HTML length: ${html.length} characters`);
 
   // Debug: Save HTML for inspection
@@ -648,9 +648,9 @@ function parsePortoCarrasHTML(
       if (!fs.existsSync(debugDir)) {
         fs.mkdirSync(debugDir);
       }
-      const filename = path.join(debugDir, `portocarras-${Date.now()}.html`);
+      const filename = path.join(debugDir, `${hotel.id}-${Date.now()}.html`);
       fs.writeFileSync(filename, String(html));
-      console.log(`💾 Saved Porto Carras HTML to: ${filename}`);
+      console.log(`💾 Saved ${hotel.name} HTML to: ${filename}`);
     } catch (error) {
       console.log(`⚠️ Could not save debug HTML:`, error);
     }
@@ -721,7 +721,7 @@ function parsePortoCarrasHTML(
           priceMatch[1].replace(/\s/g, "").replace(",", ".")
         );
 
-        // Ensure realistic range for Porto Carras luxury resort
+        // Ensure realistic range for luxury resorts
         if (priceValue >= 500 && priceValue <= 10000) {
           const roomName = `Room ${index + 1}`;
 
@@ -748,7 +748,7 @@ function parsePortoCarrasHTML(
       }
     });
   } else {
-    console.log(`⚠️ No real price containers found - Porto Carras may have no availability`);
+    console.log(`⚠️ No real price containers found - ${hotel.name} may have no availability`);
   }
 
   // If we have very short HTML (262 chars), it's likely an error/no availability page
@@ -766,10 +766,10 @@ function parsePortoCarrasHTML(
     };
   }
 
-  // NO FALLBACKS - Porto Carras prices already parsed above from <div class="val"> containers
+  // NO FALLBACKS - prices already parsed above from <div class="val"> containers
 
   console.log(
-    `✅ Parsed ${prices.length} prices and ${roomOptions.length} room options from Porto Carras`
+    `✅ Parsed ${prices.length} prices and ${roomOptions.length} room options from ${hotel.name}`
   );
 
   if (prices.length === 0) {

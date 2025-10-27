@@ -69,7 +69,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     children: 0,
     room: "standard",
     months: 0,
-    hotelIds: ["bluecarpet", "cocooning", "myra", "portocarras"],
+    hotelIds: ["bluecarpet", "cocooning", "myra", "portocarras", "eaglespalace", "eaglesvillas"],
     includeWeather: false,
     isYearSearch: false,
     weatherLocation: "pefkochori",

@@ -32,6 +32,20 @@ const HOTELS: Record<string, HotelConfig> = {
     baseUrl: "https://portocarras.reserve-online.net",
     apiEndpoint: "/avl",
   },
+  eaglespalace: {
+    id: "eaglespalace",
+    name: "Eagles Palace",
+    displayName: "Eagles Palace, Small Luxury Hotels of the World",
+    baseUrl: "https://eaglesresort.reserve-online.net",
+    apiEndpoint: "/avl",
+  },
+  eaglesvillas: {
+    id: "eaglesvillas",
+    name: "Eagles Villas",
+    displayName: "Eagles Villas, Small Luxury Hotels of the World",
+    baseUrl: "https://eaglesresort.reserve-online.net",
+    apiEndpoint: "/avl",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {
