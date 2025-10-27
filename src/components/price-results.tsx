@@ -49,12 +49,16 @@ interface PriceResultsProps {
   prices: PriceInfo[];
   isMultiHotel: boolean;
   onExport?: () => void;
+  requestedDate?: string;
+  monthsChecked?: number;
 }
 
 export function PriceResults({
   prices,
   isMultiHotel,
   onExport,
+  requestedDate, // eslint-disable-line @typescript-eslint/no-unused-vars
+  monthsChecked, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: PriceResultsProps) {
   const [sortBy, setSortBy] = useState<"date" | "price" | "hotel">("price");
 
