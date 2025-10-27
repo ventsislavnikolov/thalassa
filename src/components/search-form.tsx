@@ -51,6 +51,7 @@ interface SearchParams {
   includeWeather: boolean;
   isYearSearch: boolean;
   weatherLocation?: string;
+  enableMonthsSearch: boolean;
 }
 
 interface Hotel {
@@ -67,11 +68,12 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     adults: 2,
     children: 0,
     room: "standard",
-    months: 3,
+    months: 0,
     hotelIds: ["bluecarpet", "cocooning", "myra", "portocarras"],
     includeWeather: false,
     isYearSearch: false,
     weatherLocation: "pefkochori",
+    enableMonthsSearch: false,
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -130,7 +132,16 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     setFormData((prev) => ({
       ...prev,
       isYearSearch: checked,
-      months: checked ? 12 : 3,
+      enableMonthsSearch: checked,
+      months: checked ? 12 : 0,
+    }));
+  };
+
+  const handleMonthsToggle = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      enableMonthsSearch: checked,
+      months: checked ? 3 : 0,
     }));
   };
 
@@ -281,29 +292,46 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
             </div>
 
             {!formData.isYearSearch && (
-              <div className="space-y-2">
-                <Label htmlFor="months">Months to Check</Label>
-                <Select
-                  value={formData.months.toString()}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      months: parseInt(value),
-                    }))
-                  }
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5, 6, 9, 12].map((month) => (
-                      <SelectItem key={month} value={month.toString()}>
-                        {month} month{month > 1 ? "s" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-base">Multi-Month Search</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Search across multiple months for the best deals
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.enableMonthsSearch}
+                    onCheckedChange={handleMonthsToggle}
+                  />
+                </div>
+
+                {formData.enableMonthsSearch && (
+                  <div className="space-y-2">
+                    <Label htmlFor="months">Months to Check</Label>
+                    <Select
+                      value={formData.months.toString()}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          months: parseInt(value),
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 9, 12].map((month) => (
+                          <SelectItem key={month} value={month.toString()}>
+                            {month} month{month > 1 ? "s" : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex items-center justify-between">
