@@ -220,12 +220,12 @@ export function PriceResults({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayPrices.map((price) => {
+                {displayPrices.map((price, index) => {
                   const dateObj = parse(price.date, "yyyy-MM-dd", new Date());
                   const formattedDate = format(dateObj, "MMM d, yyyy");
 
                   return (
-                    <TableRow key={`${price.date}-${price.hotelId}`}>
+                    <TableRow key={`${price.date}-${price.hotelId}-${price.stayTotal}-${index}`}>
                       <TableCell className="font-medium">
                         {formattedDate}
                       </TableCell>
