@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       nights = 5,
       adults = 2,
       children = 0,
-      months = 3,
+      months = 0,
       hotelIds = ["bluecarpet", "cocooning"],
       includeWeather = false,
       isYearSearch = false,
@@ -44,21 +44,23 @@ export async function POST(request: NextRequest) {
     };
 
     // Limit months to prevent timeouts on Vercel
+    const parsedMonths = parseInt(months);
     const maxMonths = process.env.VERCEL
       ? 6
       : isYearSearch
       ? 12
-      : parseInt(months);
+      : parsedMonths;
     const monthsToCheck = Math.min(
       maxMonths,
-      isYearSearch ? 12 : parseInt(months)
+      isYearSearch ? 12 : parsedMonths
     );
 
     let allPrices: any[] = [];
     let roomOptions: any[] = [];
 
-    if (monthsToCheck === 1) {
-      // Single month search
+    // Only search the exact date when months is 0 (no multi-month or year search enabled)
+    if (monthsToCheck === 0) {
+      // Single date search (search only for specified check-in date)
       const responses = await fetchAllHotels(searchParams, hotelIds);
 
       // Get room options from first response
@@ -69,10 +71,14 @@ export async function POST(request: NextRequest) {
 
       allPrices = [];
       responses.forEach((response) => {
-        console.log(
-          `💰 Adding ${response.prices.length} prices from ${response.hotelName}`
+        // Filter prices to only include the exact check-in date requested
+        const filteredPrices = response.prices.filter(
+          (price) => price.date === checkin
         );
-        allPrices.push(...response.prices);
+        console.log(
+          `💰 Adding ${filteredPrices.length} prices from ${response.hotelName} (filtered from ${response.prices.length} total dates)`
+        );
+        allPrices.push(...filteredPrices);
       });
 
       allPrices.sort((a, b) => a.stayTotal - b.stayTotal);
