@@ -732,7 +732,7 @@ function parseAvlEndpointHTML(
     if (matches && matches.length > 0) {
       console.log(`🔍 Found ${matches.length} matches with pattern: ${pattern.source}`);
       
-      matches.forEach((match, index) => {
+      matches.forEach((match) => {
         // Extract price from the match
         let priceMatch = null;
         
