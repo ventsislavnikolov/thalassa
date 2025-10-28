@@ -756,34 +756,44 @@ function parseAvlEndpointHTML(
 
           console.log(`💰 Extracted price: ${priceMatch[1]} -> ${priceValue}`);
 
-          // Ensure realistic range for luxury resorts
-          if (priceValue >= 500 && priceValue <= 10000) {
-            const roomName = `Room ${foundPrices + 1}`;
+          // Check if this is a reasonable price for luxury resorts
+          // Try both original value and multiplied by 1000 (in case it's in thousands)
+          const pricesToTry = [priceValue, priceValue * 1000];
+          let priceAdded = false;
+          
+          for (const testPrice of pricesToTry) {
+            if (testPrice >= 500 && testPrice <= 50000) {
+              const roomName = `Room ${foundPrices + 1}`;
 
-            prices.push({
-              date: params.checkin,
-              dayOfWeek: format(
-                parse(params.checkin, "yyyy-MM-dd", new Date()),
-                "EEEE"
-              ),
-              averagePerNight: priceValue / params.nights,
-              stayTotal: priceValue,
-              isLowestRate: false,
-              nights: params.nights,
-              currency: "BGN",
-              hotelId: hotel.id,
-              hotelName: hotel.name,
-            });
+              prices.push({
+                date: params.checkin,
+                dayOfWeek: format(
+                  parse(params.checkin, "yyyy-MM-dd", new Date()),
+                  "EEEE"
+                ),
+                averagePerNight: testPrice / params.nights,
+                stayTotal: testPrice,
+                isLowestRate: false,
+                nights: params.nights,
+                currency: "BGN",
+                hotelId: hotel.id,
+                hotelName: hotel.name,
+              });
 
-            roomOptions.push({
-              value: roomName.toLowerCase().replace(/\s+/g, "-"),
-              name: roomName,
-            });
-            
-            foundPrices++;
-            console.log(`✅ Added price: ${priceValue} BGN for ${hotel.name}`);
-          } else {
-            console.log(`⚠️ Price ${priceValue} outside realistic range (500-10000)`);
+              roomOptions.push({
+                value: roomName.toLowerCase().replace(/\s+/g, "-"),
+                name: roomName,
+              });
+              
+              foundPrices++;
+              console.log(`✅ Added price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? 'original' : 'x1000'})`);
+              priceAdded = true;
+              break; // Found a valid price, stop trying other values
+            }
+          }
+          
+          if (!priceAdded) {
+            console.log(`⚠️ Price ${priceValue} outside realistic range (500-50000) for both original and x1000 values`);
           }
         }
       });
@@ -792,8 +802,79 @@ function parseAvlEndpointHTML(
     }
   }
   
+  // Fallback strategy: Look for prices in different HTML structures
   if (foundPrices === 0) {
-    console.log(`⚠️ No prices found - ${hotel.name} may have no availability`);
+    console.log(`🔍 No prices found with primary strategy, trying fallback parsing...`);
+    
+    // Look for any price-like patterns in the HTML
+    const fallbackPatterns = [
+      /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*лв/gi,
+      /(\d{1,2}(?:[\s,]\d{3})*,\d{2})/gi,
+      /(\d{4,6})/gi,
+    ];
+    
+    for (const pattern of fallbackPatterns) {
+      const matches = actualHtml.match(pattern);
+      if (matches && matches.length > 0) {
+        console.log(`🔍 Found ${matches.length} fallback matches with pattern: ${pattern.source}`);
+        
+        matches.forEach((match) => {
+          if (foundPrices >= 10) return; // Limit to prevent too many results
+          
+          let priceString = match;
+          console.log(`🔍 Processing fallback match: "${priceString}"`);
+          
+          // Clean up the price string
+          if (priceString.includes(" ")) {
+            priceString = priceString.replace(/\s/g, "").replace(",", ".");
+          } else if (priceString.includes(",") && !priceString.includes(".")) {
+            priceString = priceString.replace(",", ".");
+          }
+          
+          const priceValue = parseFloat(priceString);
+          console.log(`💰 Parsed fallback price: ${priceValue}`);
+          
+          // Try both original value and multiplied by 1000
+          const pricesToTry = [priceValue, priceValue * 1000];
+          
+          for (const testPrice of pricesToTry) {
+            if (testPrice >= 500 && testPrice <= 50000) {
+              const roomName = `Room ${foundPrices + 1}`;
+
+              prices.push({
+                date: params.checkin,
+                dayOfWeek: format(
+                  parse(params.checkin, "yyyy-MM-dd", new Date()),
+                  "EEEE"
+                ),
+                averagePerNight: testPrice / params.nights,
+                stayTotal: testPrice,
+                isLowestRate: false,
+                nights: params.nights,
+                currency: "BGN",
+                hotelId: hotel.id,
+                hotelName: hotel.name,
+              });
+
+              roomOptions.push({
+                value: roomName.toLowerCase().replace(/\s+/g, "-"),
+                name: roomName,
+              });
+              
+              foundPrices++;
+              console.log(`✅ Added fallback price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? 'original' : 'x1000'})`);
+              break; // Found a valid price, move to next match
+            }
+          }
+        });
+        
+        if (foundPrices > 0) break; // Found prices, stop trying other patterns
+      }
+    }
+  }
+  
+  if (foundPrices === 0) {
+    console.log(`⚠️ No prices found with any strategy - ${hotel.name} may have no availability`);
     console.log(`🔍 HTML sample for debugging:`, actualHtml.substring(0, 1000));
   }
 
