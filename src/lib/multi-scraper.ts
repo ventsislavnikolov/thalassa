@@ -82,10 +82,21 @@ export async function fetchAllHotels(
 
   for (const hotel of hotels) {
     try {
+      console.log(`🚀 Starting fetch for ${hotel.name}...`);
       const response = await fetchCalendarData(params, hotel.id);
+      console.log(`✅ Successfully processed ${hotel.name}: ${response.prices.length} prices found`);
       responses.push(response);
     } catch (error) {
-      console.error(`Error fetching ${hotel.name}:`, error);
+      console.error(`❌ Error fetching ${hotel.name}:`, error);
+      // Add empty response to maintain order
+      responses.push({
+        month: "",
+        year: 0,
+        prices: [],
+        roomOptions: [],
+        hotelId: hotel.id,
+        hotelName: hotel.name,
+      });
     }
   }
 
@@ -703,52 +714,87 @@ function parseAvlEndpointHTML(
   const roomRows = $actual(".data.rmtbl tr");
   console.log(`📋 Found ${roomRows.length} table rows total`);
 
-  // ONLY parse real prices from <div class="val"> containers - NO FALLBACKS!
-  // Format: <div class="val">2 845,73 лв / 1 455 €</div>
-  const priceContainerMatches = actualHtml.match(
-    /<div class="val">([^<]+)<\/div>/gi
-  );
+  // Parse prices from the actual HTML structure
+  // Look for price patterns in the HTML
+  const pricePatterns = [
+    // Pattern 1: <div class="val">2 845,73 лв / 1 455 €</div>
+    /<div class="val">([^<]+)<\/div>/gi,
+    // Pattern 2: Look for BGN prices in any format
+    /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/gi,
+    // Pattern 3: Look for prices in table cells
+    /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
+  ];
+
+  let foundPrices = 0;
   
-  if (priceContainerMatches && priceContainerMatches.length > 0) {
-    console.log(`🔍 Found ${priceContainerMatches.length} real price containers`);
-
-    priceContainerMatches.forEach((container, index) => {
-      // Extract the BGN price from: "2 845,73 лв / 1 455 €"
-      const priceMatch = container.match(/(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/);
-      if (priceMatch) {
-        // Remove spaces and replace comma with dot: "2 845,73" -> "2845.73"
-        const priceValue = parseFloat(
-          priceMatch[1].replace(/\s/g, "").replace(",", ".")
-        );
-
-        // Ensure realistic range for luxury resorts
-        if (priceValue >= 500 && priceValue <= 10000) {
-          const roomName = `Room ${index + 1}`;
-
-          prices.push({
-            date: params.checkin,
-            dayOfWeek: format(
-              parse(params.checkin, "yyyy-MM-dd", new Date()),
-              "EEEE"
-            ),
-            averagePerNight: priceValue / params.nights,
-            stayTotal: priceValue,
-            isLowestRate: false,
-            nights: params.nights,
-            currency: "BGN",
-            hotelId: hotel.id,
-            hotelName: hotel.name,
-          });
-
-          roomOptions.push({
-            value: roomName.toLowerCase().replace(/\s+/g, "-"),
-            name: roomName,
-          });
+  for (const pattern of pricePatterns) {
+    const matches = actualHtml.match(pattern);
+    if (matches && matches.length > 0) {
+      console.log(`🔍 Found ${matches.length} matches with pattern: ${pattern.source}`);
+      
+      matches.forEach((match, index) => {
+        // Extract price from the match
+        let priceMatch = null;
+        
+        // Try different extraction patterns
+        const extractionPatterns = [
+          /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/,
+          /(\d{1,3}(?:\s\d{3})*,\d{2})/,
+          /(\d+,\d{2})/,
+        ];
+        
+        for (const extractPattern of extractionPatterns) {
+          priceMatch = match.match(extractPattern);
+          if (priceMatch) break;
         }
-      }
-    });
-  } else {
-    console.log(`⚠️ No real price containers found - ${hotel.name} may have no availability`);
+        
+        if (priceMatch) {
+          // Remove spaces and replace comma with dot: "2 845,73" -> "2845.73"
+          const priceValue = parseFloat(
+            priceMatch[1].replace(/\s/g, "").replace(",", ".")
+          );
+
+          console.log(`💰 Extracted price: ${priceMatch[1]} -> ${priceValue}`);
+
+          // Ensure realistic range for luxury resorts
+          if (priceValue >= 500 && priceValue <= 10000) {
+            const roomName = `Room ${foundPrices + 1}`;
+
+            prices.push({
+              date: params.checkin,
+              dayOfWeek: format(
+                parse(params.checkin, "yyyy-MM-dd", new Date()),
+                "EEEE"
+              ),
+              averagePerNight: priceValue / params.nights,
+              stayTotal: priceValue,
+              isLowestRate: false,
+              nights: params.nights,
+              currency: "BGN",
+              hotelId: hotel.id,
+              hotelName: hotel.name,
+            });
+
+            roomOptions.push({
+              value: roomName.toLowerCase().replace(/\s+/g, "-"),
+              name: roomName,
+            });
+            
+            foundPrices++;
+            console.log(`✅ Added price: ${priceValue} BGN for ${hotel.name}`);
+          } else {
+            console.log(`⚠️ Price ${priceValue} outside realistic range (500-10000)`);
+          }
+        }
+      });
+      
+      if (foundPrices > 0) break; // Stop after first successful pattern
+    }
+  }
+  
+  if (foundPrices === 0) {
+    console.log(`⚠️ No prices found - ${hotel.name} may have no availability`);
+    console.log(`🔍 HTML sample for debugging:`, actualHtml.substring(0, 1000));
   }
 
   // If we have very short HTML (262 chars), it's likely an error/no availability page
