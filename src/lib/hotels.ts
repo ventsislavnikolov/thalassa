@@ -1,10 +1,10 @@
-export interface HotelConfig {
+export type HotelConfig = {
   id: string;
   name: string;
   displayName: string;
   baseUrl: string;
   apiEndpoint?: string;
-}
+};
 
 const HOTELS: Record<string, HotelConfig> = {
   bluecarpet: {
@@ -51,6 +51,13 @@ const HOTELS: Record<string, HotelConfig> = {
     name: "The Excelsior",
     displayName: "The Excelsior",
     baseUrl: "https://excelsiorthessaloniki.reserve-online.net",
+    apiEndpoint: "/avl",
+  },
+  olympionsunset: {
+    id: "olympionsunset",
+    name: "Olympion Sunset",
+    displayName: "Olympion Sunset",
+    baseUrl: "https://olympion-sunset.reserve-online.net",
     apiEndpoint: "/avl",
   },
 };
