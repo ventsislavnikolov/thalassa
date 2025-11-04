@@ -1,5 +1,5 @@
-import { PriceInfo } from "./types";
-import { getWeatherForDates, WeatherData } from "./weather";
+import type { PriceInfo } from "./types";
+import { getWeatherForDates, type WeatherData } from "./weather";
 
 export interface CombinedAnalysis {
   priceInfo: PriceInfo;
@@ -15,7 +15,7 @@ export interface CombinedAnalysis {
 
 export async function analyzeTopDeals(
   prices: PriceInfo[],
-  topCount: number = 5,
+  topCount = 5,
   weatherLocation?: string
 ): Promise<CombinedAnalysis[]> {
   // Get top N lowest prices
@@ -30,10 +30,14 @@ export async function analyzeTopDeals(
     hotelDatesMap.get(priceInfo.hotelId)!.push(priceInfo.date);
   });
 
-   // Get weather data for each hotel's dates
+  // Get weather data for each hotel's dates
   const weatherDataMap = new Map<string, WeatherData>();
   for (const [hotelId, dates] of hotelDatesMap) {
-    const weatherMap = await getWeatherForDates(dates, hotelId, weatherLocation);
+    const weatherMap = await getWeatherForDates(
+      dates,
+      hotelId,
+      weatherLocation
+    );
     weatherMap.forEach((weather, date) => {
       weatherDataMap.set(date, weather);
     });
@@ -114,17 +118,18 @@ function generateRecommendation(
 ): string {
   if (totalScore >= 80) {
     return "🌟 HIGHLY RECOMMENDED - Excellent value and weather";
-  } else if (totalScore >= 70) {
+  }
+  if (totalScore >= 70) {
     if (weatherScore > valueScore) {
       return "☀️ GOOD CHOICE - Great weather compensates for moderate savings";
-    } else {
-      return "💰 GOOD CHOICE - Excellent price makes up for average weather";
     }
-  } else if (totalScore >= 60) {
-    return "👍 ACCEPTABLE - Decent combination of price and weather";
-  } else if (totalScore >= 50) {
-    return "⚖️ CONSIDER CAREFULLY - Some trade-offs between price and weather";
-  } else {
-    return "❌ NOT RECOMMENDED - Poor weather outweighs price savings";
+    return "💰 GOOD CHOICE - Excellent price makes up for average weather";
   }
+  if (totalScore >= 60) {
+    return "👍 ACCEPTABLE - Decent combination of price and weather";
+  }
+  if (totalScore >= 50) {
+    return "⚖️ CONSIDER CAREFULLY - Some trade-offs between price and weather";
+  }
+  return "❌ NOT RECOMMENDED - Poor weather outweighs price savings";
 }

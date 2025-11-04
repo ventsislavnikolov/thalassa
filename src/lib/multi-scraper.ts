@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { format, parse, addDays } from "date-fns";
-import { SearchParams, PriceInfo, RoomOption, CalendarResponse } from "./types";
-import { HotelConfig, getHotelConfig, getDefaultHotels } from "./hotels";
+import { addDays, format, parse } from "date-fns";
+import { getDefaultHotels, getHotelConfig, type HotelConfig } from "./hotels";
+import type {
+  CalendarResponse,
+  PriceInfo,
+  RoomOption,
+  SearchParams,
+} from "./types";
 
 // Store for last raw HTML (using a Map for state management)
 const lastRawHtmlCache = new Map<string, string>();
@@ -30,7 +35,7 @@ export async function fetchCalendarData(
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       },
-      timeout: 30000, // Increased timeout to 30 seconds for slower servers
+      timeout: 30_000, // Increased timeout to 30 seconds for slower servers
     });
 
     console.log(`✅ Successfully fetched data from ${hotel.name}`);
@@ -57,7 +62,7 @@ export async function fetchCalendarData(
 
     // Log more details about the error
     if (axios.isAxiosError(error)) {
-      console.error(`🔍 Axios error details:`, {
+      console.error("🔍 Axios error details:", {
         message: error.message,
         code: error.code,
         status: error.response?.status,
@@ -73,6 +78,90 @@ export async function fetchCalendarData(
   }
 }
 
+// Helper function to add delay between requests
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Helper function to identify calendar-based hotels (not using /avl endpoint)
+function isCalendarHotel(hotelId: string): boolean {
+  const calendarHotels = ["bluecarpet", "cocooning", "myra", "potideapalace"];
+  return calendarHotels.includes(hotelId);
+}
+
+// Fetch calendar data for all room types
+export async function fetchCalendarDataAllRooms(
+  params: SearchParams,
+  hotelId: string
+): Promise<CalendarResponse> {
+  const hotel = getHotelConfig(hotelId);
+
+  console.log(`🏨 Fetching ALL room types for ${hotel.name}...`);
+
+  // First call: Get room options (without room parameter)
+  const initialResponse = await fetchCalendarData(params, hotelId);
+  const roomOptions = initialResponse.roomOptions;
+
+  console.log(`📋 Found ${roomOptions.length} room options for ${hotel.name}`);
+
+  // If no room options available, return the initial response
+  if (roomOptions.length === 0) {
+    console.log(
+      `⚠️ No room options found for ${hotel.name}, returning initial response`
+    );
+    return initialResponse;
+  }
+
+  // Fetch prices for each room type
+  const allPrices: PriceInfo[] = [];
+
+  for (const room of roomOptions) {
+    console.log(
+      `🔍 Fetching prices for room type: ${room.name} (${room.value})`
+    );
+
+    try {
+      // Create params with room parameter
+      const roomParams: SearchParams = {
+        ...params,
+        room: room.value,
+      };
+
+      // Fetch prices for this specific room type
+      const roomResponse = await fetchCalendarData(roomParams, hotelId);
+
+      // Tag each price with room type information
+      const taggedPrices = roomResponse.prices.map((price) => ({
+        ...price,
+        roomType: room.name,
+        roomCode: room.value,
+      }));
+
+      console.log(`✅ Found ${taggedPrices.length} prices for ${room.name}`);
+      allPrices.push(...taggedPrices);
+
+      // Add delay to avoid overwhelming the server (rate limiting)
+      // Skip delay for the last room to save time
+      if (room !== roomOptions[roomOptions.length - 1]) {
+        await delay(150); // 150ms delay
+      }
+    } catch (error) {
+      console.error(`❌ Error fetching room ${room.name}:`, error);
+      // Continue with other rooms even if one fails
+    }
+  }
+
+  console.log(
+    `🎉 Total prices found for ${hotel.name}: ${allPrices.length} (across ${roomOptions.length} room types)`
+  );
+
+  return {
+    ...initialResponse,
+    prices: allPrices,
+    roomOptions,
+  };
+}
+
 export async function fetchAllHotels(
   params: SearchParams,
   hotelIds?: string[]
@@ -83,8 +172,15 @@ export async function fetchAllHotels(
   for (const hotel of hotels) {
     try {
       console.log(`🚀 Starting fetch for ${hotel.name}...`);
-      const response = await fetchCalendarData(params, hotel.id);
-      console.log(`✅ Successfully processed ${hotel.name}: ${response.prices.length} prices found`);
+
+      // Use multi-room fetcher for calendar-based hotels
+      const response = isCalendarHotel(hotel.id)
+        ? await fetchCalendarDataAllRooms(params, hotel.id)
+        : await fetchCalendarData(params, hotel.id);
+
+      console.log(
+        `✅ Successfully processed ${hotel.name}: ${response.prices.length} prices found`
+      );
       responses.push(response);
     } catch (error) {
       console.error(`❌ Error fetching ${hotel.name}:`, error);
@@ -105,7 +201,7 @@ export async function fetchAllHotels(
 
 export async function findLowestPricesAllHotels(
   params: SearchParams,
-  monthsToCheck: number = 3,
+  monthsToCheck = 3,
   hotelIds?: string[]
 ): Promise<PriceInfo[]> {
   const hotels = hotelIds ? hotelIds.map(getHotelConfig) : getDefaultHotels();
@@ -116,7 +212,7 @@ export async function findLowestPricesAllHotels(
   );
 
   // Set timeout for each hotel processing
-  const hotelTimeout = process.env.VERCEL ? 15000 : 30000; // 15s on Vercel, 30s locally
+  const hotelTimeout = process.env.VERCEL ? 15_000 : 30_000; // 15s on Vercel, 30s locally
 
   for (const hotel of hotels) {
     console.log(`\n${hotel.displayName}:`);
@@ -127,13 +223,19 @@ export async function findLowestPricesAllHotels(
       // First, get prices from the initial search
       try {
         console.log(`📅 Fetching initial month for ${hotel.name}...`);
-        const initialResponse = await fetchCalendarData(params, hotel.id);
+
+        // Use multi-room fetcher for calendar-based hotels
+        const initialResponse = isCalendarHotel(hotel.id)
+          ? await fetchCalendarDataAllRooms(params, hotel.id)
+          : await fetchCalendarData(params, hotel.id);
+
         console.log(
           `✅ Initial month fetched for ${hotel.name}, found ${initialResponse.prices.length} prices`
         );
 
         initialResponse.prices.forEach((price) => {
-          const key = `${price.date}_${hotel.id}`;
+          // Include room code in key to support multiple rooms per date
+          const key = `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
           priceMap.set(key, price);
         });
       } catch (error) {
@@ -141,7 +243,7 @@ export async function findLowestPricesAllHotels(
           `❌ Error fetching initial month for ${hotel.name}:`,
           error
         );
-        console.error(`🔍 Error details:`, {
+        console.error("🔍 Error details:", {
           message: error instanceof Error ? error.message : "Unknown error",
           hotelId: hotel.id,
           hotelName: hotel.name,
@@ -167,11 +269,16 @@ export async function findLowestPricesAllHotels(
               searchParams.checkin
             })...`
           );
-          const response = await fetchCalendarData(searchParams, hotel.id);
+
+          // Use multi-room fetcher for calendar-based hotels
+          const response = isCalendarHotel(hotel.id)
+            ? await fetchCalendarDataAllRooms(searchParams, hotel.id)
+            : await fetchCalendarData(searchParams, hotel.id);
 
           let newPrices = 0;
           response.prices.forEach((price) => {
-            const key = `${price.date}_${hotel.id}`;
+            // Include room code in key to support multiple rooms per date
+            const key = `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
             if (!priceMap.has(key)) {
               priceMap.set(key, price);
               newPrices++;
@@ -234,7 +341,7 @@ export async function findLowestPricesAllHotels(
   );
 
   // Debug logging for lowest prices
-  console.log(`🔍 SORTED PRICE DEBUGGING:`);
+  console.log("🔍 SORTED PRICE DEBUGGING:");
   console.log(`   Total prices found: ${sortedPrices.length}`);
   if (sortedPrices.length > 0) {
     const lowestPrice = sortedPrices[0];
@@ -246,7 +353,7 @@ export async function findLowestPricesAllHotels(
     const top5 = sortedPrices.slice(0, 5);
     const has234 = top5.find((p) => p.stayTotal === 2.34);
     if (has234) {
-      console.log(`🎯 FOUND 2.34 IN TOP 5 LOWEST PRICES:`);
+      console.log("🎯 FOUND 2.34 IN TOP 5 LOWEST PRICES:");
       console.log(`   Hotel: ${has234.hotelName}`);
       console.log(`   Date: ${has234.date}`);
       console.log(`   Stay total: ${has234.stayTotal}`);
@@ -420,7 +527,7 @@ function parseCalendarHTML(
         console.log(
           `   Price match: ${priceMatch ? priceMatch[0] : "NO MATCH"}`
         );
-        console.log(`   ---`);
+        console.log("   ---");
       }
 
       if (priceMatch) {
@@ -471,11 +578,11 @@ function parseCalendarHTML(
           priceString = priceString.replace(allWhitespace, "");
         }
 
-        const priceValue = parseFloat(priceString);
+        const priceValue = Number.parseFloat(priceString);
 
         // Debug logging for incorrect price parsing
         if (priceValue < 100 && priceMatch[1].length > 4) {
-          console.log(`🚨 SUSPICIOUS PRICE PARSING:`);
+          console.log("🚨 SUSPICIOUS PRICE PARSING:");
           console.log(`   Original matched: "${priceMatch[1]}"`);
           console.log(`   Processed string: "${priceString}"`);
           console.log(`   Final value: ${priceValue}`);
@@ -485,7 +592,7 @@ function parseCalendarHTML(
 
         // Special check for 2.34 value
         if (priceValue === 2.34) {
-          console.log(`🎯 FOUND 2.34 VALUE:`);
+          console.log("🎯 FOUND 2.34 VALUE:");
           console.log(`   Date: ${date}`);
           console.log(`   Hotel: ${hotel.name}`);
           console.log(`   Original matched: "${priceMatch[1]}"`);
@@ -521,7 +628,7 @@ function parseCalendarHTML(
 
         // Debug logging for suspicious final prices
         if (avgPerNight < 10 || stayTotal < 50) {
-          console.log(`🚨 SUSPICIOUS FINAL PRICE:`);
+          console.log("🚨 SUSPICIOUS FINAL PRICE:");
           console.log(`   Date: ${date}`);
           console.log(`   Hotel: ${hotel.name}`);
           console.log(`   Average per night: ${avgPerNight}`);
@@ -549,7 +656,7 @@ function parseCalendarHTML(
           date,
           dayOfWeek,
           averagePerNight: avgPerNight,
-          stayTotal: stayTotal,
+          stayTotal,
           isLowestRate,
           nights: params.nights,
           currency: params.currency || "BGN",
@@ -564,7 +671,7 @@ function parseCalendarHTML(
 
   return {
     month,
-    year: parseInt(year),
+    year: Number.parseInt(year),
     prices,
     roomOptions,
     hotelId: hotel.id,
@@ -601,7 +708,10 @@ async function fetchAvlEndpointData(
       voucher: "",
     });
 
-    console.log(`📋 Form data for ${hotel.name}:`, Object.fromEntries(formData));
+    console.log(
+      `📋 Form data for ${hotel.name}:`,
+      Object.fromEntries(formData)
+    );
 
     const response = await axios.post(`${hotel.baseUrl}/avl`, formData, {
       headers: {
@@ -609,7 +719,7 @@ async function fetchAvlEndpointData(
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       },
-      timeout: 30000,
+      timeout: 30_000,
     });
 
     console.log(`✅ Successfully fetched ${hotel.name} data`);
@@ -619,14 +729,14 @@ async function fetchAvlEndpointData(
       typeof response.data === "string"
         ? response.data
         : JSON.stringify(response.data);
-    console.log(`📄 Response type:`, typeof response.data);
-    console.log(`📏 HTML length:`, html.length);
+    console.log("📄 Response type:", typeof response.data);
+    console.log("📏 HTML length:", html.length);
 
     return parseAvlEndpointHTML(html, params, hotel);
   } catch (error) {
     console.error(`❌ Error fetching ${hotel.name}:`, error);
     if (axios.isAxiosError(error)) {
-      console.error(`🔍 Error details:`, {
+      console.error("🔍 Error details:", {
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
@@ -663,19 +773,19 @@ function parseAvlEndpointHTML(
       fs.writeFileSync(filename, String(html));
       console.log(`💾 Saved ${hotel.name} HTML to: ${filename}`);
     } catch (error) {
-      console.log(`⚠️ Could not save debug HTML:`, error);
+      console.log("⚠️ Could not save debug HTML:", error);
     }
   }
 
   // Log first 500 characters of HTML to understand structure
-  console.log(`📄 HTML preview:`, html.substring(0, 500));
+  console.log("📄 HTML preview:", html.substring(0, 500));
 
   // Check if this is an error page or no availability message
   const pageTitle = $("title").text().trim();
   const bodyText = $("body").text().trim();
 
   console.log(`📰 Page title: "${pageTitle}"`);
-  console.log(`📝 Body text preview:`, bodyText.substring(0, 200));
+  console.log("📝 Body text preview:", bodyText.substring(0, 200));
 
   // Method 1: Look for any table rows with room data
   const tableRows = $("table tr, .room-row, .accommodation-row, [data-rate]");
@@ -694,15 +804,21 @@ function parseAvlEndpointHTML(
   // Parse the actual HTML from the JSON response
   // Handle both {"demand":false,"html":"..."} and {"demand": false, "html": "..."}
   let actualHtml = html;
-  if (html.trim().startsWith('{') && html.includes('"demand"') && html.includes('"html"')) {
+  if (
+    html.trim().startsWith("{") &&
+    html.includes('"demand"') &&
+    html.includes('"html"')
+  ) {
     try {
       const jsonData = JSON.parse(html);
       if (jsonData.html) {
         actualHtml = jsonData.html;
-        console.log(`📦 Parsed HTML from JSON wrapper (demand: ${jsonData.demand})`);
+        console.log(
+          `📦 Parsed HTML from JSON wrapper (demand: ${jsonData.demand})`
+        );
       }
     } catch (error) {
-      console.log(`⚠️ Could not parse JSON, using raw HTML:`, error);
+      console.log("⚠️ Could not parse JSON, using raw HTML:", error);
     }
   }
 
@@ -725,17 +841,21 @@ function parseAvlEndpointHTML(
   $actual("tr[data-price]").each((i, elem) => {
     const dataPriceValue = $actual(elem).attr("data-price");
     if (dataPriceValue) {
-      const priceValue = parseFloat(dataPriceValue);
-      if (!isNaN(priceValue) && priceValue >= 500 && priceValue <= 50000) {
+      const priceValue = Number.parseFloat(dataPriceValue);
+      if (!isNaN(priceValue) && priceValue >= 500 && priceValue <= 50_000) {
         dataAttributePrices.push(priceValue);
-        console.log(`💎 Found data-price attribute: ${dataPriceValue} -> ${priceValue} BGN`);
+        console.log(
+          `💎 Found data-price attribute: ${dataPriceValue} -> ${priceValue} BGN`
+        );
       }
     }
   });
 
   // If we found data-price attributes, use those (they're the most reliable)
   if (dataAttributePrices.length > 0) {
-    console.log(`✅ Using ${dataAttributePrices.length} prices from data-price attributes`);
+    console.log(
+      `✅ Using ${dataAttributePrices.length} prices from data-price attributes`
+    );
     dataAttributePrices.forEach((priceValue, index) => {
       const roomName = `Room ${index + 1}`;
 
@@ -760,14 +880,18 @@ function parseAvlEndpointHTML(
       });
 
       foundPrices++;
-      console.log(`✅ Added price from data-price: ${priceValue} BGN for ${hotel.name}`);
+      console.log(
+        `✅ Added price from data-price: ${priceValue} BGN for ${hotel.name}`
+      );
     });
   }
 
   // FALLBACK STRATEGY: Parse prices from HTML text patterns
   // Only use this if data-price attributes weren't found
   if (foundPrices === 0) {
-    console.log(`🔄 No data-price attributes found, falling back to HTML text parsing`);
+    console.log(
+      "🔄 No data-price attributes found, falling back to HTML text parsing"
+    );
 
     // Parse prices from the actual HTML structure
     // Look for price patterns in the HTML
@@ -779,165 +903,184 @@ function parseAvlEndpointHTML(
       // Pattern 3: Look for prices in table cells
       /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
     ];
-  
-  for (const pattern of pricePatterns) {
-    const matches = actualHtml.match(pattern);
-    if (matches && matches.length > 0) {
-      console.log(`🔍 Found ${matches.length} matches with pattern: ${pattern.source}`);
-      
-      matches.forEach((match) => {
-        // Extract price from the match
-        let priceMatch = null;
-        
-        // Try different extraction patterns
-        const extractionPatterns = [
-          /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/,
-          /(\d{1,3}(?:\s\d{3})*,\d{2})/,
-          /(\d+,\d{2})/,
-        ];
-        
-        for (const extractPattern of extractionPatterns) {
-          priceMatch = match.match(extractPattern);
-          if (priceMatch) break;
-        }
-        
-        if (priceMatch) {
-          // Remove spaces and replace comma with dot: "2 845,73" -> "2845.73"
-          const priceValue = parseFloat(
-            priceMatch[1].replace(/\s/g, "").replace(",", ".")
-          );
 
-          console.log(`💰 Extracted price: ${priceMatch[1]} -> ${priceValue}`);
-
-          // Check if this is a reasonable price for luxury resorts
-          // Try both original value and multiplied by 1000 (in case it's in thousands)
-          const pricesToTry = [priceValue, priceValue * 1000];
-          let priceAdded = false;
-          
-          for (const testPrice of pricesToTry) {
-            if (testPrice >= 500 && testPrice <= 50000) {
-              const roomName = `Room ${foundPrices + 1}`;
-
-              prices.push({
-                date: params.checkin,
-                dayOfWeek: format(
-                  parse(params.checkin, "yyyy-MM-dd", new Date()),
-                  "EEEE"
-                ),
-                averagePerNight: testPrice / params.nights,
-                stayTotal: testPrice,
-                isLowestRate: false,
-                nights: params.nights,
-                currency: "BGN",
-                hotelId: hotel.id,
-                hotelName: hotel.name,
-              });
-
-              roomOptions.push({
-                value: roomName.toLowerCase().replace(/\s+/g, "-"),
-                name: roomName,
-              });
-              
-              foundPrices++;
-              console.log(`✅ Added price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? 'original' : 'x1000'})`);
-              priceAdded = true;
-              break; // Found a valid price, stop trying other values
-            }
-          }
-          
-          if (!priceAdded) {
-            console.log(`⚠️ Price ${priceValue} outside realistic range (500-50000) for both original and x1000 values`);
-          }
-        }
-      });
-      
-      if (foundPrices > 0) break; // Stop after first successful pattern
-    }
-  }
-
-    // Nested fallback strategy: Look for prices in different HTML structures
-    if (foundPrices === 0) {
-    console.log(`🔍 No prices found with primary strategy, trying fallback parsing...`);
-    
-    // Look for any price-like patterns in the HTML
-    const fallbackPatterns = [
-      /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*лв/gi,
-      /(\d{1,2}(?:[\s,]\d{3})*,\d{2})/gi,
-      /(\d{4,6})/gi,
-    ];
-    
-    for (const pattern of fallbackPatterns) {
+    for (const pattern of pricePatterns) {
       const matches = actualHtml.match(pattern);
       if (matches && matches.length > 0) {
-        console.log(`🔍 Found ${matches.length} fallback matches with pattern: ${pattern.source}`);
-        
+        console.log(
+          `🔍 Found ${matches.length} matches with pattern: ${pattern.source}`
+        );
+
         matches.forEach((match) => {
-          if (foundPrices >= 10) return; // Limit to prevent too many results
-          
-          let priceString = match;
-          console.log(`🔍 Processing fallback match: "${priceString}"`);
-          
-          // Clean up the price string
-          if (priceString.includes(" ")) {
-            priceString = priceString.replace(/\s/g, "").replace(",", ".");
-          } else if (priceString.includes(",") && !priceString.includes(".")) {
-            priceString = priceString.replace(",", ".");
+          // Extract price from the match
+          let priceMatch = null;
+
+          // Try different extraction patterns
+          const extractionPatterns = [
+            /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/,
+            /(\d{1,3}(?:\s\d{3})*,\d{2})/,
+            /(\d+,\d{2})/,
+          ];
+
+          for (const extractPattern of extractionPatterns) {
+            priceMatch = match.match(extractPattern);
+            if (priceMatch) break;
           }
-          
-          const priceValue = parseFloat(priceString);
-          console.log(`💰 Parsed fallback price: ${priceValue}`);
-          
-          // Try both original value and multiplied by 1000
-          const pricesToTry = [priceValue, priceValue * 1000];
-          
-          for (const testPrice of pricesToTry) {
-            if (testPrice >= 500 && testPrice <= 50000) {
-              const roomName = `Room ${foundPrices + 1}`;
 
-              prices.push({
-                date: params.checkin,
-                dayOfWeek: format(
-                  parse(params.checkin, "yyyy-MM-dd", new Date()),
-                  "EEEE"
-                ),
-                averagePerNight: testPrice / params.nights,
-                stayTotal: testPrice,
-                isLowestRate: false,
-                nights: params.nights,
-                currency: "BGN",
-                hotelId: hotel.id,
-                hotelName: hotel.name,
-              });
+          if (priceMatch) {
+            // Remove spaces and replace comma with dot: "2 845,73" -> "2845.73"
+            const priceValue = Number.parseFloat(
+              priceMatch[1].replace(/\s/g, "").replace(",", ".")
+            );
 
-              roomOptions.push({
-                value: roomName.toLowerCase().replace(/\s+/g, "-"),
-                name: roomName,
-              });
-              
-              foundPrices++;
-              console.log(`✅ Added fallback price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? 'original' : 'x1000'})`);
-              break; // Found a valid price, move to next match
+            console.log(
+              `💰 Extracted price: ${priceMatch[1]} -> ${priceValue}`
+            );
+
+            // Check if this is a reasonable price for luxury resorts
+            // Try both original value and multiplied by 1000 (in case it's in thousands)
+            const pricesToTry = [priceValue, priceValue * 1000];
+            let priceAdded = false;
+
+            for (const testPrice of pricesToTry) {
+              if (testPrice >= 500 && testPrice <= 50_000) {
+                const roomName = `Room ${foundPrices + 1}`;
+
+                prices.push({
+                  date: params.checkin,
+                  dayOfWeek: format(
+                    parse(params.checkin, "yyyy-MM-dd", new Date()),
+                    "EEEE"
+                  ),
+                  averagePerNight: testPrice / params.nights,
+                  stayTotal: testPrice,
+                  isLowestRate: false,
+                  nights: params.nights,
+                  currency: "BGN",
+                  hotelId: hotel.id,
+                  hotelName: hotel.name,
+                });
+
+                roomOptions.push({
+                  value: roomName.toLowerCase().replace(/\s+/g, "-"),
+                  name: roomName,
+                });
+
+                foundPrices++;
+                console.log(
+                  `✅ Added price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
+                );
+                priceAdded = true;
+                break; // Found a valid price, stop trying other values
+              }
+            }
+
+            if (!priceAdded) {
+              console.log(
+                `⚠️ Price ${priceValue} outside realistic range (500-50000) for both original and x1000 values`
+              );
             }
           }
         });
-        
-        if (foundPrices > 0) break; // Found prices, stop trying other patterns
+
+        if (foundPrices > 0) break; // Stop after first successful pattern
       }
     }
+
+    // Nested fallback strategy: Look for prices in different HTML structures
+    if (foundPrices === 0) {
+      console.log(
+        "🔍 No prices found with primary strategy, trying fallback parsing..."
+      );
+
+      // Look for any price-like patterns in the HTML
+      const fallbackPatterns = [
+        /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*лв/gi,
+        /(\d{1,2}(?:[\s,]\d{3})*,\d{2})/gi,
+        /(\d{4,6})/gi,
+      ];
+
+      for (const pattern of fallbackPatterns) {
+        const matches = actualHtml.match(pattern);
+        if (matches && matches.length > 0) {
+          console.log(
+            `🔍 Found ${matches.length} fallback matches with pattern: ${pattern.source}`
+          );
+
+          matches.forEach((match) => {
+            if (foundPrices >= 10) return; // Limit to prevent too many results
+
+            let priceString = match;
+            console.log(`🔍 Processing fallback match: "${priceString}"`);
+
+            // Clean up the price string
+            if (priceString.includes(" ")) {
+              priceString = priceString.replace(/\s/g, "").replace(",", ".");
+            } else if (
+              priceString.includes(",") &&
+              !priceString.includes(".")
+            ) {
+              priceString = priceString.replace(",", ".");
+            }
+
+            const priceValue = Number.parseFloat(priceString);
+            console.log(`💰 Parsed fallback price: ${priceValue}`);
+
+            // Try both original value and multiplied by 1000
+            const pricesToTry = [priceValue, priceValue * 1000];
+
+            for (const testPrice of pricesToTry) {
+              if (testPrice >= 500 && testPrice <= 50_000) {
+                const roomName = `Room ${foundPrices + 1}`;
+
+                prices.push({
+                  date: params.checkin,
+                  dayOfWeek: format(
+                    parse(params.checkin, "yyyy-MM-dd", new Date()),
+                    "EEEE"
+                  ),
+                  averagePerNight: testPrice / params.nights,
+                  stayTotal: testPrice,
+                  isLowestRate: false,
+                  nights: params.nights,
+                  currency: "BGN",
+                  hotelId: hotel.id,
+                  hotelName: hotel.name,
+                });
+
+                roomOptions.push({
+                  value: roomName.toLowerCase().replace(/\s+/g, "-"),
+                  name: roomName,
+                });
+
+                foundPrices++;
+                console.log(
+                  `✅ Added fallback price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
+                );
+                break; // Found a valid price, move to next match
+              }
+            }
+          });
+
+          if (foundPrices > 0) break; // Found prices, stop trying other patterns
+        }
+      }
     }
   } // End of fallback HTML text parsing strategy
 
   if (foundPrices === 0) {
-    console.log(`⚠️ No prices found with any strategy - ${hotel.name} may have no availability`);
-    console.log(`🔍 HTML sample for debugging:`, actualHtml.substring(0, 1000));
+    console.log(
+      `⚠️ No prices found with any strategy - ${hotel.name} may have no availability`
+    );
+    console.log("🔍 HTML sample for debugging:", actualHtml.substring(0, 1000));
   }
 
   // If we have very short HTML (262 chars), it's likely an error/no availability page
   if (html.length < 300) {
-    console.log(`📄 Short response - likely error/no availability page`);
+    console.log("📄 Short response - likely error/no availability page");
     return {
       month: format(parse(params.checkin, "yyyy-MM-dd", new Date()), "MMMM"),
-      year: parseInt(
+      year: Number.parseInt(
         format(parse(params.checkin, "yyyy-MM-dd", new Date()), "yyyy")
       ),
       prices: [],
@@ -954,15 +1097,15 @@ function parseAvlEndpointHTML(
   );
 
   if (prices.length === 0) {
-    console.log(`⚠️ No prices found - this might indicate:`);
-    console.log(`   1. No availability for selected dates`);
-    console.log(`   2. Different HTML structure than expected`);
-    console.log(`   3. Form data parameters are incorrect`);
+    console.log("⚠️ No prices found - this might indicate:");
+    console.log("   1. No availability for selected dates");
+    console.log("   2. Different HTML structure than expected");
+    console.log("   3. Form data parameters are incorrect");
   }
 
   return {
     month: format(parse(params.checkin, "yyyy-MM-dd", new Date()), "MMMM"),
-    year: parseInt(
+    year: Number.parseInt(
       format(parse(params.checkin, "yyyy-MM-dd", new Date()), "yyyy")
     ),
     prices,

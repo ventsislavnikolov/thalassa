@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { fetchAllHotels, findLowestPricesAllHotels } from "@/lib/multi-scraper";
+import { addDays, format } from "date-fns";
+import { type NextRequest, NextResponse } from "next/server";
 import { analyzeTopDeals } from "@/lib/analyzer";
-import { SearchParams } from "@/lib/types";
-import { format, addDays } from "date-fns";
+import { fetchAllHotels, findLowestPricesAllHotels } from "@/lib/multi-scraper";
+import type { SearchParams } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,24 +36,17 @@ export async function POST(request: NextRequest) {
     const searchParams: SearchParams = {
       checkin,
       checkout: checkoutDate,
-      nights: parseInt(nights),
-      adults: parseInt(adults),
-      children: parseInt(children),
+      nights: Number.parseInt(nights),
+      adults: Number.parseInt(adults),
+      children: Number.parseInt(children),
       infants: 0,
       currency: "BGN",
     };
 
     // Limit months to prevent timeouts on Vercel
-    const parsedMonths = parseInt(months);
-    const maxMonths = process.env.VERCEL
-      ? 6
-      : isYearSearch
-      ? 12
-      : parsedMonths;
-    const monthsToCheck = Math.min(
-      maxMonths,
-      isYearSearch ? 12 : parsedMonths
-    );
+    const parsedMonths = Number.parseInt(months);
+    const maxMonths = process.env.VERCEL ? 6 : isYearSearch ? 12 : parsedMonths;
+    const monthsToCheck = Math.min(maxMonths, isYearSearch ? 12 : parsedMonths);
 
     let allPrices: any[] = [];
     let roomOptions: any[] = [];

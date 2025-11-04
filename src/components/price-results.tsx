@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { format, parse } from "date-fns";
 import {
+  Calendar,
+  Download,
   Star,
   TrendingDown,
   TrendingUp,
-  Calendar,
-  Download,
 } from "lucide-react";
+import { useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,14 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 interface PriceInfo {
   date: string;
@@ -43,6 +43,8 @@ interface PriceInfo {
   currency: string;
   hotelId: string;
   hotelName: string;
+  roomType?: string;
+  roomCode?: string;
 }
 
 interface PriceResultsProps {
@@ -65,7 +67,7 @@ export function PriceResults({
   if (!prices || prices.length === 0) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center h-32">
+        <CardContent className="flex h-32 items-center justify-center">
           <p className="text-muted-foreground">
             No prices found for your search criteria.
           </p>
@@ -98,14 +100,14 @@ export function PriceResults({
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="font-bold text-2xl text-green-600">
                 {lowestPrice.toFixed(2)} BGN
               </p>
-              <p className="text-sm text-muted-foreground">Lowest Price</p>
+              <p className="text-muted-foreground text-sm">Lowest Price</p>
             </div>
             <TrendingDown className="h-8 w-8 text-green-600" />
           </CardContent>
@@ -114,10 +116,10 @@ export function PriceResults({
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="text-2xl font-bold">
+              <p className="font-bold text-2xl">
                 {averagePrice.toFixed(2)} BGN
               </p>
-              <p className="text-sm text-muted-foreground">Average Price</p>
+              <p className="text-muted-foreground text-sm">Average Price</p>
             </div>
             <Calendar className="h-8 w-8 text-blue-600" />
           </CardContent>
@@ -126,10 +128,10 @@ export function PriceResults({
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="font-bold text-2xl text-red-600">
                 {highestPrice.toFixed(2)} BGN
               </p>
-              <p className="text-sm text-muted-foreground">Highest Price</p>
+              <p className="text-muted-foreground text-sm">Highest Price</p>
             </div>
             <TrendingUp className="h-8 w-8 text-red-600" />
           </CardContent>
@@ -146,10 +148,10 @@ export function PriceResults({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {Object.entries(hotelStats).map(([hotelId, stats]) => (
-                <div key={hotelId} className="p-4 border rounded-lg">
-                  <h3 className="font-semibold mb-2">{stats.name}</h3>
+                <div className="rounded-lg border p-4" key={hotelId}>
+                  <h3 className="mb-2 font-semibold">{stats.name}</h3>
                   <div className="space-y-1 text-sm">
                     <p>
                       Lowest:{" "}
@@ -169,7 +171,7 @@ export function PriceResults({
                     </p>
                   </div>
                   {stats.savings > 0 && (
-                    <Badge variant="secondary" className="mt-2">
+                    <Badge className="mt-2" variant="secondary">
                       Save {stats.savings.toFixed(2)} BGN vs other hotels
                     </Badge>
                   )}
@@ -193,17 +195,17 @@ export function PriceResults({
             </div>
             <div className="flex gap-2">
               <select
-                value={sortBy}
+                className="rounded border px-3 py-1 text-sm"
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-1 border rounded text-sm"
+                value={sortBy}
               >
                 <option value="price">Sort by Price</option>
                 <option value="date">Sort by Date</option>
                 {isMultiHotel && <option value="hotel">Sort by Hotel</option>}
               </select>
               {onExport && (
-                <Button variant="outline" size="sm" onClick={onExport}>
-                  <Download className="h-4 w-4 mr-2" />
+                <Button onClick={onExport} size="sm" variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
                   Export CSV
                 </Button>
               )}
@@ -218,6 +220,7 @@ export function PriceResults({
                   <TableHead>Date</TableHead>
                   <TableHead>Day</TableHead>
                   {isMultiHotel && <TableHead>Hotel</TableHead>}
+                  <TableHead>Room Type</TableHead>
                   <TableHead>Per Night</TableHead>
                   <TableHead>Total Stay</TableHead>
                   <TableHead>Rating</TableHead>
@@ -229,7 +232,9 @@ export function PriceResults({
                   const formattedDate = format(dateObj, "MMM d, yyyy");
 
                   return (
-                    <TableRow key={`${price.date}-${price.hotelId}-${price.stayTotal}-${index}`}>
+                    <TableRow
+                      key={`${price.date}-${price.hotelId}-${price.roomCode || "default"}-${index}`}
+                    >
                       <TableCell className="font-medium">
                         {formattedDate}
                       </TableCell>
@@ -241,20 +246,23 @@ export function PriceResults({
                           </Badge>
                         </TableCell>
                       )}
+                      <TableCell className="text-sm">
+                        {price.roomType || "Standard Room"}
+                      </TableCell>
                       <TableCell>
                         {price.averagePerNight.toFixed(2)} {price.currency}
                       </TableCell>
                       <TableCell className="font-semibold">
                         {price.stayTotal.toFixed(2)} {price.currency}
                         {price.stayTotal === lowestPrice && (
-                          <Badge variant="secondary" className="ml-2">
+                          <Badge className="ml-2" variant="secondary">
                             Best Price
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell>
                         {price.isLowestRate ? (
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                          <Star className="h-4 w-4 fill-current text-yellow-500" />
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
@@ -267,7 +275,7 @@ export function PriceResults({
           </div>
 
           {prices.length > 20 && (
-            <p className="text-sm text-muted-foreground mt-4 text-center">
+            <p className="mt-4 text-center text-muted-foreground text-sm">
               Showing top 20 results. Use export to see all {prices.length}{" "}
               dates.
             </p>
@@ -277,7 +285,7 @@ export function PriceResults({
 
       {/* Monthly Summary for Year Searches */}
       {prices.length > 30 && (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion className="w-full" collapsible type="single">
           <AccordionItem value="monthly-summary">
             <AccordionTrigger>Monthly Price Summary</AccordionTrigger>
             <AccordionContent>
@@ -291,31 +299,37 @@ export function PriceResults({
 }
 
 function getHotelComparisonStats(prices: PriceInfo[]) {
-  const hotelGroups = prices.reduce((acc, price) => {
-    if (!acc[price.hotelId]) {
-      acc[price.hotelId] = {
-        name: price.hotelName,
-        prices: [],
+  const hotelGroups = prices.reduce(
+    (acc, price) => {
+      if (!acc[price.hotelId]) {
+        acc[price.hotelId] = {
+          name: price.hotelName,
+          prices: [],
+        };
+      }
+      acc[price.hotelId].prices.push(price.stayTotal);
+      return acc;
+    },
+    {} as Record<string, { name: string; prices: number[] }>
+  );
+
+  const stats = Object.entries(hotelGroups).reduce(
+    (acc, [hotelId, data]) => {
+      const lowest = Math.min(...data.prices);
+      const average =
+        data.prices.reduce((sum, p) => sum + p, 0) / data.prices.length;
+
+      acc[hotelId] = {
+        name: data.name,
+        lowest,
+        average,
+        count: data.prices.length,
+        savings: 0,
       };
-    }
-    acc[price.hotelId].prices.push(price.stayTotal);
-    return acc;
-  }, {} as Record<string, { name: string; prices: number[] }>);
-
-  const stats = Object.entries(hotelGroups).reduce((acc, [hotelId, data]) => {
-    const lowest = Math.min(...data.prices);
-    const average =
-      data.prices.reduce((sum, p) => sum + p, 0) / data.prices.length;
-
-    acc[hotelId] = {
-      name: data.name,
-      lowest,
-      average,
-      count: data.prices.length,
-      savings: 0,
-    };
-    return acc;
-  }, {} as Record<string, any>);
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   // Calculate savings compared to other hotels
   const globalLowest = Math.min(...Object.values(stats).map((s) => s.lowest));
@@ -329,14 +343,17 @@ function getHotelComparisonStats(prices: PriceInfo[]) {
 }
 
 function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
-  const monthlyData = prices.reduce((acc, price) => {
-    const month = price.date.substring(0, 7); // YYYY-MM
-    if (!acc[month]) {
-      acc[month] = [];
-    }
-    acc[month].push(price.stayTotal);
-    return acc;
-  }, {} as Record<string, number[]>);
+  const monthlyData = prices.reduce(
+    (acc, price) => {
+      const month = price.date.substring(0, 7); // YYYY-MM
+      if (!acc[month]) {
+        acc[month] = [];
+      }
+      acc[month].push(price.stayTotal);
+      return acc;
+    },
+    {} as Record<string, number[]>
+  );
 
   const monthlyStats = Object.entries(monthlyData)
     .map(([month, prices]) => ({
@@ -349,14 +366,14 @@ function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
     .sort((a, b) => a.month.localeCompare(b.month));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {monthlyStats.map(({ month, lowest, highest, average, count }) => {
         const monthName = format(new Date(month + "-01"), "MMMM yyyy");
 
         return (
           <Card key={month}>
             <CardContent className="p-4">
-              <h4 className="font-semibold mb-2">{monthName}</h4>
+              <h4 className="mb-2 font-semibold">{monthName}</h4>
               <div className="space-y-1 text-sm">
                 <p>
                   Lowest:{" "}

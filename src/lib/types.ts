@@ -19,6 +19,8 @@ export interface PriceInfo {
   currency: string;
   hotelId: string;
   hotelName: string;
+  roomType?: string; // e.g., "Triple Suite | Sea View"
+  roomCode?: string; // e.g., "TRPL"
 }
 
 export interface RoomOption {

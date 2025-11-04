@@ -39,24 +39,24 @@ const NEOS_MARMARAS_LOCATION = {
 
 function getLocationForHotel(hotelId?: string, location?: string) {
   // If location is explicitly provided, use it
-  if (location === 'kavala') {
+  if (location === "kavala") {
     return KAVALA_LOCATION;
   }
-  if (location === 'pefkochori') {
+  if (location === "pefkochori") {
     return PEFKOHORI_LOCATION;
   }
-  if (location === 'neosmarmaras') {
+  if (location === "neosmarmaras") {
     return NEOS_MARMARAS_LOCATION;
   }
-  
+
   // Map hotel IDs to their locations
   switch (hotelId) {
-    case 'myra':
+    case "myra":
       return KAVALA_LOCATION;
-    case 'portocarras':
+    case "portocarras":
       return NEOS_MARMARAS_LOCATION;
-    case 'bluecarpet':
-    case 'cocooning':
+    case "bluecarpet":
+    case "cocooning":
     default:
       return PEFKOHORI_LOCATION;
   }
@@ -74,7 +74,12 @@ export async function getWeatherForDates(
 
   for (const [yearMonth, monthDates] of dateGroups.entries()) {
     try {
-      const monthWeather = await fetchMonthWeather(yearMonth, monthDates, hotelId, location);
+      const monthWeather = await fetchMonthWeather(
+        yearMonth,
+        monthDates,
+        hotelId,
+        location
+      );
       monthWeather.forEach((weather, date) => {
         weatherMap.set(date, weather);
       });
@@ -113,8 +118,8 @@ async function fetchMonthWeather(
   const [year, month] = yearMonth.split("-");
   const startDate = `${year}-${month}-01`;
   const endDate = `${year}-${month}-${getDaysInMonth(
-    parseInt(year),
-    parseInt(month)
+    Number.parseInt(year),
+    Number.parseInt(month)
   )}`;
 
   const weatherMap = new Map<string, WeatherData>();
@@ -130,7 +135,7 @@ async function fetchMonthWeather(
   }
 
   const locationData = getLocationForHotel(hotelId, location);
-  const url = `https://api.open-meteo.com/v1/forecast`;
+  const url = "https://api.open-meteo.com/v1/forecast";
   const params = {
     latitude: locationData.latitude,
     longitude: locationData.longitude,
@@ -172,7 +177,7 @@ async function fetchHistoricalClimateData(
 ): Promise<Map<string, WeatherData>> {
   const [year, month] = yearMonth.split("-");
   console.log(year, month);
-  const monthNum = parseInt(month);
+  const monthNum = Number.parseInt(month);
   const weatherMap = new Map<string, WeatherData>();
 
   // Use historical weather data from previous years to estimate future weather
@@ -187,7 +192,7 @@ async function fetchHistoricalClimateData(
 
   try {
     const locationData = getLocationForHotel(hotelId, location);
-    const url = `https://archive-api.open-meteo.com/v1/archive`;
+    const url = "https://archive-api.open-meteo.com/v1/archive";
     const params = {
       latitude: locationData.latitude,
       longitude: locationData.longitude,
@@ -209,7 +214,7 @@ async function fetchHistoricalClimateData(
 
     // Map historical data to requested future dates
     dates.forEach((date) => {
-      const dayOfMonth = parseInt(date.split("-")[2]);
+      const dayOfMonth = Number.parseInt(date.split("-")[2]);
       const historicalDate = `${historicalYear}-${month}-${dayOfMonth
         .toString()
         .padStart(2, "0")}`;
@@ -370,7 +375,7 @@ function createWeatherDataFromHistorical(
 }
 
 function estimateUVIndex(date: string): number {
-  const month = parseInt(date.split("-")[1]);
+  const month = Number.parseInt(date.split("-")[1]);
   // UV index estimates by month for Greece
   const uvByMonth: Record<number, number> = {
     1: 2,
@@ -487,7 +492,7 @@ function getWeatherDescription(weatherCode: number): string {
 }
 
 function estimateSeaTemperature(date: string, airTemp: number): number {
-  const month = parseInt(date.split("-")[1]);
+  const month = Number.parseInt(date.split("-")[1]);
 
   // Typical sea temperatures for Aegean Sea by month
   const seaTemps: Record<number, number> = {
@@ -605,23 +610,29 @@ function generateWeatherRecommendation(
 ): string {
   if (score >= 90) {
     return "🌟 Exceptional beach weather - Perfect day for all outdoor activities!";
-  } else if (score >= 80) {
-    return "☀️ Excellent conditions - Great day for the beach and water sports!";
-  } else if (score >= 70) {
-    return "🏖️ Very good weather - Ideal for beach activities with minor considerations.";
-  } else if (score >= 60) {
-    return "👍 Good conditions - Suitable for beach with some weather variations.";
-  } else if (score >= 50) {
-    return "⚠️ Fair weather - Beach activities possible but be prepared for changing conditions.";
-  } else if (precipitation > 5) {
-    return "🌧️ Rainy day - Consider indoor activities or covered areas.";
-  } else if (temperature < 18) {
-    return "🧥 Too cold for beach - Better suited for sightseeing or indoor activities.";
-  } else if (windSpeed > 25) {
-    return "💨 Very windy - Beach umbrella and wind protection recommended.";
-  } else {
-    return "🌤️ Moderate conditions - Beach activities possible with proper preparation.";
   }
+  if (score >= 80) {
+    return "☀️ Excellent conditions - Great day for the beach and water sports!";
+  }
+  if (score >= 70) {
+    return "🏖️ Very good weather - Ideal for beach activities with minor considerations.";
+  }
+  if (score >= 60) {
+    return "👍 Good conditions - Suitable for beach with some weather variations.";
+  }
+  if (score >= 50) {
+    return "⚠️ Fair weather - Beach activities possible but be prepared for changing conditions.";
+  }
+  if (precipitation > 5) {
+    return "🌧️ Rainy day - Consider indoor activities or covered areas.";
+  }
+  if (temperature < 18) {
+    return "🧥 Too cold for beach - Better suited for sightseeing or indoor activities.";
+  }
+  if (windSpeed > 25) {
+    return "💨 Very windy - Beach umbrella and wind protection recommended.";
+  }
+  return "🌤️ Moderate conditions - Beach activities possible with proper preparation.";
 }
 
 function getDaysInMonth(year: number, month: number): number {

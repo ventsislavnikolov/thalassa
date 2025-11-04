@@ -1,7 +1,8 @@
 "use client";
 
 import { format, parse } from "date-fns";
-import { Cloud, Sun, Droplets, Wind, Thermometer, Waves } from "lucide-react";
+import { Cloud, Droplets, Sun, Thermometer, Waves, Wind } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -9,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 interface WeatherData {
@@ -71,7 +71,8 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
             Weather Analysis for Best Price Dates
           </CardTitle>
           <CardDescription>
-            Combining price and weather data to find the perfect vacation dates. Weather data based on your selected location.
+            Combining price and weather data to find the perfect vacation dates.
+            Weather data based on your selected location.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -87,9 +88,9 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
 
           return (
             <WeatherCard
-              key={analysis.priceInfo.date}
               analysis={analysis}
               formattedDate={formattedDate}
+              key={analysis.priceInfo.date}
               rank={index + 1}
             />
           );
@@ -103,14 +104,14 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 border rounded-lg">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-lg border p-4 text-center">
                 <h4 className="font-semibold text-green-600">Best Value</h4>
-                <p className="text-2xl font-bold">
+                <p className="font-bold text-2xl">
                   {sortedAnalyses[0]?.priceInfo?.stayTotal?.toFixed(2) || "0"}{" "}
                   BGN
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {sortedAnalyses[0]?.priceInfo?.date
                     ? format(
                         parse(
@@ -124,25 +125,25 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
                 </p>
               </div>
 
-              <div className="text-center p-4 border rounded-lg">
+              <div className="rounded-lg border p-4 text-center">
                 <h4 className="font-semibold text-blue-600">Best Weather</h4>
-                <p className="text-2xl font-bold">
+                <p className="font-bold text-2xl">
                   {Math.max(...analyses.map((a) => a.weatherData.score))}/100
                 </p>
-                <p className="text-sm text-muted-foreground">Beach Score</p>
+                <p className="text-muted-foreground text-sm">Beach Score</p>
               </div>
 
-              <div className="text-center p-4 border rounded-lg">
+              <div className="rounded-lg border p-4 text-center">
                 <h4 className="font-semibold text-purple-600">Best Overall</h4>
-                <p className="text-2xl font-bold">
+                <p className="font-bold text-2xl">
                   {sortedAnalyses[0]?.combinedScore?.toFixed(1) || "0"}/100
                 </p>
-                <p className="text-sm text-muted-foreground">Combined Score</p>
+                <p className="text-muted-foreground text-sm">Combined Score</p>
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-              <h4 className="font-semibold mb-2">💡 Recommendation</h4>
+            <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950">
+              <h4 className="mb-2 font-semibold">💡 Recommendation</h4>
               <p className="text-sm">
                 {sortedAnalyses[0]?.recommendation ||
                   "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece. Weather data is specific to your selected location."}
@@ -190,12 +191,12 @@ function WeatherCard({
   };
 
   return (
-    <Card className={rank === 1 ? "border-green-500 border-2" : ""}>
+    <Card className={rank === 1 ? "border-2 border-green-500" : ""}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">
                 {rank}
               </span>
               {formattedDate}
@@ -211,17 +212,17 @@ function WeatherCard({
 
       <CardContent className="space-y-4">
         {/* Price Information */}
-        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
           <div>
-            <p className="text-sm text-muted-foreground">Total Stay Price</p>
-            <p className="text-2xl font-bold">
+            <p className="text-muted-foreground text-sm">Total Stay Price</p>
+            <p className="font-bold text-2xl">
               {priceInfo?.stayTotal?.toFixed(2) || "0"}{" "}
               {priceInfo?.currency || "BGN"}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Per Night</p>
-            <p className="text-lg font-semibold">
+            <p className="text-muted-foreground text-sm">Per Night</p>
+            <p className="font-semibold text-lg">
               {priceInfo?.averagePerNight?.toFixed(2) || "0"}{" "}
               {priceInfo?.currency || "BGN"}
             </p>
@@ -229,12 +230,12 @@ function WeatherCard({
         </div>
 
         {/* Weather Information */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="flex items-center gap-2">
             <Thermometer className="h-4 w-4 text-red-500" />
             <div>
-              <p className="text-xs text-muted-foreground">Temperature</p>
-              <p className="text-sm font-medium">
+              <p className="text-muted-foreground text-xs">Temperature</p>
+              <p className="font-medium text-sm">
                 {weatherData?.temperature?.min || 0}° -{" "}
                 {weatherData?.temperature?.max || 0}°C
               </p>
@@ -244,8 +245,8 @@ function WeatherCard({
           <div className="flex items-center gap-2">
             <Waves className="h-4 w-4 text-blue-500" />
             <div>
-              <p className="text-xs text-muted-foreground">Sea Temp</p>
-              <p className="text-sm font-medium">
+              <p className="text-muted-foreground text-xs">Sea Temp</p>
+              <p className="font-medium text-sm">
                 {weatherData?.seaTemperature || 0}°C
               </p>
             </div>
@@ -254,8 +255,8 @@ function WeatherCard({
           <div className="flex items-center gap-2">
             <Droplets className="h-4 w-4 text-blue-500" />
             <div>
-              <p className="text-xs text-muted-foreground">Rain</p>
-              <p className="text-sm font-medium">
+              <p className="text-muted-foreground text-xs">Rain</p>
+              <p className="font-medium text-sm">
                 {weatherData?.precipitation?.toFixed(1) || "0"}mm
               </p>
             </div>
@@ -264,8 +265,8 @@ function WeatherCard({
           <div className="flex items-center gap-2">
             <Wind className="h-4 w-4 text-gray-500" />
             <div>
-              <p className="text-xs text-muted-foreground">Wind</p>
-              <p className="text-sm font-medium">
+              <p className="text-muted-foreground text-xs">Wind</p>
+              <p className="font-medium text-sm">
                 {weatherData?.windSpeed || 0}km/h
               </p>
             </div>
@@ -273,20 +274,20 @@ function WeatherCard({
         </div>
 
         {/* Weather Description */}
-        <div className="flex items-center gap-2 p-3 border rounded-lg">
+        <div className="flex items-center gap-2 rounded-lg border p-3">
           {getWeatherIcon(weatherData?.description || "")}
           <div className="flex-1">
             <p className="font-medium">
               {weatherData?.description || "Unknown"}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {weatherData?.beachConditions || "N/A"}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Beach Score</p>
+            <p className="text-muted-foreground text-sm">Beach Score</p>
             <p
-              className={`text-lg font-bold ${getScoreColor(
+              className={`font-bold text-lg ${getScoreColor(
                 weatherData?.score || 0
               )}`}
             >
@@ -296,53 +297,53 @@ function WeatherCard({
         </div>
 
         {/* Scores and Rankings */}
-        <div className="grid grid-cols-3 gap-4 pt-2 border-t">
+        <div className="grid grid-cols-3 gap-4 border-t pt-2">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Price Rank</p>
+            <p className="mb-1 text-muted-foreground text-xs">Price Rank</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">
+              <span className="font-semibold text-sm">
                 #{analysis.priceRank}
               </span>
               <Progress
+                className="h-2 flex-1"
                 value={(6 - analysis.priceRank) * 20}
-                className="flex-1 h-2"
               />
             </div>
           </div>
 
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Weather Rank</p>
+            <p className="mb-1 text-muted-foreground text-xs">Weather Rank</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">
+              <span className="font-semibold text-sm">
                 #{analysis.weatherRank}
               </span>
               <Progress
+                className="h-2 flex-1"
                 value={(6 - analysis.weatherRank) * 20}
-                className="flex-1 h-2"
               />
             </div>
           </div>
 
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Overall Score</p>
+            <p className="mb-1 text-muted-foreground text-xs">Overall Score</p>
             <div className="flex items-center gap-2">
               <span
-                className={`text-sm font-bold ${getScoreColor(
+                className={`font-bold text-sm ${getScoreColor(
                   analysis?.combinedScore || 0
                 )}`}
               >
                 {analysis?.combinedScore?.toFixed(1) || "0"}
               </span>
               <Progress
+                className="h-2 flex-1"
                 value={analysis?.combinedScore || 0}
-                className="flex-1 h-2"
               />
             </div>
           </div>
         </div>
 
         {/* Weather Recommendation */}
-        <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+        <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950">
           <p className="text-sm">
             {weatherData?.recommendation || "No recommendation available"}
           </p>
