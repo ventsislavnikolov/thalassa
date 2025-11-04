@@ -46,6 +46,13 @@ const HOTELS: Record<string, HotelConfig> = {
     baseUrl: "https://eaglesresort.reserve-online.net",
     apiEndpoint: "/avl",
   },
+  excelsior: {
+    id: "excelsior",
+    name: "The Excelsior",
+    displayName: "The Excelsior",
+    baseUrl: "https://excelsiorthessaloniki.reserve-online.net",
+    apiEndpoint: "/avl",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {
