@@ -78,6 +78,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       "eaglesvillas",
       "excelsior",
       "olympionsunset",
+      "potideapalace",
     ],
     includeWeather: false,
     isYearSearch: false,

@@ -60,6 +60,12 @@ const HOTELS: Record<string, HotelConfig> = {
     baseUrl: "https://olympion-sunset.reserve-online.net",
     apiEndpoint: "/avl",
   },
+  potideapalace: {
+    id: "potideapalace",
+    name: "Potidea Palace",
+    displayName: "Potidea Palace Hotel",
+    baseUrl: "https://potideapalace.reserve-online.net",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {
