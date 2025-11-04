@@ -692,14 +692,17 @@ function parseAvlEndpointHTML(
   console.log(`🏨 Found ${roomBlocks.length} room blocks`);
 
   // Parse the actual HTML from the JSON response
+  // Handle both {"demand":false,"html":"..."} and {"demand": false, "html": "..."}
   let actualHtml = html;
-  if (html.startsWith('{"demand":false,"html":')) {
+  if (html.trim().startsWith('{') && html.includes('"demand"') && html.includes('"html"')) {
     try {
       const jsonData = JSON.parse(html);
-      actualHtml = jsonData.html || html;
-      console.log(`📦 Parsed HTML from JSON wrapper`);
-    } catch {
-      console.log(`⚠️ Could not parse JSON, using raw HTML`);
+      if (jsonData.html) {
+        actualHtml = jsonData.html;
+        console.log(`📦 Parsed HTML from JSON wrapper (demand: ${jsonData.demand})`);
+      }
+    } catch (error) {
+      console.log(`⚠️ Could not parse JSON, using raw HTML:`, error);
     }
   }
 
@@ -714,18 +717,68 @@ function parseAvlEndpointHTML(
   const roomRows = $actual(".data.rmtbl tr");
   console.log(`📋 Found ${roomRows.length} table rows total`);
 
-  // Parse prices from the actual HTML structure
-  // Look for price patterns in the HTML
-  const pricePatterns = [
-    // Pattern 1: <div class="val">2 845,73 лв / 1 455 €</div>
-    /<div class="val">([^<]+)<\/div>/gi,
-    // Pattern 2: Look for BGN prices in any format
-    /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/gi,
-    // Pattern 3: Look for prices in table cells
-    /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
-  ];
-
+  // PRIORITY STRATEGY: Parse data-price attributes from <tr> tags
+  // This is the most reliable source as it contains clean price values
   let foundPrices = 0;
+  const dataAttributePrices: number[] = [];
+
+  $actual("tr[data-price]").each((i, elem) => {
+    const dataPriceValue = $actual(elem).attr("data-price");
+    if (dataPriceValue) {
+      const priceValue = parseFloat(dataPriceValue);
+      if (!isNaN(priceValue) && priceValue >= 500 && priceValue <= 50000) {
+        dataAttributePrices.push(priceValue);
+        console.log(`💎 Found data-price attribute: ${dataPriceValue} -> ${priceValue} BGN`);
+      }
+    }
+  });
+
+  // If we found data-price attributes, use those (they're the most reliable)
+  if (dataAttributePrices.length > 0) {
+    console.log(`✅ Using ${dataAttributePrices.length} prices from data-price attributes`);
+    dataAttributePrices.forEach((priceValue, index) => {
+      const roomName = `Room ${index + 1}`;
+
+      prices.push({
+        date: params.checkin,
+        dayOfWeek: format(
+          parse(params.checkin, "yyyy-MM-dd", new Date()),
+          "EEEE"
+        ),
+        averagePerNight: priceValue / params.nights,
+        stayTotal: priceValue,
+        isLowestRate: false,
+        nights: params.nights,
+        currency: "BGN",
+        hotelId: hotel.id,
+        hotelName: hotel.name,
+      });
+
+      roomOptions.push({
+        value: roomName.toLowerCase().replace(/\s+/g, "-"),
+        name: roomName,
+      });
+
+      foundPrices++;
+      console.log(`✅ Added price from data-price: ${priceValue} BGN for ${hotel.name}`);
+    });
+  }
+
+  // FALLBACK STRATEGY: Parse prices from HTML text patterns
+  // Only use this if data-price attributes weren't found
+  if (foundPrices === 0) {
+    console.log(`🔄 No data-price attributes found, falling back to HTML text parsing`);
+
+    // Parse prices from the actual HTML structure
+    // Look for price patterns in the HTML
+    const pricePatterns = [
+      // Pattern 1: <div class="val">2 845,73 лв / 1 455 €</div>
+      /<div class="val">([^<]+)<\/div>/gi,
+      // Pattern 2: Look for BGN prices in any format
+      /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/gi,
+      // Pattern 3: Look for prices in table cells
+      /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
+    ];
   
   for (const pattern of pricePatterns) {
     const matches = actualHtml.match(pattern);
@@ -801,9 +854,9 @@ function parseAvlEndpointHTML(
       if (foundPrices > 0) break; // Stop after first successful pattern
     }
   }
-  
-  // Fallback strategy: Look for prices in different HTML structures
-  if (foundPrices === 0) {
+
+    // Nested fallback strategy: Look for prices in different HTML structures
+    if (foundPrices === 0) {
     console.log(`🔍 No prices found with primary strategy, trying fallback parsing...`);
     
     // Look for any price-like patterns in the HTML
@@ -871,8 +924,9 @@ function parseAvlEndpointHTML(
         if (foundPrices > 0) break; // Found prices, stop trying other patterns
       }
     }
-  }
-  
+    }
+  } // End of fallback HTML text parsing strategy
+
   if (foundPrices === 0) {
     console.log(`⚠️ No prices found with any strategy - ${hotel.name} may have no availability`);
     console.log(`🔍 HTML sample for debugging:`, actualHtml.substring(0, 1000));
