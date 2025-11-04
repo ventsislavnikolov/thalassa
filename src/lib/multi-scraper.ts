@@ -403,7 +403,8 @@ function parseCalendarHTML(
   const [month, year] = monthYearText.split(" ");
   console.log(`📅 Month/Year: ${monthYearText}`);
 
-  // Extract room options
+  // Extract room options - try both methods
+  // Method 1: Check for select dropdown (used by some hotels)
   $('select[name="room"] option').each((_, el) => {
     const $option = $(el);
     const value = $option.attr("value");
@@ -412,6 +413,36 @@ function parseCalendarHTML(
       roomOptions.push({ value, name });
     }
   });
+
+  // Method 2: Extract from tr.room elements and data-room attributes (used by Cocooning, etc.)
+  if (roomOptions.length === 0) {
+    const roomMap = new Map<string, string>();
+
+    // Find all tr.room elements to get room names
+    $('tr.room').each((_, roomRow) => {
+      const $roomRow = $(roomRow);
+      const roomName = $roomRow.find('td.name').first().text().trim();
+
+      // Find the next tr with data-room attribute (could be immediate sibling or further down)
+      let $currentRow = $roomRow.next('tr');
+      while ($currentRow.length > 0 && !$currentRow.hasClass('room')) {
+        const roomCode = $currentRow.attr('data-room');
+        if (roomCode && roomName) {
+          roomMap.set(roomCode, roomName);
+          break; // Found the room code, move to next room
+        }
+        $currentRow = $currentRow.next('tr');
+      }
+    });
+
+    console.log(`   Room map has ${roomMap.size} entries: ${Array.from(roomMap.keys()).join(', ')}`);
+
+    // Convert map to array
+    roomMap.forEach((name, value) => {
+      roomOptions.push({ value, name });
+    });
+  }
+
   console.log(`🏨 Found ${roomOptions.length} room options`);
 
   // Check if calendar exists
