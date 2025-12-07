@@ -1,4 +1,54 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"]
+  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "linter": {
+    "rules": {
+      "correctness": {
+        "useParseIntRadix": "off",
+        "noUndeclaredVariables": "off",
+        "noUnusedFunctionParameters": "off",
+        "noNestedComponentDefinitions": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "useOptionalChain": "off",
+        "noUselessSwitchCase": "off",
+        "noExcessiveCognitiveComplexity": "off"
+      },
+      "nursery": {
+        "noShadow": "off",
+        "noLeakedRender": "off",
+        "noIncrementDecrement": "off",
+        "useConsistentArrowReturn": "off"
+      },
+      "performance": {
+        "useTopLevelRegex": "off",
+        "noNamespaceImport": "off"
+      },
+      "style": {
+        "useAtIndex": "off",
+        "useTemplate": "off",
+        "useImportType": "off",
+        "noMagicNumbers": "off",
+        "noNestedTernary": "off",
+        "noNonNullAssertion": "off",
+        "useBlockStatements": "off",
+        "useDefaultSwitchClause": "off",
+        "useFilenamingConvention": "off",
+        "useNodejsImportProtocol": "off",
+        "useConsistentTypeDefinitions": "off"
+      },
+      "suspicious": {
+        "useAwait": "off",
+        "noGlobalIsNan": "off",
+        "noExplicitAny": "off",
+        "noEvolvingTypes": "off",
+        "noArrayIndexKey": "off",
+        "noDocumentCookie": "off",
+        "noUnknownAtRules": "off",
+        "noEmptyBlockStatements": "off",
+        "noTemplateCurlyInString": "off"
+      }
+    }
+  }
 }

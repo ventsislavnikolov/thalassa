@@ -419,23 +419,25 @@ function parseCalendarHTML(
     const roomMap = new Map<string, string>();
 
     // Find all tr.room elements to get room names
-    $('tr.room').each((_, roomRow) => {
+    $("tr.room").each((_, roomRow) => {
       const $roomRow = $(roomRow);
-      const roomName = $roomRow.find('td.name').first().text().trim();
+      const roomName = $roomRow.find("td.name").first().text().trim();
 
       // Find the next tr with data-room attribute (could be immediate sibling or further down)
-      let $currentRow = $roomRow.next('tr');
-      while ($currentRow.length > 0 && !$currentRow.hasClass('room')) {
-        const roomCode = $currentRow.attr('data-room');
+      let $currentRow = $roomRow.next("tr");
+      while ($currentRow.length > 0 && !$currentRow.hasClass("room")) {
+        const roomCode = $currentRow.attr("data-room");
         if (roomCode && roomName) {
           roomMap.set(roomCode, roomName);
           break; // Found the room code, move to next room
         }
-        $currentRow = $currentRow.next('tr');
+        $currentRow = $currentRow.next("tr");
       }
     });
 
-    console.log(`   Room map has ${roomMap.size} entries: ${Array.from(roomMap.keys()).join(', ')}`);
+    console.log(
+      `   Room map has ${roomMap.size} entries: ${Array.from(roomMap.keys()).join(", ")}`
+    );
 
     // Convert map to array
     roomMap.forEach((name, value) => {
