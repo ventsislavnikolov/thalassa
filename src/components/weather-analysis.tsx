@@ -109,7 +109,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
                 <h4 className="font-semibold text-green-600">Best Value</h4>
                 <p className="font-bold text-2xl">
                   {sortedAnalyses[0]?.priceInfo?.stayTotal?.toFixed(2) || "0"}{" "}
-                  BGN
+                  EUR
                 </p>
                 <p className="text-muted-foreground text-sm">
                   {sortedAnalyses[0]?.priceInfo?.date
@@ -217,14 +217,14 @@ function WeatherCard({
             <p className="text-muted-foreground text-sm">Total Stay Price</p>
             <p className="font-bold text-2xl">
               {priceInfo?.stayTotal?.toFixed(2) || "0"}{" "}
-              {priceInfo?.currency || "BGN"}
+              {priceInfo?.currency || "EUR"}
             </p>
           </div>
           <div className="text-right">
             <p className="text-muted-foreground text-sm">Per Night</p>
             <p className="font-semibold text-lg">
               {priceInfo?.averagePerNight?.toFixed(2) || "0"}{" "}
-              {priceInfo?.currency || "BGN"}
+              {priceInfo?.currency || "EUR"}
             </p>
           </div>
         </div>

@@ -105,7 +105,7 @@ export function PriceResults({
           <CardContent className="flex items-center justify-between p-6">
             <div>
               <p className="font-bold text-2xl text-green-600">
-                {lowestPrice.toFixed(2)} BGN
+                {lowestPrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Lowest Price</p>
             </div>
@@ -117,7 +117,7 @@ export function PriceResults({
           <CardContent className="flex items-center justify-between p-6">
             <div>
               <p className="font-bold text-2xl">
-                {averagePrice.toFixed(2)} BGN
+                {averagePrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Average Price</p>
             </div>
@@ -129,7 +129,7 @@ export function PriceResults({
           <CardContent className="flex items-center justify-between p-6">
             <div>
               <p className="font-bold text-2xl text-red-600">
-                {highestPrice.toFixed(2)} BGN
+                {highestPrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Highest Price</p>
             </div>
@@ -156,13 +156,13 @@ export function PriceResults({
                     <p>
                       Lowest:{" "}
                       <span className="font-medium">
-                        {stats.lowest.toFixed(2)} BGN
+                        {stats.lowest.toFixed(2)} EUR
                       </span>
                     </p>
                     <p>
                       Average:{" "}
                       <span className="font-medium">
-                        {stats.average.toFixed(2)} BGN
+                        {stats.average.toFixed(2)} EUR
                       </span>
                     </p>
                     <p>
@@ -172,7 +172,7 @@ export function PriceResults({
                   </div>
                   {stats.savings > 0 && (
                     <Badge className="mt-2" variant="secondary">
-                      Save {stats.savings.toFixed(2)} BGN vs other hotels
+                      Save {stats.savings.toFixed(2)} EUR vs other hotels
                     </Badge>
                   )}
                 </div>
@@ -378,17 +378,17 @@ function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
                 <p>
                   Lowest:{" "}
                   <span className="font-medium text-green-600">
-                    {lowest.toFixed(2)} BGN
+                    {lowest.toFixed(2)} EUR
                   </span>
                 </p>
                 <p>
                   Average:{" "}
-                  <span className="font-medium">{average.toFixed(2)} BGN</span>
+                  <span className="font-medium">{average.toFixed(2)} EUR</span>
                 </p>
                 <p>
                   Highest:{" "}
                   <span className="font-medium text-red-600">
-                    {highest.toFixed(2)} BGN
+                    {highest.toFixed(2)} EUR
                   </span>
                 </p>
                 <p className="text-muted-foreground">{count} dates available</p>

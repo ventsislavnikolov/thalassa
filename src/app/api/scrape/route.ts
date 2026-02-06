@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       adults: Number.parseInt(adults),
       children: Number.parseInt(children),
       infants: 0,
-      currency: "BGN",
+      currency: "EUR",
     };
 
     // Limit months to prevent timeouts on Vercel

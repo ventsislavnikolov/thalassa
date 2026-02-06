@@ -74,8 +74,8 @@ export default function HomePage() {
       "Date",
       "Day of Week",
       "Hotel",
-      "Average Per Night (BGN)",
-      "Total Stay (BGN)",
+      "Average Per Night (EUR)",
+      "Total Stay (EUR)",
       "Lowest Rate",
       "Nights",
     ];

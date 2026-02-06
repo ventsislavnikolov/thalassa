@@ -6,7 +6,7 @@ export interface SearchParams {
   children?: number;
   infants?: number;
   room?: string; // Suite type (optional, defaults to empty for all rooms)
-  currency?: string; // Default: BGN
+  currency?: string; // Default: EUR
 }
 
 export interface PriceInfo {

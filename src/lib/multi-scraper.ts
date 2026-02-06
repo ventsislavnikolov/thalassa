@@ -346,7 +346,7 @@ export async function findLowestPricesAllHotels(
   if (sortedPrices.length > 0) {
     const lowestPrice = sortedPrices[0];
     console.log(
-      `   Lowest price: ${lowestPrice.stayTotal} BGN (${lowestPrice.hotelName} on ${lowestPrice.date})`
+      `   Lowest price: ${lowestPrice.stayTotal} EUR (${lowestPrice.hotelName} on ${lowestPrice.date})`
     );
 
     // Check if 2.34 is in the top 5 lowest prices
@@ -374,7 +374,7 @@ function buildFormData(params: SearchParams): URLSearchParams {
     offerid: "",
     checkin: params.checkin,
     checkout: params.checkout,
-    cur_iso: params.currency || "BGN",
+    cur_iso: params.currency || "EUR",
     fromd: format(checkinDate, "dd/MM/yyyy"),
     nights: params.nights.toString(),
     rooms: "1",
@@ -498,31 +498,31 @@ function parseCalendarHTML(
       // Handle various Unicode whitespace characters for better compatibility
       const totalPricePatterns = [
         // US format with comma as thousands separator and dot as decimal
-        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-        /(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-        /(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+        /(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+        /(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
         // European format with space as thousands separator and comma as decimal (must be exactly 2 digits after comma)
-        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
-        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
         // Handle numbers without decimal places (like "2,347" or "2 347" in HTML) - must be 3 digits after separator
-        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
-        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
         // Fallback: simple numbers without separators
-        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
-        /(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
-        /(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)?<\/b>/i,
+        /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
+        /(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+        /(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
       ];
 
       // Pattern 2: General patterns for both formats
       const generalPricePatterns = [
         // US format
-        /(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-        /([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
+        /([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
         // European format
-        /(?:BGN|лв)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
-        /([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв)/i,
+        /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
+        /([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
       ];
 
       // Try to match total price first
@@ -692,7 +692,7 @@ function parseCalendarHTML(
           stayTotal,
           isLowestRate,
           nights: params.nights,
-          currency: params.currency || "BGN",
+          currency: params.currency || "EUR",
           hotelId: hotel.id,
           hotelName: hotel.name,
         });
@@ -731,7 +731,7 @@ async function fetchAvlEndpointData(
       offerid: "",
       checkin: params.checkin,
       checkout: format(checkoutDate, "yyyy-MM-dd"),
-      cur_iso: params.currency || "BGN",
+      cur_iso: params.currency || "EUR",
       fromd: format(checkinDate, "dd/MM/yyyy"),
       tod: format(checkoutDate, "dd/MM/yyyy"),
       rooms: "1",
@@ -878,7 +878,7 @@ function parseAvlEndpointHTML(
       if (!isNaN(priceValue) && priceValue >= 500 && priceValue <= 50_000) {
         dataAttributePrices.push(priceValue);
         console.log(
-          `💎 Found data-price attribute: ${dataPriceValue} -> ${priceValue} BGN`
+          `💎 Found data-price attribute: ${dataPriceValue} -> ${priceValue} EUR`
         );
       }
     }
@@ -902,7 +902,7 @@ function parseAvlEndpointHTML(
         stayTotal: priceValue,
         isLowestRate: false,
         nights: params.nights,
-        currency: "BGN",
+        currency: params.currency || "EUR",
         hotelId: hotel.id,
         hotelName: hotel.name,
       });
@@ -914,7 +914,7 @@ function parseAvlEndpointHTML(
 
       foundPrices++;
       console.log(
-        `✅ Added price from data-price: ${priceValue} BGN for ${hotel.name}`
+        `✅ Added price from data-price: ${priceValue} EUR for ${hotel.name}`
       );
     });
   }
@@ -931,8 +931,8 @@ function parseAvlEndpointHTML(
     const pricePatterns = [
       // Pattern 1: <div class="val">2 845,73 лв / 1 455 €</div>
       /<div class="val">([^<]+)<\/div>/gi,
-      // Pattern 2: Look for BGN prices in any format
-      /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/gi,
+      // Pattern 2: Look for BGN/EUR prices in any format
+      /(\d{1,3}(?:\s\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/gi,
       // Pattern 3: Look for prices in table cells
       /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
     ];
@@ -950,7 +950,7 @@ function parseAvlEndpointHTML(
 
           // Try different extraction patterns
           const extractionPatterns = [
-            /(\d{1,3}(?:\s\d{3})*,\d{2})\s*лв/,
+            /(\d{1,3}(?:\s\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/,
             /(\d{1,3}(?:\s\d{3})*,\d{2})/,
             /(\d+,\d{2})/,
           ];
@@ -989,7 +989,7 @@ function parseAvlEndpointHTML(
                   stayTotal: testPrice,
                   isLowestRate: false,
                   nights: params.nights,
-                  currency: "BGN",
+                  currency: params.currency || "EUR",
                   hotelId: hotel.id,
                   hotelName: hotel.name,
                 });
@@ -1001,7 +1001,7 @@ function parseAvlEndpointHTML(
 
                 foundPrices++;
                 console.log(
-                  `✅ Added price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
+                  `✅ Added price: ${testPrice} EUR for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
                 );
                 priceAdded = true;
                 break; // Found a valid price, stop trying other values
@@ -1028,7 +1028,7 @@ function parseAvlEndpointHTML(
 
       // Look for any price-like patterns in the HTML
       const fallbackPatterns = [
-        /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*лв/gi,
+        /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/gi,
         /(\d{1,2}(?:[\s,]\d{3})*,\d{2})/gi,
         /(\d{4,6})/gi,
       ];
@@ -1076,7 +1076,7 @@ function parseAvlEndpointHTML(
                   stayTotal: testPrice,
                   isLowestRate: false,
                   nights: params.nights,
-                  currency: "BGN",
+                  currency: params.currency || "EUR",
                   hotelId: hotel.id,
                   hotelName: hotel.name,
                 });
@@ -1088,7 +1088,7 @@ function parseAvlEndpointHTML(
 
                 foundPrices++;
                 console.log(
-                  `✅ Added fallback price: ${testPrice} BGN for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
+                  `✅ Added fallback price: ${testPrice} EUR for ${hotel.name} (${priceValue === testPrice ? "original" : "x1000"})`
                 );
                 break; // Found a valid price, move to next match
               }
