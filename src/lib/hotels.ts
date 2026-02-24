@@ -66,6 +66,13 @@ const HOTELS: Record<string, HotelConfig> = {
     displayName: "Potidea Palace Hotel",
     baseUrl: "https://potideapalace.reserve-online.net",
   },
+  meditekassandra: {
+    id: "meditekassandra",
+    name: "Medite Kassandra Resort",
+    displayName: "Medite Kassandra Resort",
+    baseUrl: "https://meditekassandraresort.reserve-online.net",
+    apiEndpoint: "/avl",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {
