@@ -79,6 +79,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       "excelsior",
       "olympionsunset",
       "potideapalace",
+      "meditekassandra",
     ],
     includeWeather: false,
     isYearSearch: false,
@@ -163,13 +164,13 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 font-display">
           <Hotel className="h-5 w-5" />
           Greece Hotels Price Search
         </CardTitle>
         <CardDescription>
-          Find the best prices at Blue Carpet Suites, Cocooning Suites, and
-          Myrto Suites in Greece
+          Find the best prices across 10 premium hotels in Halkidiki &amp;
+          Thessaloniki
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -395,7 +396,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           >
             {loading ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-primary-foreground border-b-2" />
                 Searching...
               </>
             ) : (
@@ -407,7 +408,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           </Button>
 
           {formData.hotelIds.length === 0 && (
-            <p className="text-center text-red-500 text-sm">
+            <p className="text-center text-destructive text-sm">
               Please select at least one hotel to search
             </p>
           )}

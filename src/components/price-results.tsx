@@ -25,6 +25,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -94,7 +101,6 @@ export function PriceResults({
   const averagePrice =
     prices.reduce((sum, p) => sum + p.stayTotal, 0) / prices.length;
 
-  // Hotel comparison data
   const hotelStats = isMultiHotel ? getHotelComparisonStats(prices) : null;
 
   return (
@@ -104,36 +110,36 @@ export function PriceResults({
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="font-bold text-2xl text-green-600">
+              <p className="font-bold text-2xl text-secondary">
                 {lowestPrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Lowest Price</p>
             </div>
-            <TrendingDown className="h-8 w-8 text-green-600" />
+            <TrendingDown className="h-8 w-8 text-secondary" />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="font-bold text-2xl">
+              <p className="font-bold text-2xl text-primary">
                 {averagePrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Average Price</p>
             </div>
-            <Calendar className="h-8 w-8 text-blue-600" />
+            <Calendar className="h-8 w-8 text-primary" />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div>
-              <p className="font-bold text-2xl text-red-600">
+              <p className="font-bold text-2xl text-destructive">
                 {highestPrice.toFixed(2)} EUR
               </p>
               <p className="text-muted-foreground text-sm">Highest Price</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-red-600" />
+            <TrendingUp className="h-8 w-8 text-destructive" />
           </CardContent>
         </Card>
       </div>
@@ -142,7 +148,7 @@ export function PriceResults({
       {hotelStats && (
         <Card>
           <CardHeader>
-            <CardTitle>Hotel Comparison</CardTitle>
+            <CardTitle className="font-display">Hotel Comparison</CardTitle>
             <CardDescription>
               Price comparison across selected hotels
             </CardDescription>
@@ -187,22 +193,30 @@ export function PriceResults({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Best Prices Found</CardTitle>
+              <CardTitle className="font-display">Best Prices Found</CardTitle>
               <CardDescription>
                 Showing top {displayPrices.length} results from {prices.length}{" "}
                 total dates
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <select
-                className="rounded border px-3 py-1 text-sm"
-                onChange={(e) => setSortBy(e.target.value as any)}
+              <Select
+                onValueChange={(value) =>
+                  setSortBy(value as "date" | "price" | "hotel")
+                }
                 value={sortBy}
               >
-                <option value="price">Sort by Price</option>
-                <option value="date">Sort by Date</option>
-                {isMultiHotel && <option value="hotel">Sort by Hotel</option>}
-              </select>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="price">Sort by Price</SelectItem>
+                  <SelectItem value="date">Sort by Date</SelectItem>
+                  {isMultiHotel && (
+                    <SelectItem value="hotel">Sort by Hotel</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
               {onExport && (
                 <Button onClick={onExport} size="sm" variant="outline">
                   <Download className="mr-2 h-4 w-4" />
@@ -287,7 +301,9 @@ export function PriceResults({
       {prices.length > 30 && (
         <Accordion className="w-full" collapsible type="single">
           <AccordionItem value="monthly-summary">
-            <AccordionTrigger>Monthly Price Summary</AccordionTrigger>
+            <AccordionTrigger className="font-display">
+              Monthly Price Summary
+            </AccordionTrigger>
             <AccordionContent>
               <MonthlySummary prices={prices} />
             </AccordionContent>
@@ -331,7 +347,6 @@ function getHotelComparisonStats(prices: PriceInfo[]) {
     {} as Record<string, any>
   );
 
-  // Calculate savings compared to other hotels
   const globalLowest = Math.min(...Object.values(stats).map((s) => s.lowest));
   Object.values(stats).forEach((stat) => {
     if (stat.lowest > globalLowest) {
@@ -345,7 +360,7 @@ function getHotelComparisonStats(prices: PriceInfo[]) {
 function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
   const monthlyData = prices.reduce(
     (acc, price) => {
-      const month = price.date.substring(0, 7); // YYYY-MM
+      const month = price.date.substring(0, 7);
       if (!acc[month]) {
         acc[month] = [];
       }
@@ -373,11 +388,11 @@ function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
         return (
           <Card key={month}>
             <CardContent className="p-4">
-              <h4 className="mb-2 font-semibold">{monthName}</h4>
+              <h4 className="mb-2 font-display font-semibold">{monthName}</h4>
               <div className="space-y-1 text-sm">
                 <p>
                   Lowest:{" "}
-                  <span className="font-medium text-green-600">
+                  <span className="font-medium text-secondary">
                     {lowest.toFixed(2)} EUR
                   </span>
                 </p>
@@ -387,7 +402,7 @@ function MonthlySummary({ prices }: { prices: PriceInfo[] }) {
                 </p>
                 <p>
                   Highest:{" "}
-                  <span className="font-medium text-red-600">
+                  <span className="font-medium text-destructive">
                     {highest.toFixed(2)} EUR
                   </span>
                 </p>

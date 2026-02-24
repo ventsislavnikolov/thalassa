@@ -1,5 +1,6 @@
 "use client";
 
+import { BarChart3, Calendar, Hotel, Moon, Users } from "lucide-react";
 import { useState } from "react";
 import { PriceResults } from "@/components/price-results";
 import { SearchForm } from "@/components/search-form";
@@ -69,7 +70,6 @@ export default function HomePage() {
   const handleExport = () => {
     if (!results?.prices) return;
 
-    // Convert results to CSV
     const csvHeaders = [
       "Date",
       "Day of Week",
@@ -95,7 +95,6 @@ export default function HomePage() {
       ...csvRows.map((row) => row.join(",")),
     ].join("\n");
 
-    // Create and download file
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -111,16 +110,16 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="mb-2 font-bold text-4xl text-gray-900 dark:text-white">
-            🏖️ Greece Hotels Price Finder
+          <h1 className="mb-2 font-display text-4xl tracking-tight">
+            Discover Your Perfect Greek Getaway
           </h1>
-          <p className="text-gray-600 text-lg dark:text-gray-300">
-            Find the best deals at Blue Carpet Suites, Cocooning Suites, and
-            Myrto Suites in Greece
+          <p className="text-lg text-muted-foreground">
+            Compare prices across 10 premium hotels in Halkidiki &amp;
+            Thessaloniki
           </p>
         </div>
 
@@ -142,7 +141,7 @@ export default function HomePage() {
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-blue-600 border-b-2" />
+              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-primary border-b-2" />
               <p className="font-medium text-lg">
                 Searching for the best prices...
               </p>
@@ -155,21 +154,33 @@ export default function HomePage() {
 
         {/* Results */}
         {results && !loading && (
-          <div className="space-y-8">
+          <div className="animate-fade-in-up space-y-8">
             {/* Search Summary */}
-            <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
-              <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
-                <span>📅 Check-in: {results.searchParams.checkin}</span>
-                <span>🛏️ {results.searchParams.nights} nights</span>
-                <span>👥 {results.searchParams.adults} adults</span>
-                {results.searchParams.children > 0 && (
-                  <span>👶 {results.searchParams.children} children</span>
-                )}
-                <span>
-                  🏨 {results.meta.hotelsSearched.length} hotel
+            <div className="rounded-lg bg-card p-4 shadow-warm">
+              <div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {results.searchParams.checkin}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                  <Moon className="h-3.5 w-3.5" />
+                  {results.searchParams.nights} nights
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                  <Users className="h-3.5 w-3.5" />
+                  {results.searchParams.adults} adults
+                  {results.searchParams.children > 0 &&
+                    `, ${results.searchParams.children} children`}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                  <Hotel className="h-3.5 w-3.5" />
+                  {results.meta.hotelsSearched.length} hotel
                   {results.meta.hotelsSearched.length > 1 ? "s" : ""}
                 </span>
-                <span>📊 {results.meta.totalResults} dates found</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  {results.meta.totalResults} dates found
+                </span>
               </div>
             </div>
 
@@ -203,14 +214,14 @@ export default function HomePage() {
             {results.roomOptions.length > 0 && (
               <>
                 <Separator className="my-8" />
-                <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-                  <h3 className="mb-3 font-semibold text-lg">
+                <div className="rounded-lg bg-card p-6 shadow-warm">
+                  <h3 className="mb-3 font-display text-lg">
                     Available Room Types
                   </h3>
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                     {results.roomOptions.map((room: any) => (
                       <div
-                        className="rounded bg-gray-50 p-2 text-sm dark:bg-gray-700"
+                        className="rounded bg-muted p-2 text-sm"
                         key={room.value}
                       >
                         <span className="font-medium">{room.value}</span> -{" "}
@@ -225,8 +236,8 @@ export default function HomePage() {
         )}
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
-          <p>Built with ❤️ for finding the best vacation deals in Greece</p>
+        <footer className="mt-16 text-center text-muted-foreground text-sm">
+          <p>Finding the best vacation deals across Greece</p>
         </footer>
       </div>
     </div>

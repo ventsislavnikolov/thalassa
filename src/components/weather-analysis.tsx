@@ -57,7 +57,6 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
     return null;
   }
 
-  // Sort by overall rank for display
   const sortedAnalyses = [...analyses].sort(
     (a, b) => a.overallRank - b.overallRank
   );
@@ -66,7 +65,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 font-display">
             <Sun className="h-5 w-5" />
             Weather Analysis for Best Price Dates
           </CardTitle>
@@ -100,13 +99,15 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
       {/* Summary and Recommendations */}
       <Card>
         <CardHeader>
-          <CardTitle>Vacation Planning Summary</CardTitle>
+          <CardTitle className="font-display">
+            Vacation Planning Summary
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="rounded-lg border p-4 text-center">
-                <h4 className="font-semibold text-green-600">Best Value</h4>
+                <h4 className="font-semibold text-secondary">Best Value</h4>
                 <p className="font-bold text-2xl">
                   {sortedAnalyses[0]?.priceInfo?.stayTotal?.toFixed(2) || "0"}{" "}
                   EUR
@@ -126,7 +127,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
               </div>
 
               <div className="rounded-lg border p-4 text-center">
-                <h4 className="font-semibold text-blue-600">Best Weather</h4>
+                <h4 className="font-semibold text-primary">Best Weather</h4>
                 <p className="font-bold text-2xl">
                   {Math.max(...analyses.map((a) => a.weatherData.score))}/100
                 </p>
@@ -134,7 +135,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
               </div>
 
               <div className="rounded-lg border p-4 text-center">
-                <h4 className="font-semibold text-purple-600">Best Overall</h4>
+                <h4 className="font-semibold text-amber-600">Best Overall</h4>
                 <p className="font-bold text-2xl">
                   {sortedAnalyses[0]?.combinedScore?.toFixed(1) || "0"}/100
                 </p>
@@ -142,8 +143,8 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
               </div>
             </div>
 
-            <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950">
-              <h4 className="mb-2 font-semibold">💡 Recommendation</h4>
+            <div className="rounded-lg bg-muted p-4">
+              <h4 className="mb-2 font-semibold">Recommendation</h4>
               <p className="text-sm">
                 {sortedAnalyses[0]?.recommendation ||
                   "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece. Weather data is specific to your selected location."}
@@ -171,31 +172,35 @@ function WeatherCard({
     if (description.includes("clear") || description.includes("sun"))
       return <Sun className="h-5 w-5 text-yellow-500" />;
     if (description.includes("cloud"))
-      return <Cloud className="h-5 w-5 text-gray-500" />;
+      return <Cloud className="h-5 w-5 text-muted-foreground" />;
     if (description.includes("rain") || description.includes("drizzle"))
-      return <Droplets className="h-5 w-5 text-blue-500" />;
+      return <Droplets className="h-5 w-5 text-teal-500" />;
     return <Sun className="h-5 w-5 text-yellow-500" />;
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 80) return "text-secondary";
+    if (score >= 60) return "text-amber-600";
+    return "text-destructive";
   };
 
   const getRecommendationBadge = (rank: number) => {
     if (rank === 1)
-      return <Badge className="bg-green-100 text-green-800">Best Choice</Badge>;
+      return (
+        <Badge className="border-0 bg-primary/10 text-primary">
+          Best Choice
+        </Badge>
+      );
     if (rank <= 3) return <Badge variant="secondary">Great Option</Badge>;
     return <Badge variant="outline">Good Alternative</Badge>;
   };
 
   return (
-    <Card className={rank === 1 ? "border-2 border-green-500" : ""}>
+    <Card className={rank === 1 ? "border-2 border-primary" : ""}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-display">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">
                 {rank}
               </span>
@@ -212,7 +217,7 @@ function WeatherCard({
 
       <CardContent className="space-y-4">
         {/* Price Information */}
-        <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+        <div className="flex items-center justify-between rounded-lg bg-muted p-3">
           <div>
             <p className="text-muted-foreground text-sm">Total Stay Price</p>
             <p className="font-bold text-2xl">
@@ -232,7 +237,7 @@ function WeatherCard({
         {/* Weather Information */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-red-500" />
+            <Thermometer className="h-4 w-4 text-primary" />
             <div>
               <p className="text-muted-foreground text-xs">Temperature</p>
               <p className="font-medium text-sm">
@@ -243,7 +248,7 @@ function WeatherCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <Waves className="h-4 w-4 text-blue-500" />
+            <Waves className="h-4 w-4 text-teal-500" />
             <div>
               <p className="text-muted-foreground text-xs">Sea Temp</p>
               <p className="font-medium text-sm">
@@ -253,7 +258,7 @@ function WeatherCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <Droplets className="h-4 w-4 text-blue-500" />
+            <Droplets className="h-4 w-4 text-teal-500" />
             <div>
               <p className="text-muted-foreground text-xs">Rain</p>
               <p className="font-medium text-sm">
@@ -263,7 +268,7 @@ function WeatherCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <Wind className="h-4 w-4 text-gray-500" />
+            <Wind className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-muted-foreground text-xs">Wind</p>
               <p className="font-medium text-sm">
@@ -343,7 +348,7 @@ function WeatherCard({
         </div>
 
         {/* Weather Recommendation */}
-        <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950">
+        <div className="rounded-lg bg-muted p-3">
           <p className="text-sm">
             {weatherData?.recommendation || "No recommendation available"}
           </p>
