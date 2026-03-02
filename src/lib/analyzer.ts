@@ -2,15 +2,15 @@ import type { PriceInfo } from "./types";
 import { getWeatherForDates, type WeatherData } from "./weather";
 
 export interface CombinedAnalysis {
+  combinedScore: number;
+  overallRank: number;
   priceInfo: PriceInfo;
-  weatherData: WeatherData;
+  priceRank: number;
+  recommendation: string;
   totalScore: number;
   valueScore: number;
-  recommendation: string;
-  priceRank: number;
+  weatherData: WeatherData;
   weatherRank: number;
-  overallRank: number;
-  combinedScore: number;
 }
 
 export async function analyzeTopDeals(

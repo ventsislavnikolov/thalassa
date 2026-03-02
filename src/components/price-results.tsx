@@ -41,25 +41,25 @@ import {
 } from "@/components/ui/table";
 
 interface PriceInfo {
+  averagePerNight: number;
+  currency: string;
   date: string;
   dayOfWeek: string;
-  averagePerNight: number;
-  stayTotal: number;
-  isLowestRate: boolean;
-  nights: number;
-  currency: string;
   hotelId: string;
   hotelName: string;
-  roomType?: string;
+  isLowestRate: boolean;
+  nights: number;
   roomCode?: string;
+  roomType?: string;
+  stayTotal: number;
 }
 
 interface PriceResultsProps {
-  prices: PriceInfo[];
   isMultiHotel: boolean;
-  onExport?: () => void;
-  requestedDate?: string;
   monthsChecked?: number;
+  onExport?: () => void;
+  prices: PriceInfo[];
+  requestedDate?: string;
 }
 
 export function PriceResults({

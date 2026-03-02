@@ -9,27 +9,27 @@ import { Separator } from "@/components/ui/separator";
 import { WeatherAnalysis } from "@/components/weather-analysis";
 
 interface SearchParams {
-  checkin: string;
-  nights: number;
   adults: number;
+  checkin: string;
   children: number;
-  room: string;
-  months: number;
   hotelIds: string[];
   includeWeather: boolean;
   isYearSearch: boolean;
+  months: number;
+  nights: number;
+  room: string;
 }
 
 interface SearchResults {
-  prices: any[];
-  roomOptions: any[];
-  weatherAnalysis: any[] | null;
-  searchParams: any;
   meta: {
     totalResults: number;
     monthsChecked: number;
     hotelsSearched: string[];
   };
+  prices: any[];
+  roomOptions: any[];
+  searchParams: any;
+  weatherAnalysis: any[] | null;
 }
 
 export default function HomePage() {

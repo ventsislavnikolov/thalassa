@@ -13,25 +13,27 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 interface WeatherData {
+  beachConditions: string;
   date: string;
+  description: string;
+  humidity: number;
+  precipitation: number;
+  recommendation: string;
+  score: number;
+  seaTemperature?: number;
   temperature: {
     min: number;
     max: number;
     avg: number;
   };
-  precipitation: number;
-  windSpeed: number;
-  humidity: number;
   uvIndex: number;
   weatherCode: number;
-  description: string;
-  seaTemperature?: number;
-  beachConditions: string;
-  recommendation: string;
-  score: number;
+  windSpeed: number;
 }
 
 interface VacationAnalysis {
+  combinedScore: number;
+  overallRank: number;
   priceInfo: {
     date: string;
     dayOfWeek: string;
@@ -40,12 +42,10 @@ interface VacationAnalysis {
     hotelName: string;
     currency: string;
   };
-  weatherData: WeatherData;
-  combinedScore: number;
   priceRank: number;
-  weatherRank: number;
-  overallRank: number;
   recommendation: string;
+  weatherData: WeatherData;
+  weatherRank: number;
 }
 
 interface WeatherAnalysisProps {

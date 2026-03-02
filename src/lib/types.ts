@@ -1,38 +1,38 @@
 export interface SearchParams {
+  adults: number;
   checkin: string; // Format: YYYY-MM-DD
   checkout: string; // Format: YYYY-MM-DD
-  nights: number;
-  adults: number;
   children?: number;
-  infants?: number;
-  room?: string; // Suite type (optional, defaults to empty for all rooms)
   currency?: string; // Default: EUR
+  infants?: number;
+  nights: number;
+  room?: string; // Suite type (optional, defaults to empty for all rooms)
 }
 
 export interface PriceInfo {
+  averagePerNight: number;
+  currency: string;
   date: string;
   dayOfWeek: string;
-  averagePerNight: number;
-  stayTotal: number;
-  isLowestRate: boolean;
-  nights: number;
-  currency: string;
   hotelId: string;
   hotelName: string;
-  roomType?: string; // e.g., "Triple Suite | Sea View"
+  isLowestRate: boolean;
+  nights: number;
   roomCode?: string; // e.g., "TRPL"
+  roomType?: string; // e.g., "Triple Suite | Sea View"
+  stayTotal: number;
 }
 
 export interface RoomOption {
-  value: string;
   name: string;
+  value: string;
 }
 
 export interface CalendarResponse {
-  month: string;
-  year: number;
-  prices: PriceInfo[];
-  roomOptions: RoomOption[];
   hotelId: string;
   hotelName: string;
+  month: string;
+  prices: PriceInfo[];
+  roomOptions: RoomOption[];
+  year: number;
 }
