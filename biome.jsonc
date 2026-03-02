@@ -18,8 +18,7 @@
       "nursery": {
         "noShadow": "off",
         "noLeakedRender": "off",
-        "noIncrementDecrement": "off",
-        "useConsistentArrowReturn": "off"
+        "noIncrementDecrement": "off"
       },
       "performance": {
         "useTopLevelRegex": "off",

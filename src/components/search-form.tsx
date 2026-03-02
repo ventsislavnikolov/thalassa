@@ -80,6 +80,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
       "olympionsunset",
       "potideapalace",
       "meditekassandra",
+      "pomegranate",
     ],
     includeWeather: false,
     isYearSearch: false,
@@ -87,11 +88,21 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     enableMonthsSearch: false,
   });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
 
   const WEATHER_LOCATIONS = [
     { value: "pefkochori", label: "Pefkochori (Blue Carpet & Cocooning)" },
     { value: "kavala", label: "Kavala (Myra Hotel)" },
     { value: "neosmarmaras", label: "Neos Marmaras (Porto Carras)" },
+    { value: "eagles", label: "Ouranoupoli (Eagles Palace & Eagles Villas)" },
+    { value: "thessaloniki", label: "Thessaloniki (The Excelsior)" },
+    { value: "fourka", label: "Fourka (Olympion Sunset)" },
+    { value: "neapotidea", label: "Nea Potidea (Potidea Palace)" },
+    {
+      value: "neamoudania",
+      label: "Nea Moudania (Medite Kassandra & Pomegranate Spa)",
+    },
   ];
 
   useEffect(() => {
@@ -123,6 +134,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
+      setCalendarOpen(false);
       setFormData((prev) => ({
         ...prev,
         checkin: format(date, "yyyy-MM-dd"),
@@ -179,7 +191,13 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="checkin">Check-in Date</Label>
-              <Popover>
+              <Popover
+                onOpenChange={(open) => {
+                  if (open) setCalendarMonth(selectedDate);
+                  setCalendarOpen(open);
+                }}
+                open={calendarOpen}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     className="w-full justify-start text-left font-normal"
@@ -194,6 +212,8 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                     disabled={(date) => date < new Date()}
                     initialFocus
                     mode="single"
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
                     onSelect={handleDateSelect}
                     selected={selectedDate}
                   />
@@ -333,11 +353,13 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 9, 12].map((month) => (
-                          <SelectItem key={month} value={month.toString()}>
-                            {month} month{month > 1 ? "s" : ""}
-                          </SelectItem>
-                        ))}
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(
+                          (month) => (
+                            <SelectItem key={month} value={month.toString()}>
+                              {month} month{month > 1 ? "s" : ""}
+                            </SelectItem>
+                          )
+                        )}
                       </SelectContent>
                     </Select>
                   </div>

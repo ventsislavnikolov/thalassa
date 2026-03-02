@@ -1,22 +1,22 @@
 import axios from "axios";
 
 export interface WeatherData {
+  beachConditions: string;
   date: string;
+  description: string;
+  humidity: number;
+  precipitation: number;
+  recommendation: string;
+  score: number;
+  seaTemperature?: number;
   temperature: {
     min: number;
     max: number;
     avg: number;
   };
-  precipitation: number;
-  windSpeed: number;
-  humidity: number;
   uvIndex: number;
   weatherCode: number;
-  description: string;
-  seaTemperature?: number;
-  beachConditions: string;
-  recommendation: string;
-  score: number;
+  windSpeed: number;
 }
 
 // Pefkohori coordinates (approximate) - for Blue Carpet and Cocooning
@@ -37,6 +37,36 @@ const NEOS_MARMARAS_LOCATION = {
   longitude: 23.7778,
 };
 
+// Ouranoupoli/Athos coordinates - for Eagles Palace & Eagles Villas
+const EAGLES_LOCATION = {
+  latitude: 40.3542,
+  longitude: 23.9512,
+};
+
+// Thessaloniki city center coordinates - for The Excelsior
+const THESSALONIKI_LOCATION = {
+  latitude: 40.6357,
+  longitude: 22.9427,
+};
+
+// Fourka, Kassandra coordinates - for Olympion Sunset
+const FOURKA_LOCATION = {
+  latitude: 39.9617,
+  longitude: 23.3267,
+};
+
+// Nea Potidea, Kassandra coordinates - for Potidea Palace
+const NEA_POTIDEA_LOCATION = {
+  latitude: 40.1928,
+  longitude: 23.1867,
+};
+
+// Nea Moudania, Halkidiki coordinates - for Medite Kassandra Resort
+const NEA_MOUDANIA_LOCATION = {
+  latitude: 40.2428,
+  longitude: 23.2817,
+};
+
 function getLocationForHotel(hotelId?: string, location?: string) {
   // If location is explicitly provided, use it
   if (location === "kavala") {
@@ -48,6 +78,21 @@ function getLocationForHotel(hotelId?: string, location?: string) {
   if (location === "neosmarmaras") {
     return NEOS_MARMARAS_LOCATION;
   }
+  if (location === "eagles") {
+    return EAGLES_LOCATION;
+  }
+  if (location === "thessaloniki") {
+    return THESSALONIKI_LOCATION;
+  }
+  if (location === "fourka") {
+    return FOURKA_LOCATION;
+  }
+  if (location === "neapotidea") {
+    return NEA_POTIDEA_LOCATION;
+  }
+  if (location === "neamoudania") {
+    return NEA_MOUDANIA_LOCATION;
+  }
 
   // Map hotel IDs to their locations
   switch (hotelId) {
@@ -55,6 +100,18 @@ function getLocationForHotel(hotelId?: string, location?: string) {
       return KAVALA_LOCATION;
     case "portocarras":
       return NEOS_MARMARAS_LOCATION;
+    case "eaglespalace":
+    case "eaglesvillas":
+      return EAGLES_LOCATION;
+    case "excelsior":
+      return THESSALONIKI_LOCATION;
+    case "olympionsunset":
+      return FOURKA_LOCATION;
+    case "potideapalace":
+      return NEA_POTIDEA_LOCATION;
+    case "meditekassandra":
+    case "pomegranate":
+      return NEA_MOUDANIA_LOCATION;
     case "bluecarpet":
     case "cocooning":
     default:

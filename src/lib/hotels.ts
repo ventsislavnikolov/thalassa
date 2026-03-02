@@ -73,6 +73,12 @@ const HOTELS: Record<string, HotelConfig> = {
     baseUrl: "https://meditekassandraresort.reserve-online.net",
     apiEndpoint: "/avl",
   },
+  pomegranate: {
+    id: "pomegranate",
+    name: "Pomegranate Spa Hotel",
+    displayName: "Pomegranate Spa Hotel",
+    baseUrl: "https://pomegranatespahotel.reserve-online.net",
+  },
 };
 
 export function getHotelConfig(hotelId: string): HotelConfig {
