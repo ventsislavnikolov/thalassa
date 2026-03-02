@@ -89,7 +89,7 @@ export function WeatherAnalysis({ analyses }: WeatherAnalysisProps) {
             <WeatherCard
               analysis={analysis}
               formattedDate={formattedDate}
-              key={analysis.priceInfo.date}
+              key={`${analysis.priceInfo.date}-${analysis.priceInfo.hotelName}`}
               rank={index + 1}
             />
           );
