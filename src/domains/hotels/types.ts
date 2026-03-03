@@ -1,0 +1,16 @@
+export interface HotelConfig {
+  id: string;
+  slug: string;
+  name: string;
+  displayName: string;
+  baseUrl: string;
+  strategyType: "calendar" | "avl";
+  locationSlug: string;
+  description?: string;
+  excludeFromYearSearch?: boolean;
+}
+
+export interface RoomType {
+  code: string;
+  name: string;
+}
