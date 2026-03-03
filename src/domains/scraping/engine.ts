@@ -35,7 +35,7 @@ export async function scrapeHotels(
   hotelIds: string[],
   searchParams: SearchParams
 ): Promise<ScrapeAllResult> {
-  const results: PriceResult[] = [];
+  const priceMap = new Map<string, PriceResult>();
   const allRoomOptions: RoomType[] = [];
   const errors: { hotel: string; error: string }[] = [];
   const hotelTimeout = getHotelTimeout();
@@ -50,7 +50,10 @@ export async function scrapeHotels(
         hotelTimeout
       );
 
-      results.push(...response.prices);
+      for (const price of response.prices) {
+        const key = `${price.date}_${price.hotelId}_${price.roomCode ?? "default"}`;
+        priceMap.set(key, price);
+      }
       allRoomOptions.push(...response.roomOptions);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -58,7 +61,11 @@ export async function scrapeHotels(
     }
   }
 
-  return { results, roomOptions: allRoomOptions, errors };
+  const sortedResults = Array.from(priceMap.values()).sort(
+    (a, b) => a.stayTotal - b.stayTotal
+  );
+
+  return { results: sortedResults, roomOptions: allRoomOptions, errors };
 }
 
 export async function scrapeHotelsMultiMonth(

@@ -1,4 +1,5 @@
 const ALL_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
+const HAS_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/;
 const CURRENCY_PREFIX = /^(?:BGN|EUR|USD|лв|€|\$)\s*/i;
 const CURRENCY_SUFFIX = /\s*(?:BGN|EUR|USD|лв|€|\$)$/i;
 
@@ -15,7 +16,7 @@ export const PriceFormat = {
     const hasSpace =
       cleaned.includes(" ") ||
       cleaned.includes("\u00A0") ||
-      ALL_WHITESPACE.test(cleaned);
+      HAS_WHITESPACE.test(cleaned);
 
     if (hasComma && hasDot) {
       const commaIndex = cleaned.indexOf(",");

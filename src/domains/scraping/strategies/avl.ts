@@ -197,7 +197,7 @@ function parseAvlHtml(
   const actualHtml = unwrapJsonHtml(html);
 
   // Short response likely means error/no availability
-  if (html.length < 300) {
+  if (actualHtml.length < 300) {
     return {
       prices: [],
       roomOptions: [],
