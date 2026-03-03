@@ -1,13 +1,6 @@
 import type { ReactNode } from "react";
-import { Footer } from "@/components/layout/footer";
-import { Header } from "@/components/layout/header";
+import { StandardLayout } from "@/components/layout/standard-layout";
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <Header />
-      <main className="min-h-screen">{children}</main>
-      <Footer />
-    </>
-  );
+  return <StandardLayout>{children}</StandardLayout>;
 }

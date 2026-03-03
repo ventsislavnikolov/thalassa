@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllHotels, getHotel } from "@/domains/hotels/registry";
 import type { HotelConfig } from "@/domains/hotels/types";
+import { getLocation } from "@/domains/locations/registry";
 
 interface HotelDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -16,7 +17,7 @@ function findHotel(slug: string): HotelConfig {
   try {
     return getHotel(slug);
   } catch {
-    notFound();
+    return notFound();
   }
 }
 
@@ -30,6 +31,7 @@ export default async function HotelDetailPage({
 }: HotelDetailPageProps) {
   const { slug } = await params;
   const hotel = findHotel(slug);
+  const location = getLocation(hotel.locationSlug);
 
   return (
     <div>
@@ -43,7 +45,7 @@ export default async function HotelDetailPage({
             <div className="mb-6 flex items-center justify-center gap-3">
               <Badge variant="outline">
                 <MapPin className="mr-1 h-3 w-3" />
-                {hotel.locationSlug}
+                {location.name}
               </Badge>
               <Badge variant="secondary">{hotel.strategyType}</Badge>
             </div>
@@ -71,10 +73,10 @@ export default async function HotelDetailPage({
                 <p className="text-muted-foreground">
                   Located in{" "}
                   <span className="font-medium text-foreground">
-                    {hotel.locationSlug}
+                    {location.name}
                   </span>
-                  , Greece. One of the most sought-after destinations in the
-                  Mediterranean.
+                  , {location.region}, Greece. One of the most sought-after
+                  destinations in the Mediterranean.
                 </p>
               </CardContent>
             </Card>

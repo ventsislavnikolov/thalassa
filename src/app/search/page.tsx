@@ -3,6 +3,7 @@
 import { BarChart3, Calendar, Hotel, Moon, Users } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import type { ScrapeApiResponse } from "@/app/api/scrape/types";
 import { PageContainer } from "@/components/layout/page-container";
 import { ExportButton } from "@/components/results/export-button";
 import { HotelComparison } from "@/components/results/hotel-comparison";
@@ -17,20 +18,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { WeatherGrid } from "@/components/weather/weather-grid";
 import { WeatherSummary } from "@/components/weather/weather-summary";
-import type { CombinedAnalysis } from "@/domains/analysis/types";
-import type { PriceResult } from "@/domains/scraping/types";
-
-interface SearchResults {
-  results: PriceResult[];
-  roomOptions: { code: string; name: string }[];
-  weather: CombinedAnalysis[] | null;
-  meta: {
-    totalResults: number;
-    hotelsSearched: string[];
-    searchDuration: number;
-    errors: string[];
-  };
-}
 
 function deriveSearchMode(params: SearchFormParams): string {
   if (params.isYearSearch) return "year";
@@ -43,7 +30,7 @@ function SearchPageContent() {
   const defaultHotel = searchParams.get("hotel") ?? undefined;
 
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SearchResults | null>(null);
+  const [results, setResults] = useState<ScrapeApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchContext, setSearchContext] = useState<SearchFormParams | null>(
     null
@@ -76,7 +63,7 @@ function SearchPageContent() {
         throw new Error(errorData.error || "Failed to fetch prices");
       }
 
-      const data: SearchResults = await response.json();
+      const data: ScrapeApiResponse = await response.json();
       setResults(data);
     } catch (err) {
       setError(
@@ -212,9 +199,20 @@ function SearchPageContent() {
   );
 }
 
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-primary border-b-2" />
+        <p className="text-muted-foreground text-sm">Loading search...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function SearchPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingFallback />}>
       <SearchPageContent />
     </Suspense>
   );

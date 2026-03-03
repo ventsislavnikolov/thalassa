@@ -4,6 +4,7 @@ import { BarChart3, Calendar, Hotel, Moon, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import type { ScrapeApiResponse } from "@/app/api/scrape/types";
 import { PageContainer } from "@/components/layout/page-container";
 import { ExportButton } from "@/components/results/export-button";
 import { HotelComparison } from "@/components/results/hotel-comparison";
@@ -15,20 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { WeatherGrid } from "@/components/weather/weather-grid";
 import { WeatherSummary } from "@/components/weather/weather-summary";
-import type { CombinedAnalysis } from "@/domains/analysis/types";
-import type { PriceResult } from "@/domains/scraping/types";
-
-interface SearchResults {
-  results: PriceResult[];
-  roomOptions: { code: string; name: string }[];
-  weather: CombinedAnalysis[] | null;
-  meta: {
-    totalResults: number;
-    hotelsSearched: string[];
-    searchDuration: number;
-    errors: string[];
-  };
-}
 
 interface ParsedParams {
   checkin: string;
@@ -66,7 +53,7 @@ function ResultsPageContent() {
   const parsed = useMemo(() => parseSearchParams(searchParams), [searchParams]);
 
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SearchResults | null>(null);
+  const [results, setResults] = useState<ScrapeApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -91,7 +78,7 @@ function ResultsPageContent() {
           throw new Error(errorData.error || "Failed to fetch prices");
         }
 
-        const data: SearchResults = await response.json();
+        const data: ScrapeApiResponse = await response.json();
         setResults(data);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -236,9 +223,20 @@ function ResultsPageContent() {
   );
 }
 
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-primary border-b-2" />
+        <p className="text-muted-foreground text-sm">Loading results...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ResultsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingFallback />}>
       <ResultsPageContent />
     </Suspense>
   );
