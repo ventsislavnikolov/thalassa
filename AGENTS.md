@@ -1,123 +1,89 @@
-# Ultracite Code Standards
+# CLAUDE.md
 
-This project uses **Ultracite**, a zero-config Biome preset that enforces strict code quality standards through automated formatting and linting.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Reference
+## Project Overview
 
-- **Format code**: `npx ultracite fix`
-- **Check for issues**: `npx ultracite check`
-- **Diagnose setup**: `npx ultracite doctor`
+This is a modern web application for finding the best hotel prices at Blue Carpet Suites, Cocooning Suites, and Myra Hotel in Greece. Built with Next.js 15, TypeScript, and shadcn/ui, it provides a comprehensive hotel price comparison tool with weather analysis.
 
-Biome (the underlying engine) provides extremely fast Rust-based linting and formatting. Most issues are automatically fixable.
+## Key Commands
 
----
+### Development
 
-## Core Principles
+- `pnpm install` - Install dependencies
+- `pnpm dev` - Start the Next.js development server
+- `pnpm build` - Build the application for production
+- `pnpm start` - Start the production server
 
-Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
+### Code Quality
 
-### Type Safety & Explicitness
+- `pnpm lint` - Run ESLint on all files
+- `pnpm lint:fix` - Auto-fix linting issues
 
-- Use explicit types for function parameters and return values when they enhance clarity
-- Prefer `unknown` over `any` when the type is genuinely unknown
-- Use const assertions (`as const`) for immutable values and literal types
-- Leverage TypeScript's type narrowing instead of type assertions
-- Use meaningful variable names instead of magic numbers - extract constants with descriptive names
+## Architecture
 
-### Modern JavaScript/TypeScript
+### Web Application Structure
 
-- Use arrow functions for callbacks and short functions
-- Prefer `for...of` loops over `.forEach()` and indexed `for` loops
-- Use optional chaining (`?.`) and nullish coalescing (`??`) for safer property access
-- Prefer template literals over string concatenation
-- Use destructuring for object and array assignments
-- Use `const` by default, `let` only when reassignment is needed, never `var`
+1. **Frontend Components** (`src/components/`)
 
-### Async & Promises
+   - `search-form.tsx` - Main search interface with hotel selection, date picker, and options
+   - `price-results.tsx` - Display price tables, hotel comparisons, and export functionality
+   - `weather-analysis.tsx` - Weather analysis cards with beach suitability scoring
+   - `ui/` - shadcn/ui components (buttons, cards, forms, etc.)
 
-- Always `await` promises in async functions - don't forget to use the return value
-- Use `async/await` syntax instead of promise chains for better readability
-- Handle errors appropriately in async code with try-catch blocks
-- Don't use async functions as Promise executors
+2. **API Routes** (`src/app/api/`)
 
-### React & JSX
+   - `scrape/route.ts` - Main scraping endpoint that processes search requests
+   - `hotels/route.ts` - Returns available hotel configurations
 
-- Use function components over class components
-- Call hooks at the top level only, never conditionally
-- Specify all dependencies in hook dependency arrays correctly
-- Use the `key` prop for elements in iterables (prefer unique IDs over array indices)
-- Nest children between opening and closing tags instead of passing as props
-- Don't define components inside other components
-- Use semantic HTML and ARIA attributes for accessibility:
-  - Provide meaningful alt text for images
-  - Use proper heading hierarchy
-  - Add labels for form inputs
-  - Include keyboard event handlers alongside mouse events
-  - Use semantic elements (`<button>`, `<nav>`, etc.) instead of divs with roles
+3. **Scraper Logic** (`src/lib/`)
 
-### Error Handling & Debugging
+   - `multi-scraper.ts` - Multi-hotel scraping engine for both properties
+   - `weather.ts` - Weather data integration with Open-Meteo API
+   - `analyzer.ts` - Combines price and weather data for recommendations
+   - `types.ts` - TypeScript interfaces and type definitions
+   - `hotels.ts` - Hotel configuration and management
 
-- Remove `console.log`, `debugger`, and `alert` statements from production code
-- Throw `Error` objects with descriptive messages, not strings or other values
-- Use `try-catch` blocks meaningfully - don't catch errors just to rethrow them
-- Prefer early returns over nested conditionals for error cases
+4. **Main Application** (`src/app/`)
+   - `page.tsx` - Main application page with search form and results
+   - `layout.tsx` - Root layout with global styles
+   - `globals.css` - Global CSS including Tailwind styles
 
-### Code Organization
+### Key Features
 
-- Keep functions focused and under reasonable cognitive complexity limits
-- Extract complex conditions into well-named boolean variables
-- Use early returns to reduce nesting
-- Prefer simple conditionals over nested ternary operators
-- Group related code together and separate concerns
+- **Multi-Hotel Support**: Search Blue Carpet Suites, Cocooning Suites, Myra Hotel, or any combination
+- **Weather Integration**: Beach suitability scoring with temperature, precipitation, wind analysis
+- **Smart Recommendations**: Combined price + weather scoring (60/40 weighting)
+- **Export Functionality**: CSV download of search results
+- **Responsive Design**: Mobile-first design that works on all devices
+- **Real-time Search**: Live price fetching with progress indicators
 
-### Security
+### External Dependencies
 
-- Add `rel="noopener"` when using `target="_blank"` on links
-- Avoid `dangerouslySetInnerHTML` unless absolutely necessary
-- Don't use `eval()` or assign directly to `document.cookie`
-- Validate and sanitize user input
+- `next` - React framework with App Router
+- `react` - UI library
+- `typescript` - Type safety
+- `tailwindcss` - CSS framework
+- `shadcn/ui` - UI component library
+- `axios` - HTTP client for scraping
+- `cheerio` - HTML parsing
+- `date-fns` - Date manipulation
+- `lucide-react` - Icon library
 
-### Performance
+## API Integration
 
-- Avoid spread syntax in accumulators within loops
-- Use top-level regex literals instead of creating them in loops
-- Prefer specific imports over namespace imports
-- Avoid barrel files (index files that re-export everything)
-- Use proper image components (e.g., Next.js `<Image>`) over `<img>` tags
+The application scrapes hotel data from:
 
-### Framework-Specific Guidance
+- **Blue Carpet Suites**: `https://bluecarpetsuites.reserve-online.net/calendar`
+- **Cocooning Suites**: `https://cocooningsuites.reserve-online.net/calendar`
+- **Myra Hotel**: `https://myrahotel.reserve-online.net/calendar`
+- **Weather API**: Open-Meteo API for weather forecasting
 
-**Next.js:**
-- Use Next.js `<Image>` component for images
-- Use `next/head` or App Router metadata API for head elements
-- Use Server Components for async data fetching instead of async Client Components
+### Search Parameters
 
-**React 19+:**
-- Use ref as a prop instead of `React.forwardRef`
-
-**Solid/Svelte/Vue/Qwik:**
-- Use `class` and `for` attributes (not `className` or `htmlFor`)
-
----
-
-## Testing
-
-- Write assertions inside `it()` or `test()` blocks
-- Avoid done callbacks in async tests - use async/await instead
-- Don't use `.only` or `.skip` in committed code
-- Keep test suites reasonably flat - avoid excessive `describe` nesting
-
-## When Biome Can't Help
-
-Biome's linter will catch most issues automatically. Focus your attention on:
-
-1. **Business logic correctness** - Biome can't validate your algorithms
-2. **Meaningful naming** - Use descriptive names for functions, variables, and types
-3. **Architecture decisions** - Component structure, data flow, and API design
-4. **Edge cases** - Handle boundary conditions and error states
-5. **User experience** - Accessibility, performance, and usability considerations
-6. **Documentation** - Add comments for complex logic, but prefer self-documenting code
-
----
-
-Most formatting and common issues are automatically fixed by Biome. Run `npx ultracite fix` before committing to ensure compliance.
+- Hotel selection (single or multiple)
+- Check-in date and number of nights
+- Adults and children count
+- Room type preferences
+- Search scope (months or full year)
+- Weather analysis toggle
