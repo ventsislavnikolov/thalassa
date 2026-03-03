@@ -1,15 +1,7 @@
 import { NextResponse } from "next/server";
-import { getAllHotels } from "@/lib/hotels";
+import { getAllHotels } from "@/domains/hotels/registry";
 
 export async function GET() {
-  try {
-    const hotels = getAllHotels();
-    return NextResponse.json(hotels);
-  } catch (error) {
-    console.error("Error fetching hotels:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch hotels" },
-      { status: 500 }
-    );
-  }
+  const hotels = getAllHotels();
+  return NextResponse.json(hotels);
 }
