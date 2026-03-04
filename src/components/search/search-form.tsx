@@ -135,11 +135,11 @@ export function SearchForm({
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    nights: Number.parseInt(e.target.value, 10),
+                    nights: Number.parseInt(e.target.value, 10) || 0,
                   }))
                 }
                 type="number"
-                value={formData.nights}
+                value={formData.nights || ""}
               />
             </div>
           </div>

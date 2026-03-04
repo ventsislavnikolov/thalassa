@@ -27,10 +27,10 @@ export function GuestSelector({
           max="8"
           min="1"
           onChange={(e) =>
-            onChange(Number.parseInt(e.target.value, 10), childCount)
+            onChange(Number.parseInt(e.target.value, 10) || 0, childCount)
           }
           type="number"
-          value={adults}
+          value={adults || ""}
         />
       </div>
       <div className="space-y-2">
@@ -40,10 +40,10 @@ export function GuestSelector({
           max="6"
           min="0"
           onChange={(e) =>
-            onChange(adults, Number.parseInt(e.target.value, 10))
+            onChange(adults, Number.parseInt(e.target.value, 10) || 0)
           }
           type="number"
-          value={childCount}
+          value={childCount || ""}
         />
       </div>
     </div>
