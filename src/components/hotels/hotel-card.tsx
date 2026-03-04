@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,11 +17,11 @@ interface HotelCardProps {
 
 export function HotelCard({ hotel }: HotelCardProps) {
   return (
-    <Card className="overflow-hidden pt-0">
-      <div className="relative h-40">
+    <Card className="group overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-warm">
+      <div className="relative h-48 overflow-hidden">
         <Image
           alt={hotel.displayName}
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           src={hotel.image}
@@ -34,12 +35,9 @@ export function HotelCard({ hotel }: HotelCardProps) {
         <Badge variant="secondary">{hotel.strategyType}</Badge>
       </CardContent>
       <CardFooter>
-        <Link
-          className="text-primary text-sm underline-offset-4 hover:underline"
-          href={`/hotels/${hotel.slug}`}
-        >
-          View Details
-        </Link>
+        <Button asChild className="w-full" variant="outline">
+          <Link href={`/hotels/${hotel.slug}`}>View Details</Link>
+        </Button>
       </CardFooter>
     </Card>
   );
