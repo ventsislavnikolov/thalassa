@@ -10,6 +10,7 @@ const kavala: LocationConfig = {
     longitude: 23.55,
   },
   timezone: "Europe/Athens",
+  image: "/images/locations/kavala.jpg",
 };
 
 export default kavala;

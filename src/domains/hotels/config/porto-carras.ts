@@ -8,6 +8,7 @@ const portoCarras: HotelConfig = {
   baseUrl: "https://portocarras.reserve-online.net",
   strategyType: "avl",
   locationSlug: "neos-marmaras",
+  image: "/images/hotels/porto-carras.jpg",
   excludeFromYearSearch: true,
 };
 

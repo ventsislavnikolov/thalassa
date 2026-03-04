@@ -8,6 +8,7 @@ const myra: HotelConfig = {
   baseUrl: "https://myrahotel.reserve-online.net",
   strategyType: "calendar",
   locationSlug: "kavala",
+  image: "/images/hotels/myra.jpg",
 };
 
 export default myra;

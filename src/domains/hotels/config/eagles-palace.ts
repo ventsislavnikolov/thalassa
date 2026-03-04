@@ -8,6 +8,7 @@ const eaglesPalace: HotelConfig = {
   baseUrl: "https://eaglesresort.reserve-online.net",
   strategyType: "avl",
   locationSlug: "pefkochori",
+  image: "/images/hotels/eagles-palace.jpg",
 };
 
 export default eaglesPalace;

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,8 +16,16 @@ interface HotelCardProps {
 
 export function HotelCard({ hotel }: HotelCardProps) {
   return (
-    <Card className="overflow-hidden">
-      <div className="h-40 bg-gradient-to-br from-primary/20 via-secondary/10 to-accent" />
+    <Card className="overflow-hidden pt-0">
+      <div className="relative h-40">
+        <Image
+          alt={hotel.displayName}
+          className="object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          src={hotel.image}
+        />
+      </div>
       <CardHeader>
         <CardTitle className="font-display">{hotel.displayName}</CardTitle>
       </CardHeader>

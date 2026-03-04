@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageContainer } from "@/components/layout/page-container";
@@ -36,23 +37,30 @@ export default async function HotelDetailPage({
   return (
     <div>
       {/* Hotel Hero */}
-      <section className="bg-gradient-to-br from-primary/20 via-secondary/10 to-accent py-20">
-        <PageContainer>
-          <div className="mx-auto max-w-3xl text-center">
+      <section className="relative py-20">
+        <Image
+          alt={hotel.displayName}
+          className="object-cover"
+          fill
+          priority
+          sizes="100vw"
+          src={hotel.image}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <PageContainer className="relative z-10">
+          <div className="mx-auto max-w-3xl text-center text-white">
             <h1 className="mb-4 font-display text-4xl tracking-tight sm:text-5xl">
               {hotel.displayName}
             </h1>
             <div className="mb-6 flex items-center justify-center gap-3">
-              <Badge variant="outline">
+              <Badge className="border-white/50 text-white" variant="outline">
                 <MapPin className="mr-1 h-3 w-3" />
                 {location.name}
               </Badge>
               <Badge variant="secondary">{hotel.strategyType}</Badge>
             </div>
             {hotel.description && (
-              <p className="mb-8 text-lg text-muted-foreground">
-                {hotel.description}
-              </p>
+              <p className="mb-8 text-lg text-white/80">{hotel.description}</p>
             )}
             <Button asChild size="lg">
               <Link href={`/search?hotel=${hotel.slug}`}>Check Prices</Link>

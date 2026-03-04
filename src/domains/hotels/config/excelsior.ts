@@ -8,6 +8,7 @@ const excelsior: HotelConfig = {
   baseUrl: "https://excelsiorthessaloniki.reserve-online.net",
   strategyType: "avl",
   locationSlug: "pefkochori",
+  image: "/images/hotels/excelsior.jpg",
 };
 
 export default excelsior;

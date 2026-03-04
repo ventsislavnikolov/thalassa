@@ -6,6 +6,7 @@ export interface HotelConfig {
   baseUrl: string;
   strategyType: "calendar" | "avl";
   locationSlug: string;
+  image: string;
   description?: string;
   excludeFromYearSearch?: boolean;
 }

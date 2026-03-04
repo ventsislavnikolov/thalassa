@@ -10,6 +10,7 @@ const neosMarmaras: LocationConfig = {
     longitude: 23.7778,
   },
   timezone: "Europe/Athens",
+  image: "/images/locations/neos-marmaras.jpg",
 };
 
 export default neosMarmaras;

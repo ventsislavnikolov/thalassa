@@ -8,6 +8,7 @@ const cocooning: HotelConfig = {
   baseUrl: "https://cocooningsuites.reserve-online.net",
   strategyType: "calendar",
   locationSlug: "pefkochori",
+  image: "/images/hotels/cocooning.jpg",
 };
 
 export default cocooning;

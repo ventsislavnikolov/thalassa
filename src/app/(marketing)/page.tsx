@@ -1,4 +1,5 @@
 import { MapPin, Search, Sun } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { HotelGrid } from "@/components/hotels/hotel-grid";
 import { PageContainer } from "@/components/layout/page-container";
@@ -49,8 +50,16 @@ export default function HomePage() {
           <h2 className="mb-8 font-display text-3xl">Explore Our Locations</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {locations.map((location) => (
-              <Card key={location.slug}>
-                <div className="h-32 bg-gradient-to-br from-secondary/20 via-primary/10 to-accent" />
+              <Card className="overflow-hidden pt-0" key={location.slug}>
+                <div className="relative h-32">
+                  <Image
+                    alt={location.name}
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    src={location.image}
+                  />
+                </div>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 font-display">
                     <MapPin className="h-5 w-5 text-primary" />

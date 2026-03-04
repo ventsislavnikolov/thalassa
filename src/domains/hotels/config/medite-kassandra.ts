@@ -8,6 +8,7 @@ const mediteKassandra: HotelConfig = {
   baseUrl: "https://meditekassandraresort.reserve-online.net",
   strategyType: "avl",
   locationSlug: "pefkochori",
+  image: "/images/hotels/medite-kassandra.jpg",
 };
 
 export default mediteKassandra;

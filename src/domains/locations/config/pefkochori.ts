@@ -10,6 +10,7 @@ const pefkochori: LocationConfig = {
     longitude: 23.35,
   },
   timezone: "Europe/Athens",
+  image: "/images/locations/pefkochori.jpg",
 };
 
 export default pefkochori;

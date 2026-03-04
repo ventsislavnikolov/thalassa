@@ -10,4 +10,5 @@ export interface LocationConfig {
   country: string;
   coordinates: Coordinates;
   timezone: string;
+  image: string;
 }

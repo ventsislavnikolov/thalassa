@@ -8,6 +8,7 @@ const blueCarpet: HotelConfig = {
   baseUrl: "https://bluecarpetsuites.reserve-online.net",
   strategyType: "calendar",
   locationSlug: "pefkochori",
+  image: "/images/hotels/blue-carpet.jpg",
 };
 
 export default blueCarpet;

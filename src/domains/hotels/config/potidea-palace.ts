@@ -8,6 +8,7 @@ const potideaPalace: HotelConfig = {
   baseUrl: "https://potideapalace.reserve-online.net",
   strategyType: "calendar",
   locationSlug: "pefkochori",
+  image: "/images/hotels/potidea-palace.jpg",
 };
 
 export default potideaPalace;
