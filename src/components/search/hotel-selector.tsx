@@ -11,12 +11,17 @@ interface HotelSelectorProps {
   onChange: (ids: string[]) => void;
 }
 
+// Hotels temporarily hidden from search (keep config/registry intact for later)
+const HIDDEN_HOTEL_IDS = ["excelsior"];
+
 export function HotelSelector({
   hotels,
   selected,
   onChange,
 }: HotelSelectorProps) {
-  const allSelected = hotels.length > 0 && selected.length === hotels.length;
+  const visibleHotels = hotels.filter((h) => !HIDDEN_HOTEL_IDS.includes(h.id));
+  const allSelected =
+    visibleHotels.length > 0 && selected.length === visibleHotels.length;
 
   const handleToggle = (hotelId: string, checked: boolean) => {
     onChange(
@@ -25,7 +30,7 @@ export function HotelSelector({
   };
 
   const handleSelectAll = () => {
-    onChange(allSelected ? [] : hotels.map((h) => h.id));
+    onChange(allSelected ? [] : visibleHotels.map((h) => h.id));
   };
 
   return (
@@ -42,7 +47,7 @@ export function HotelSelector({
         </Button>
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {hotels.map((hotel) => (
+        {visibleHotels.map((hotel) => (
           <div className="flex items-center space-x-2" key={hotel.id}>
             <Checkbox
               checked={selected.includes(hotel.id)}

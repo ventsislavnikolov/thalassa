@@ -2,6 +2,7 @@ import blueCarpet from "./config/blue-carpet";
 import cocooning from "./config/cocooning";
 import eaglesPalace from "./config/eagles-palace";
 import eaglesVillas from "./config/eagles-villas";
+import ekies from "./config/ekies";
 import excelsior from "./config/excelsior";
 import mediteKassandra from "./config/medite-kassandra";
 import myra from "./config/myra";
@@ -18,6 +19,7 @@ const hotels: HotelConfig[] = [
   portoCarras,
   eaglesPalace,
   eaglesVillas,
+  ekies,
   excelsior,
   olympionSunset,
   mediteKassandra,

@@ -1,9 +1,15 @@
 import kavala from "./config/kavala";
 import neosMarmaras from "./config/neos-marmaras";
 import pefkochori from "./config/pefkochori";
+import vourvourou from "./config/vourvourou";
 import type { LocationConfig } from "./types";
 
-const locations: LocationConfig[] = [pefkochori, kavala, neosMarmaras];
+const locations: LocationConfig[] = [
+  pefkochori,
+  kavala,
+  neosMarmaras,
+  vourvourou,
+];
 
 export function getAllLocations(): LocationConfig[] {
   return locations;

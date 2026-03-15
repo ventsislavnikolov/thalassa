@@ -44,7 +44,7 @@ export default function HomePage() {
               </Button>
               <Button
                 asChild
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
                 size="lg"
                 variant="outline"
               >
