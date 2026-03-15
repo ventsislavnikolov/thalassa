@@ -15,10 +15,21 @@ STAGED_HASH=$(git diff --cached | sha256sum | cut -d' ' -f1)
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
 PARTIALLY_STAGED=$(git diff --name-only)
 
+# Preserve merge state across stash (git stash removes MERGE_HEAD)
+MERGE_HEAD_BACKUP=""
+if [ -f ".git/MERGE_HEAD" ]; then
+  MERGE_HEAD_BACKUP=$(cat .git/MERGE_HEAD)
+fi
+
 # Stash unstaged changes to preserve working directory
 # --keep-index keeps staged changes in working tree
 git stash push --quiet --keep-index --message "pre-commit-stash" || true
 STASHED=$?
+
+# Restore merge state if it was lost
+if [ -n "$MERGE_HEAD_BACKUP" ] && [ ! -f ".git/MERGE_HEAD" ]; then
+  echo "$MERGE_HEAD_BACKUP" > .git/MERGE_HEAD
+fi
 
 # Run formatter on the staged files
 pnpm dlx ultracite fix

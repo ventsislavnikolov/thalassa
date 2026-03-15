@@ -13,7 +13,7 @@ export function WeatherGrid({ analyses }: WeatherGridProps) {
       {sorted.map((analysis, index) => (
         <WeatherCard
           analysis={analysis}
-          key={analysis.priceInfo.date}
+          key={`${analysis.priceInfo.date}-${analysis.priceInfo.hotelName}`}
           rank={index + 1}
         />
       ))}
