@@ -5,7 +5,7 @@ export function Header() {
     <header className="border-b bg-card">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link className="font-bold font-display text-primary text-xl" href="/">
-          Greece Holiday Advisor
+          Thalassa
         </Link>
         <nav className="flex items-center gap-6">
           <Link

@@ -14,9 +14,9 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Greece Holiday Advisor",
+  title: "Thalassa",
   description:
-    "Compare prices across premium hotels in Halkidiki & Thessaloniki, Greece",
+    "Find the best hotel deals across Halkidiki & Thessaloniki, Greece",
 };
 
 export default function RootLayout({

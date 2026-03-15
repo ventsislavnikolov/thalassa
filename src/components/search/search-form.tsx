@@ -116,10 +116,10 @@ export function SearchForm({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-display">
           <Hotel className="h-5 w-5" />
-          Greece Hotels Price Search
+          Thalassa Price Search
         </CardTitle>
         <CardDescription>
-          Find the best prices across 10 premium hotels in Halkidiki &amp;
+          Find the best prices across premium hotels in Halkidiki &amp;
           Thessaloniki
         </CardDescription>
       </CardHeader>

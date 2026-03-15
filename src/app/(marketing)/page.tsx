@@ -120,9 +120,7 @@ export default function HomePage() {
             <p className="mb-2 font-semibold text-primary text-sm uppercase tracking-widest">
               Platform
             </p>
-            <h2 className="mb-10 font-display text-3xl">
-              Why Use Greece Holiday Advisor?
-            </h2>
+            <h2 className="mb-10 font-display text-3xl">Why Use Thalassa?</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {[
                 {
