@@ -1,123 +1,156 @@
-# Ultracite Code Standards
+# AGENTS.md
 
-This project uses **Ultracite**, a zero-config Biome preset that enforces strict code quality standards through automated formatting and linting.
+This file provides guidance to AI agents (Claude Code, Cursor, etc.) when working with code in this repository.
 
-## Quick Reference
+## Project Overview
 
-- **Format code**: `npx ultracite fix`
-- **Check for issues**: `npx ultracite check`
-- **Diagnose setup**: `npx ultracite doctor`
+This is a modern web application for finding the best hotel prices across 10 hotels in Greece (Halkidiki and Kavala regions). Built with Next.js 15, TypeScript, and shadcn/ui, it uses a **modular domain architecture** with 5 core domains: hotels, locations, scraping, weather, and analysis. The application scrapes hotel prices from reserve-online.net, integrates weather forecasting, and provides combined value recommendations.
 
-Biome (the underlying engine) provides extremely fast Rust-based linting and formatting. Most issues are automatically fixable.
+## Key Commands
 
----
+### Development
 
-## Core Principles
+- `pnpm install` - Install dependencies
+- `pnpm dev` - Start the Next.js development server
+- `pnpm build` - Build the application for production
+- `pnpm start` - Start the production server
 
-Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
+### Testing
 
-### Type Safety & Explicitness
+- `pnpm test` - Run all tests (vitest)
+- `pnpm test -- --watch` - Run tests in watch mode
 
-- Use explicit types for function parameters and return values when they enhance clarity
-- Prefer `unknown` over `any` when the type is genuinely unknown
-- Use const assertions (`as const`) for immutable values and literal types
-- Leverage TypeScript's type narrowing instead of type assertions
-- Use meaningful variable names instead of magic numbers - extract constants with descriptive names
+### Code Quality
 
-### Modern JavaScript/TypeScript
+- `npx ultracite check` - Check for lint and format issues (Biome)
+- `npx ultracite fix` - Auto-fix lint and format issues
+- `pnpm lint` - Run ESLint
 
-- Use arrow functions for callbacks and short functions
-- Prefer `for...of` loops over `.forEach()` and indexed `for` loops
-- Use optional chaining (`?.`) and nullish coalescing (`??`) for safer property access
-- Prefer template literals over string concatenation
-- Use destructuring for object and array assignments
-- Use `const` by default, `let` only when reassignment is needed, never `var`
+## Architecture
 
-### Async & Promises
+### Domain Structure (`src/domains/`)
 
-- Always `await` promises in async functions - don't forget to use the return value
-- Use `async/await` syntax instead of promise chains for better readability
-- Handle errors appropriately in async code with try-catch blocks
-- Don't use async functions as Promise executors
+Each domain is self-contained with types, configs, logic, and tests:
 
-### React & JSX
+1. **Hotels** (`src/domains/hotels/`)
+   - `types.ts` - `HotelConfig`, `RoomType` interfaces
+   - `config/` - Individual hotel configs (10 hotels)
+   - `registry.ts` - Hotel lookup functions (`getAllHotels`, `getHotel`, `getHotelsByStrategy`)
+   - `__tests__/` - Registry tests
 
-- Use function components over class components
-- Call hooks at the top level only, never conditionally
-- Specify all dependencies in hook dependency arrays correctly
-- Use the `key` prop for elements in iterables (prefer unique IDs over array indices)
-- Nest children between opening and closing tags instead of passing as props
-- Don't define components inside other components
-- Use semantic HTML and ARIA attributes for accessibility:
-  - Provide meaningful alt text for images
-  - Use proper heading hierarchy
-  - Add labels for form inputs
-  - Include keyboard event handlers alongside mouse events
-  - Use semantic elements (`<button>`, `<nav>`, etc.) instead of divs with roles
+2. **Locations** (`src/domains/locations/`)
+   - `types.ts` - `LocationConfig`, `Coordinates` interfaces
+   - `config/` - Location configs (Pefkochori, Kavala, Neos Marmaras)
+   - `registry.ts` - Location lookup functions
+   - `__tests__/` - Registry tests
 
-### Error Handling & Debugging
+3. **Scraping** (`src/domains/scraping/`)
+   - `types.ts` - `SearchParams`, `PriceResult`, `ScrapingStrategy` interface, `ScrapingError`
+   - `strategies/calendar.ts` - Calendar endpoint strategy (HTML scraping)
+   - `strategies/avl.ts` - AVL endpoint strategy (JSON API)
+   - `parsers/price-parser.ts` - Price string normalization (EU/US formats)
+   - `parsers/html-parser.ts` - Cheerio HTML utilities
+   - `engine.ts` - Orchestrates scraping across hotels with timeouts
+   - `__tests__/` - Price parser tests (31 cases)
 
-- Remove `console.log`, `debugger`, and `alert` statements from production code
-- Throw `Error` objects with descriptive messages, not strings or other values
-- Use `try-catch` blocks meaningfully - don't catch errors just to rethrow them
-- Prefer early returns over nested conditionals for error cases
+4. **Weather** (`src/domains/weather/`)
+   - `types.ts` - `WeatherData`, `WeatherProvider` interface
+   - `scoring.ts` - Beach score, conditions, recommendations, sea temp estimation
+   - `climate-data.ts` - Monthly climate averages for Halkidiki
+   - `providers/open-meteo.ts` - Open-Meteo API provider (forecast + historical)
+   - `__tests__/` - Scoring tests (39 cases)
 
-### Code Organization
+5. **Analysis** (`src/domains/analysis/`)
+   - `types.ts` - `CombinedAnalysis` interface
+   - `combined-scorer.ts` - Value scoring, combined score (60% weather / 40% price), deal analysis
+   - `__tests__/` - Combined scorer tests (20 cases)
 
-- Keep functions focused and under reasonable cognitive complexity limits
-- Extract complex conditions into well-named boolean variables
-- Use early returns to reduce nesting
-- Prefer simple conditionals over nested ternary operators
-- Group related code together and separate concerns
+### UI Components (`src/components/`)
 
-### Security
+Components are organized by feature area, using shadcn/ui primitives:
 
-- Add `rel="noopener"` when using `target="_blank"` on links
-- Avoid `dangerouslySetInnerHTML` unless absolutely necessary
-- Don't use `eval()` or assign directly to `document.cookie`
-- Validate and sanitize user input
+- `layout/` - Header, footer, page-container, standard-layout
+- `hotels/` - Hotel card and grid components
+- `search/` - Hotel selector, date picker, guest selector, search options, search form
+- `results/` - Price stats, price table, hotel comparison, monthly summary, export button
+- `weather/` - Beach score, weather card, weather grid, weather summary
+- `ui/` - shadcn/ui primitives (button, card, input, select, calendar, etc.)
 
-### Performance
+### Pages (`src/app/`)
 
-- Avoid spread syntax in accumulators within loops
-- Use top-level regex literals instead of creating them in loops
-- Prefer specific imports over namespace imports
-- Avoid barrel files (index files that re-export everything)
-- Use proper image components (e.g., Next.js `<Image>`) over `<img>` tags
+- `(marketing)/page.tsx` - Homepage with hotel showcase
+- `hotels/page.tsx` - Hotels listing page
+- `hotels/[slug]/page.tsx` - Hotel detail pages
+- `search/page.tsx` - Search form and results page
+- `layout.tsx` - Root layout with Mediterranean theme
 
-### Framework-Specific Guidance
+### API Routes (`src/app/api/`)
 
-**Next.js:**
-- Use Next.js `<Image>` component for images
-- Use `next/head` or App Router metadata API for head elements
-- Use Server Components for async data fetching instead of async Client Components
+- `POST /api/scrape` - Price scraping with Zod validation
+- `GET /api/hotels` - All hotel configs
+- `GET /api/hotels/[slug]` - Single hotel config
+- `GET /api/weather` - Weather data for a location and date range
 
-**React 19+:**
-- Use ref as a prop instead of `React.forwardRef`
+### Key Features
 
-**Solid/Svelte/Vue/Qwik:**
-- Use `class` and `for` attributes (not `className` or `htmlFor`)
+- **Multi-Hotel Support**: 10 hotels across 3 locations with two scraping strategies
+- **Weather Integration**: Beach suitability scoring (0-100) with temperature, precipitation, wind, UV analysis
+- **Smart Recommendations**: Combined price + weather scoring (60/40 weighting)
+- **Export Functionality**: CSV download of search results
+- **Responsive Design**: Mobile-first Mediterranean theme with DM Sans typography
+- **Real-time Search**: Live price fetching with progress indicators
 
----
+### External Dependencies
+
+- `next` - React framework with App Router
+- `react` - UI library
+- `typescript` - Type safety
+- `tailwindcss` - CSS framework
+- `shadcn/ui` - UI component library
+- `axios` - HTTP client for scraping
+- `cheerio` - HTML parsing
+- `date-fns` - Date manipulation
+- `lucide-react` - Icon library
+- `zod` - Schema validation
+- `vitest` - Test framework
+
+## API Integration
+
+The application scrapes hotel data from reserve-online.net using two strategies:
+
+- **Calendar strategy** (`/calendar` endpoint): HTML scraping with Cheerio
+- **AVL strategy** (`/avl` endpoint): JSON API responses
+
+Weather data comes from the **Open-Meteo API** (forecast + historical archive).
+
+### Search Parameters
+
+- Hotel selection (single or multiple from 10 hotels)
+- Check-in date and number of nights
+- Adults and children count
+- Room type preferences
+- Search scope (single month, multi-month, or full year)
+- Weather analysis toggle
+
+## Skills
+
+Each domain includes a `skill.md` file with step-by-step instructions for common extension tasks:
+
+- [`src/domains/hotels/skill.md`](src/domains/hotels/skill.md) - Add a new hotel
+- [`src/domains/locations/skill.md`](src/domains/locations/skill.md) - Add a new location
+- [`src/domains/scraping/skill.md`](src/domains/scraping/skill.md) - Add a new scraping strategy
+- [`src/domains/weather/skill.md`](src/domains/weather/skill.md) - Add a weather provider or modify scoring
+- [`src/domains/analysis/skill.md`](src/domains/analysis/skill.md) - Modify analysis weights
+- [`src/components/skill.md`](src/components/skill.md) - Add a UI component
 
 ## Testing
 
-- Write assertions inside `it()` or `test()` blocks
-- Avoid done callbacks in async tests - use async/await instead
-- Don't use `.only` or `.skip` in committed code
-- Keep test suites reasonably flat - avoid excessive `describe` nesting
+99 tests across 5 test files using Vitest:
 
-## When Biome Can't Help
+- `src/domains/hotels/__tests__/registry.test.ts` (6 tests)
+- `src/domains/locations/__tests__/registry.test.ts` (3 tests)
+- `src/domains/scraping/__tests__/price-parser.test.ts` (31 tests)
+- `src/domains/weather/__tests__/scoring.test.ts` (39 tests)
+- `src/domains/analysis/__tests__/combined-scorer.test.ts` (20 tests)
 
-Biome's linter will catch most issues automatically. Focus your attention on:
-
-1. **Business logic correctness** - Biome can't validate your algorithms
-2. **Meaningful naming** - Use descriptive names for functions, variables, and types
-3. **Architecture decisions** - Component structure, data flow, and API design
-4. **Edge cases** - Handle boundary conditions and error states
-5. **User experience** - Accessibility, performance, and usability considerations
-6. **Documentation** - Add comments for complex logic, but prefer self-documenting code
-
----
-
-Most formatting and common issues are automatically fixed by Biome. Run `npx ultracite fix` before committing to ensure compliance.
+Always run `pnpm test` after making changes to verify nothing is broken.
