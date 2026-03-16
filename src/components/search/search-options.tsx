@@ -10,12 +10,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { getAllHotels } from "@/domains/hotels/registry";
+import { getAllLocations } from "@/domains/locations/registry";
 
-const WEATHER_LOCATIONS = [
-  { value: "pefkochori", label: "Pefkochori (Blue Carpet & Cocooning)" },
-  { value: "kavala", label: "Kavala (Myra Hotel)" },
-  { value: "neosmarmaras", label: "Neos Marmaras (Porto Carras)" },
-];
+const WEATHER_LOCATIONS = getAllLocations()
+  .map((location) => {
+    const hotels = getAllHotels().filter(
+      (h) => h.locationSlug === location.slug
+    );
+    return {
+      value: location.slug,
+      label: `${location.name} (${hotels.map((h) => h.name).join(", ")})`,
+      hasHotels: hotels.length > 0,
+    };
+  })
+  .filter((loc) => loc.hasHotels);
 
 const MONTH_OPTIONS = [1, 2, 3, 4, 5, 6, 9, 12];
 

@@ -7,7 +7,8 @@ const excelsior: HotelConfig = {
   displayName: "The Excelsior",
   baseUrl: "https://excelsiorthessaloniki.reserve-online.net",
   strategyType: "avl",
-  locationSlug: "pefkochori",
+  locationSlug: "thessaloniki",
+  hidden: true,
   image: "/images/hotels/excelsior.jpg",
 };
 

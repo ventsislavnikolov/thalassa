@@ -8,13 +8,23 @@ Adding a new geographic location for hotels. Required when a new hotel is in a t
 
 ### Prerequisites
 
-- Town/area name and region (e.g., "Pefkochori" in "Halkidiki")
-- Geographic coordinates (latitude/longitude) - use Google Maps or similar
-- Timezone identifier (e.g., "Europe/Athens")
+- Town/area name (e.g., "Pefkochori")
 
 ### Steps
 
-1. **Create config file** at `src/domains/locations/config/<location-slug>.ts`:
+1. **Research the location.**
+   Search the web for the town/area name + "Greece coordinates" to find:
+   - Full name and correct spelling
+   - Region (e.g., "Halkidiki", "Central Macedonia")
+   - Geographic coordinates (latitude/longitude in decimal degrees)
+   If any of these cannot be determined, ask the user.
+
+2. **Find a location image.**
+   Search the web for the town/area name + "Greece" to find a representative image (beach, town view, landmark).
+   Download it to `public/images/locations/<location-slug>.jpg`.
+   If no suitable image is found, ask the user to provide one.
+
+3. **Create config file** at `src/domains/locations/config/<location-slug>.ts`:
 
 ```typescript
 import type { LocationConfig } from "../types";
@@ -29,12 +39,13 @@ const myLocation: LocationConfig = {
     longitude: 23.35,
   },
   timezone: "Europe/Athens",
+  image: "/images/locations/<location-slug>.jpg",
 };
 
 export default myLocation;
 ```
 
-2. **Register in `src/domains/locations/registry.ts`**:
+4. **Register in `src/domains/locations/registry.ts`**:
 
 ```typescript
 // Add import at the top (alphabetical order)
@@ -47,19 +58,10 @@ const locations: LocationConfig[] = [
 ];
 ```
 
-3. **Update the location registry test** in `src/domains/locations/__tests__/registry.test.ts`:
+5. **Update the location registry test** in `src/domains/locations/__tests__/registry.test.ts`:
    - Update the expected location count in the "returns all locations" test
-   - Add a test case for the new location slug:
 
-```typescript
-it("gets location by slug", () => {
-  const location = getLocation("<location-slug>");
-  expect(location.name).toBe("<Location Name>");
-  expect(location.coordinates.latitude).toBe(<latitude>);
-});
-```
-
-4. **Run verification**:
+6. **Run verification**:
 
 ```bash
 pnpm test    # verify all tests pass
@@ -68,9 +70,10 @@ pnpm build   # verify no type errors
 
 ### Validation
 
+- [ ] Image exists at `public/images/locations/<location-slug>.jpg`
 - [ ] Config file exports a valid `LocationConfig` object
 - [ ] Location is registered in `registry.ts`
-- [ ] Coordinates are accurate (verify on a map)
+- [ ] Coordinates are accurate (verified via web search)
 - [ ] Timezone is correct for the country
-- [ ] Registry test updated with new count and lookup test
+- [ ] Registry test updated with new count
 - [ ] All tests pass (`pnpm test`)

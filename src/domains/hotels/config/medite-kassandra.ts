@@ -7,7 +7,7 @@ const mediteKassandra: HotelConfig = {
   displayName: "Medite Kassandra Resort",
   baseUrl: "https://meditekassandraresort.reserve-online.net",
   strategyType: "avl",
-  locationSlug: "pefkochori",
+  locationSlug: "nea-moudania",
   image: "/images/hotels/medite-kassandra.jpg",
 };
 

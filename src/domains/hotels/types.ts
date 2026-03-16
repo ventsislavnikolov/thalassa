@@ -9,6 +9,7 @@ export interface HotelConfig {
   image: string;
   description?: string;
   excludeFromYearSearch?: boolean;
+  hidden?: boolean;
 }
 
 export interface RoomType {

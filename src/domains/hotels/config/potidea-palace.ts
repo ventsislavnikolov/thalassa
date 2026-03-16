@@ -4,10 +4,10 @@ const potideaPalace: HotelConfig = {
   id: "potideapalace",
   slug: "potidea-palace",
   name: "Potidea Palace",
-  displayName: "Potidea Palace Hotel",
+  displayName: "Potidea Palace",
   baseUrl: "https://potideapalace.reserve-online.net",
   strategyType: "calendar",
-  locationSlug: "pefkochori",
+  locationSlug: "nea-moudania",
   image: "/images/hotels/potidea-palace.jpg",
 };
 

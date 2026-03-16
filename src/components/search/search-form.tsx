@@ -40,8 +40,13 @@ interface SearchFormProps {
 }
 
 const DEFAULT_HOTEL_IDS = [
+  "paxos",
+  "avatonlr",
   "bluecarpet",
   "cocooning",
+  "dnoruzkass",
+  "whitecoast",
+  "neemamais",
   "myra",
   "portocarras",
   "eaglespalace",

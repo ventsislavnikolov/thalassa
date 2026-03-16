@@ -4,10 +4,10 @@ const eaglesPalace: HotelConfig = {
   id: "eaglespalace",
   slug: "eagles-palace",
   name: "Eagles Palace",
-  displayName: "Eagles Palace, Small Luxury Hotels of the World",
+  displayName: "Eagles Palace",
   baseUrl: "https://eaglesresort.reserve-online.net",
   strategyType: "avl",
-  locationSlug: "pefkochori",
+  locationSlug: "ouranoupolis",
   image: "/images/hotels/eagles-palace.jpg",
 };
 
