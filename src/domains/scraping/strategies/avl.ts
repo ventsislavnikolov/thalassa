@@ -93,20 +93,25 @@ function parseDataPriceAttributes(
   const prices: PriceResult[] = [];
   const roomOptions: RoomType[] = [];
 
-  $actual("tr[data-price]").each((index, elem) => {
+  $actual('tr[data-price][data-status="AVL"]').each((index, elem) => {
     const dataPriceValue = $actual(elem).attr("data-price");
     if (!dataPriceValue) return;
 
     const priceValue = Number.parseFloat(dataPriceValue);
     if (Number.isNaN(priceValue) || !isReasonablePrice(priceValue)) return;
 
-    prices.push(createPriceResult(priceValue, params, hotel));
+    const roomCode = $actual(elem).attr("data-room") || `room-${index + 1}`;
+    const roomBody = $actual(elem).closest("tbody");
+    const roomName =
+      roomBody.find("tr.room td.name").first().text().trim() ||
+      `Room ${index + 1}`;
 
-    const roomName = `Room ${index + 1}`;
-    roomOptions.push({
-      code: roomName.toLowerCase().replace(/\s+/g, "-"),
-      name: roomName,
-    });
+    const result = createPriceResult(priceValue, params, hotel);
+    result.roomCode = roomCode;
+    result.roomType = roomName;
+    prices.push(result);
+
+    roomOptions.push({ code: roomCode, name: roomName });
   });
 
   return { prices, roomOptions };

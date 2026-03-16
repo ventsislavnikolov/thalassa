@@ -52,7 +52,10 @@ export async function scrapeHotels(
 
       for (const price of response.prices) {
         const key = `${price.date}_${price.hotelId}_${price.roomCode ?? "default"}`;
-        priceMap.set(key, price);
+        const existing = priceMap.get(key);
+        if (!existing || price.stayTotal < existing.stayTotal) {
+          priceMap.set(key, price);
+        }
       }
       allRoomOptions.push(...response.roomOptions);
     } catch (error) {
@@ -93,7 +96,10 @@ export async function scrapeHotelsMultiMonth(
 
         for (const price of initialResponse.prices) {
           const key = `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
-          priceMap.set(key, price);
+          const existing = priceMap.get(key);
+          if (!existing || price.stayTotal < existing.stayTotal) {
+            priceMap.set(key, price);
+          }
         }
         allRoomOptions.push(...initialResponse.roomOptions);
       } catch (error) {
