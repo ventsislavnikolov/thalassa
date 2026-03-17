@@ -1,6 +1,5 @@
 "use client";
 
-import { Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -18,11 +17,11 @@ export function GuestSelector({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div className="space-y-2">
-        <Label className="flex items-center gap-2" htmlFor="adults">
-          <Users className="h-4 w-4" />
+        <Label className="text-[#A3B2B5]" htmlFor="adults">
           Adults
         </Label>
         <Input
+          className="border-[#1e2a36] bg-[#111820] text-[#F5F7F8] placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-[#2A4F58]/30"
           id="adults"
           max="8"
           min="1"
@@ -34,8 +33,11 @@ export function GuestSelector({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="children">Children</Label>
+        <Label className="text-[#A3B2B5]" htmlFor="children">
+          Children
+        </Label>
         <Input
+          className="border-[#1e2a36] bg-[#111820] text-[#F5F7F8] placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-[#2A4F58]/30"
           id="children"
           max="6"
           min="0"

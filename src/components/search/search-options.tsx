@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon } from "lucide-react";
+import { CloudSun } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -58,11 +58,12 @@ export function SearchOptions({
   onWeatherLocationChange,
 }: SearchOptionsProps) {
   return (
-    <div className="space-y-4 border-t pt-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <Label className="text-base">Year-long Search</Label>
-          <p className="text-muted-foreground text-sm">
+    <div className="space-y-4">
+      {/* Year search */}
+      <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
+        <div className="space-y-0.5">
+          <Label className="text-[#F5F7F8] text-sm">Year-long Search</Label>
+          <p className="text-[#536365] text-xs">
             {yearSearchHint ??
               "Search for the best prices throughout the entire year"}
           </p>
@@ -76,10 +77,13 @@ export function SearchOptions({
 
       {!isYearSearch && (
         <>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-base">Multi-Month Search</Label>
-              <p className="text-muted-foreground text-sm">
+          {/* Multi-month */}
+          <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
+            <div className="space-y-0.5">
+              <Label className="text-[#F5F7F8] text-sm">
+                Multi-Month Search
+              </Label>
+              <p className="text-[#536365] text-xs">
                 Search across multiple months for the best deals
               </p>
             </div>
@@ -90,13 +94,15 @@ export function SearchOptions({
           </div>
 
           {enableMonthsSearch && (
-            <div className="space-y-2">
-              <Label htmlFor="months">Months to Check</Label>
+            <div className="space-y-2 pl-4">
+              <Label className="text-[#A3B2B5]" htmlFor="months">
+                Months to Check
+              </Label>
               <Select
                 onValueChange={(v) => onMonthsChange(Number.parseInt(v, 10))}
                 value={months.toString()}
               >
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-32 border-[#1e2a36] bg-[#111820] text-[#F5F7F8]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -112,13 +118,14 @@ export function SearchOptions({
         </>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <Label className="flex items-center gap-2 text-base">
-            <Moon className="h-4 w-4" />
+      {/* Weather */}
+      <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
+        <div className="space-y-0.5">
+          <Label className="flex items-center gap-2 text-[#F5F7F8] text-sm">
+            <CloudSun className="h-3.5 w-3.5 text-[#738C8A]" />
             Weather Analysis
           </Label>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-[#536365] text-xs">
             Include weather forecasts and beach conditions for top deals
           </p>
         </div>
@@ -126,13 +133,15 @@ export function SearchOptions({
       </div>
 
       {includeWeather && (
-        <div className="space-y-2">
-          <Label htmlFor="weatherLocation">Weather Location</Label>
+        <div className="space-y-2 pl-4">
+          <Label className="text-[#A3B2B5]" htmlFor="weatherLocation">
+            Weather Location
+          </Label>
           <Select
             onValueChange={onWeatherLocationChange}
             value={weatherLocation}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-[#1e2a36] bg-[#111820] text-[#F5F7F8]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

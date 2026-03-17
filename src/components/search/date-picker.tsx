@@ -19,14 +19,16 @@ interface DatePickerProps {
 export function DatePicker({ date, onSelect }: DatePickerProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor="checkin">Check-in Date</Label>
+      <Label className="text-[#A3B2B5]" htmlFor="checkin">
+        Check-in Date
+      </Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            className="w-full justify-start text-left font-normal"
+            className="w-full justify-start border-[#1e2a36] bg-[#111820] text-left font-normal text-[#F5F7F8] hover:bg-[#161f2a] hover:text-[#F5F7F8]"
             variant="outline"
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="mr-2 h-4 w-4 text-[#738C8A]" />
             {date ? format(date, "PPP") : "Pick a date"}
           </Button>
         </PopoverTrigger>

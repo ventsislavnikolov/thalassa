@@ -1,16 +1,9 @@
 "use client";
 
 import { format } from "date-fns";
-import { Hotel, Search } from "lucide-react";
+import { Calendar, Hotel, Search, Settings2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { HotelConfig } from "@/domains/hotels/types";
@@ -117,24 +110,41 @@ export function SearchForm({
     formData.hotelIds.length === 1 && formData.hotelIds[0] === "portocarras";
 
   return (
-    <Card className="mx-auto w-full max-w-4xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-display">
-          <Hotel className="h-5 w-5" />
-          Thalassa Price Search
-        </CardTitle>
-        <CardDescription>
-          Find the best prices across premium hotels in Halkidiki &amp;
-          Thessaloniki
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+    <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-[#1e2a36] bg-[#0d1117]">
+      {/* Form header */}
+      <div className="border-[#1e2a36] border-b px-6 py-5 sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2E5BB1]/15">
+            <Search className="h-4 w-4 text-[#2E5BB1]" />
+          </div>
+          <div>
+            <h2 className="font-display text-[#F5F7F8] text-lg">
+              Price Search
+            </h2>
+            <p className="text-[#536365] text-xs">
+              Find the best rates across {hotels.length || 15} hotels
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        {/* Section: When & Duration */}
+        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-[#738C8A]" />
+            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+              When
+            </span>
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <DatePicker date={selectedDate} onSelect={handleDateSelect} />
             <div className="space-y-2">
-              <Label htmlFor="nights">Nights</Label>
+              <Label className="text-[#A3B2B5]" htmlFor="nights">
+                Nights
+              </Label>
               <Input
+                className="border-[#1e2a36] bg-[#111820] text-[#F5F7F8] placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-[#2A4F58]/30"
                 id="nights"
                 max="30"
                 min="1"
@@ -149,7 +159,16 @@ export function SearchForm({
               />
             </div>
           </div>
+        </div>
 
+        {/* Section: Guests */}
+        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Users className="h-3.5 w-3.5 text-[#738C8A]" />
+            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+              Guests
+            </span>
+          </div>
           <GuestSelector
             adults={formData.adults}
             childCount={formData.children}
@@ -157,7 +176,19 @@ export function SearchForm({
               setFormData((prev) => ({ ...prev, adults, children: childCount }))
             }
           />
+        </div>
 
+        {/* Section: Hotels */}
+        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Hotel className="h-3.5 w-3.5 text-[#738C8A]" />
+            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+              Hotels
+            </span>
+            <span className="ml-auto rounded-md bg-[#2A4F58]/15 px-2 py-0.5 text-[#738C8A] text-[10px]">
+              {formData.hotelIds.length} selected
+            </span>
+          </div>
           <HotelSelector
             hotels={hotels}
             onChange={(ids) =>
@@ -165,7 +196,16 @@ export function SearchForm({
             }
             selected={formData.hotelIds}
           />
+        </div>
 
+        {/* Section: Options */}
+        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+          <div className="mb-4 flex items-center gap-2">
+            <Settings2 className="h-3.5 w-3.5 text-[#738C8A]" />
+            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+              Options
+            </span>
+          </div>
           <SearchOptions
             enableMonthsSearch={formData.enableMonthsSearch}
             includeWeather={formData.includeWeather}
@@ -203,16 +243,19 @@ export function SearchForm({
                 : undefined
             }
           />
+        </div>
 
+        {/* Submit */}
+        <div className="px-6 py-6 sm:px-8">
           <Button
-            className="w-full"
+            className="w-full bg-[#2E5BB1] text-white hover:bg-[#2E5BB1]/90 disabled:bg-[#293044] disabled:text-[#536365]"
             disabled={loading || formData.hotelIds.length === 0}
             size="lg"
             type="submit"
           >
             {loading ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-primary-foreground border-b-2" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
                 Searching...
               </>
             ) : (
@@ -224,12 +267,12 @@ export function SearchForm({
           </Button>
 
           {formData.hotelIds.length === 0 && (
-            <p className="text-center text-destructive text-sm">
+            <p className="mt-3 text-center text-red-400 text-sm">
               Please select at least one hotel to search
             </p>
           )}
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </div>
   );
 }
