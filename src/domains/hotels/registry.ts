@@ -14,6 +14,7 @@ import neemaMaison from "./config/neema-maison";
 import olympionSunset from "./config/olympion-sunset";
 import portoCarras from "./config/porto-carras";
 import potideaPalace from "./config/potidea-palace";
+import stellaIsland from "./config/stella-island";
 import type { HotelConfig } from "./types";
 
 const hotels: HotelConfig[] = [
@@ -33,6 +34,7 @@ const hotels: HotelConfig[] = [
   excelsior,
   olympionSunset,
   mediteKassandra,
+  stellaIsland,
 ];
 
 export function getAllHotels(): HotelConfig[] {

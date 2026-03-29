@@ -49,6 +49,7 @@ const DEFAULT_HOTEL_IDS = [
   "olympionsunset",
   "potideapalace",
   "meditekassandra",
+  "stellaisla",
 ];
 
 export function SearchForm({
