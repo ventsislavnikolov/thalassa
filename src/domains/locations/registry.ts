@@ -1,3 +1,4 @@
+import analipsi from "./config/analipsi";
 import crete from "./config/crete";
 import fourka from "./config/fourka";
 import hanioti from "./config/hanioti";
@@ -15,6 +16,7 @@ import vourvourou from "./config/vourvourou";
 import type { LocationConfig } from "./types";
 
 const locations: LocationConfig[] = [
+  analipsi,
   crete,
   pefkochori,
   fourka,
