@@ -1,3 +1,4 @@
+import acroSuites from "./config/acro-suites";
 import agaliHotel from "./config/agali-hotel";
 import avaton from "./config/avaton";
 import blueCarpet from "./config/blue-carpet";
@@ -17,6 +18,7 @@ import potideaPalace from "./config/potidea-palace";
 import type { HotelConfig } from "./types";
 
 const hotels: HotelConfig[] = [
+  acroSuites,
   agaliHotel,
   avaton,
   blueCarpet,
