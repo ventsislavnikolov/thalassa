@@ -50,6 +50,9 @@ const DEFAULT_HOTEL_IDS = [
   "potideapalace",
   "meditekassandra",
   "stellaisla",
+  "mountathos",
+  "miraggio",
+  "paralos",
 ];
 
 export function SearchForm({

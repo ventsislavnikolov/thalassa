@@ -10,9 +10,12 @@ import eaglesVillas from "./config/eagles-villas";
 import ekies from "./config/ekies";
 import excelsior from "./config/excelsior";
 import mediteKassandra from "./config/medite-kassandra";
+import miraggioThermalSpa from "./config/miraggio-thermal-spa";
+import mountAthosResort from "./config/mount-athos-resort";
 import myra from "./config/myra";
 import neemaMaison from "./config/neema-maison";
 import olympionSunset from "./config/olympion-sunset";
+import paralosLifestyleBeach from "./config/paralos-lifestyle-beach";
 import portoCarras from "./config/porto-carras";
 import potideaPalace from "./config/potidea-palace";
 import stellaIsland from "./config/stella-island";
@@ -37,6 +40,9 @@ const hotels: HotelConfig[] = [
   olympionSunset,
   mediteKassandra,
   stellaIsland,
+  mountAthosResort,
+  miraggioThermalSpa,
+  paralosLifestyleBeach,
 ];
 
 export function getAllHotels(): HotelConfig[] {
