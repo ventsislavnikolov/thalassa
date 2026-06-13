@@ -52,7 +52,7 @@ function groupDatesByMonth(dates: string[]): Map<string, string[]> {
   const groups = new Map<string, string[]>();
 
   for (const date of dates) {
-    const yearMonth = date.substring(0, 7);
+    const yearMonth = date.slice(0, 7);
     const existing = groups.get(yearMonth);
     if (existing) {
       existing.push(date);

@@ -16,7 +16,7 @@ export function MonthlySummary({ prices }: MonthlySummaryProps) {
   const monthlyData: Record<string, number[]> = {};
 
   for (const price of prices) {
-    const month = price.date.substring(0, 7);
+    const month = price.date.slice(0, 7);
     if (!monthlyData[month]) {
       monthlyData[month] = [];
     }

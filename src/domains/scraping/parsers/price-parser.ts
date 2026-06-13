@@ -27,7 +27,7 @@ export const PriceFormat = {
     if (hasComma && !hasDot) {
       const commaIndex = cleaned.lastIndexOf(",");
       const afterComma = cleaned
-        .substring(commaIndex + 1)
+        .slice(commaIndex + 1)
         .replace(ALL_WHITESPACE, "");
 
       if (afterComma.length === 2 && /^\d{2}$/.test(afterComma)) {
