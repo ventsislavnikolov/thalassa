@@ -15,11 +15,6 @@
         "noUselessSwitchCase": "off",
         "noExcessiveCognitiveComplexity": "off"
       },
-      "nursery": {
-        "noShadow": "off",
-        "noLeakedRender": "off",
-        "noIncrementDecrement": "off"
-      },
       "performance": {
         "useTopLevelRegex": "off",
         "noNamespaceImport": "off"
