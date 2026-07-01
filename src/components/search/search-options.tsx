@@ -29,18 +29,18 @@ const WEATHER_LOCATIONS = getAllLocations()
 const MONTH_OPTIONS = [1, 2, 3, 4, 5, 6, 9, 12];
 
 interface SearchOptionsProps {
-  isYearSearch: boolean;
-  onYearToggle: (checked: boolean) => void;
-  yearSearchDisabled?: boolean;
-  yearSearchHint?: string;
   enableMonthsSearch: boolean;
-  onMonthsToggle: (checked: boolean) => void;
+  includeWeather: boolean;
+  isYearSearch: boolean;
   months: number;
   onMonthsChange: (months: number) => void;
-  includeWeather: boolean;
-  onWeatherToggle: (checked: boolean) => void;
-  weatherLocation: string;
+  onMonthsToggle: (checked: boolean) => void;
   onWeatherLocationChange: (location: string) => void;
+  onWeatherToggle: (checked: boolean) => void;
+  onYearToggle: (checked: boolean) => void;
+  weatherLocation: string;
+  yearSearchDisabled?: boolean;
+  yearSearchHint?: string;
 }
 
 export function SearchOptions({

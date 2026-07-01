@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import type { PriceResult } from "@/domains/scraping/types";
 
 interface ExportButtonProps {
-  prices: PriceResult[];
   filename?: string;
+  prices: PriceResult[];
 }
 
 export function ExportButton({

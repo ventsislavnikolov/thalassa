@@ -1,44 +1,44 @@
 import type { HotelConfig, RoomType } from "@/domains/hotels/types";
 
 export interface SearchParams {
+  adults: number;
   checkin: string; // YYYY-MM-DD
   checkout: string; // YYYY-MM-DD
-  nights: number;
-  adults: number;
   children?: number;
-  infants?: number;
-  room?: string;
   currency?: string; // Default: EUR
+  infants?: number;
+  nights: number;
+  room?: string;
 }
 
 export interface PriceResult {
+  averagePerNight: number;
+  currency: string;
   date: string;
   dayOfWeek: string;
-  averagePerNight: number;
-  stayTotal: number;
-  isLowestRate: boolean;
-  nights: number;
-  currency: string;
   hotelId: string;
   hotelName: string;
-  roomType?: string;
+  isLowestRate: boolean;
+  nights: number;
   roomCode?: string;
+  roomType?: string;
+  stayTotal: number;
 }
 
 export interface ScrapeResponse {
-  prices: PriceResult[];
-  roomOptions: RoomType[];
   hotelId: string;
   hotelName: string;
+  prices: PriceResult[];
+  roomOptions: RoomType[];
 }
 
 export interface ScrapingStrategy {
-  type: "calendar" | "avl";
   fetchPrices(params: {
     hotel: HotelConfig;
     searchParams: SearchParams;
     signal?: AbortSignal;
   }): Promise<ScrapeResponse>;
+  type: "calendar" | "avl";
 }
 
 export class ScrapingError extends Error {

@@ -13,23 +13,23 @@ import { HotelSelector } from "./hotel-selector";
 import { SearchOptions } from "./search-options";
 
 export interface SearchFormParams {
-  checkin: string;
-  nights: number;
   adults: number;
+  checkin: string;
   children: number;
-  room: string;
-  months: number;
+  enableMonthsSearch: boolean;
   hotelIds: string[];
   includeWeather: boolean;
   isYearSearch: boolean;
+  months: number;
+  nights: number;
+  room: string;
   weatherLocation?: string;
-  enableMonthsSearch: boolean;
 }
 
 interface SearchFormProps {
-  onSearch: (params: SearchFormParams) => void;
   defaultHotel?: string;
   loading?: boolean;
+  onSearch: (params: SearchFormParams) => void;
 }
 
 const DEFAULT_HOTEL_IDS = [

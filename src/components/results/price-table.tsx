@@ -32,9 +32,9 @@ import type { PriceResult } from "@/domains/scraping/types";
 type SortKey = "date" | "price" | "hotel";
 
 interface PriceTableProps {
+  onExport?: () => void;
   prices: PriceResult[];
   showHotel?: boolean;
-  onExport?: () => void;
 }
 
 export function PriceTable({

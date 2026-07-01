@@ -34,14 +34,14 @@ const DAILY_ARCHIVE_PARAMS = [
 ].join(",");
 
 interface DailyApiData {
-  time: string[];
-  temperature_2m_min: (number | null)[];
-  temperature_2m_max: (number | null)[];
   precipitation_sum: (number | null)[];
-  windspeed_10m_max: (number | null)[];
   relative_humidity_2m: (number | null)[];
+  temperature_2m_max: (number | null)[];
+  temperature_2m_min: (number | null)[];
+  time: string[];
   uv_index_max?: (number | null)[];
   weathercode: (number | null)[];
+  windspeed_10m_max: (number | null)[];
 }
 
 function getDaysInMonth(year: number, month: number): number {

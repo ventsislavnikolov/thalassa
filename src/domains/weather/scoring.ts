@@ -1,26 +1,26 @@
 interface BeachScoreInput {
-  temperature: number;
   precipitation: number;
-  windSpeed: number;
+  temperature: number;
   uvIndex: number;
+  windSpeed: number;
 }
 
 interface BeachConditionsInput {
-  temperature: number;
   precipitation: number;
+  temperature: number;
   windSpeed: number;
 }
 
 interface RecommendationInput {
+  precipitation: number;
   score: number;
   temperature: number;
-  precipitation: number;
   windSpeed: number;
 }
 
 interface SeaTemperatureInput {
-  date: string;
   airTemp: number;
+  date: string;
 }
 
 export function calculateBeachScore({

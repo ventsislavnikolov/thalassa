@@ -7,8 +7,8 @@ import type { HotelConfig } from "@/domains/hotels/types";
 
 interface HotelSelectorProps {
   hotels: HotelConfig[];
-  selected: string[];
   onChange: (ids: string[]) => void;
+  selected: string[];
 }
 
 // Hotels temporarily hidden from search (keep config/registry intact for later)

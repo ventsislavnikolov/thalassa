@@ -6,9 +6,9 @@ import { CalendarStrategy } from "./strategies/calendar";
 import type { PriceResult, ScrapingStrategy, SearchParams } from "./types";
 
 export interface ScrapeAllResult {
+  errors: { hotel: string; error: string }[];
   results: PriceResult[];
   roomOptions: RoomType[];
-  errors: { hotel: string; error: string }[];
 }
 
 const calendarStrategy = new CalendarStrategy();

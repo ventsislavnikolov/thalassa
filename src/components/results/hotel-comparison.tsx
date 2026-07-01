@@ -13,10 +13,10 @@ interface HotelComparisonProps {
 }
 
 interface HotelStats {
-  name: string;
-  lowest: number;
   average: number;
   count: number;
+  lowest: number;
+  name: string;
   savings: number;
 }
 

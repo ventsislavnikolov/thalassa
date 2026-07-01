@@ -1,6 +1,6 @@
 export interface MonthlyClimate {
-  minTemp: number;
   maxTemp: number;
+  minTemp: number;
   precipitation: number;
   windSpeed: number;
 }

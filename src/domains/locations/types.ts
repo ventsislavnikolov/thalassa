@@ -4,11 +4,11 @@ export interface Coordinates {
 }
 
 export interface LocationConfig {
-  slug: string;
+  coordinates: Coordinates;
+  country: string;
+  image: string;
   name: string;
   region: string;
-  country: string;
-  coordinates: Coordinates;
+  slug: string;
   timezone: string;
-  image: string;
 }

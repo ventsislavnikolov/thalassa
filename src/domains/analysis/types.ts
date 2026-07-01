@@ -2,12 +2,12 @@ import type { PriceResult } from "@/domains/scraping/types";
 import type { WeatherData } from "@/domains/weather/types";
 
 export interface CombinedAnalysis {
+  overallRank: number;
   priceInfo: PriceResult;
-  weatherData: WeatherData;
+  priceRank: number;
+  recommendation: string;
   totalScore: number;
   valueScore: number;
-  recommendation: string;
-  priceRank: number;
+  weatherData: WeatherData;
   weatherRank: number;
-  overallRank: number;
 }

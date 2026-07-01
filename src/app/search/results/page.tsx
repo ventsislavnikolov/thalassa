@@ -18,14 +18,14 @@ import { WeatherGrid } from "@/components/weather/weather-grid";
 import { WeatherSummary } from "@/components/weather/weather-summary";
 
 interface ParsedParams {
-  checkin: string;
-  nights: number;
   adults: number;
+  checkin: string;
   children: number;
   hotelSlugs: string[];
-  searchMode: string;
-  months?: number;
   includeWeather: boolean;
+  months?: number;
+  nights: number;
+  searchMode: string;
 }
 
 function parseSearchParams(params: URLSearchParams): ParsedParams | null {
