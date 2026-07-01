@@ -29,6 +29,12 @@ export function Header() {
           >
             Search
           </Link>
+          <Link
+            className="text-[#536365] text-sm transition-colors hover:text-[#A3B2B5]"
+            href="/watchlist"
+          >
+            Watchlist
+          </Link>
         </nav>
       </div>
     </header>

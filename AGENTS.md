@@ -4,7 +4,7 @@ This file provides guidance to AI agents (Claude Code, Cursor, etc.) when workin
 
 ## Project Overview
 
-This is a modern web application for finding the best hotel prices across 10 hotels in Greece (Halkidiki and Kavala regions). Built with Next.js 15, TypeScript, and shadcn/ui, it uses a **modular domain architecture** with 5 core domains: hotels, locations, scraping, weather, and analysis. The application scrapes hotel prices from reserve-online.net, integrates weather forecasting, and provides combined value recommendations.
+This is a modern web application for finding the best hotel prices across 10 hotels in Greece (Halkidiki and Kavala regions). Built with Next.js 15, TypeScript, and shadcn/ui, it uses a **modular domain architecture** with 6 core domains: hotels, locations, scraping, weather, analysis, and tracking. The application scrapes hotel prices from reserve-online.net, integrates weather forecasting, and provides combined value recommendations.
 
 ## Key Commands
 
@@ -65,6 +65,15 @@ Each domain is self-contained with types, configs, logic, and tests:
    - `combined-scorer.ts` - Value scoring, combined score (60% weather / 40% price), deal analysis
    - `__tests__/` - Combined scorer tests (20 cases)
 
+6. **Tracking** (`src/domains/tracking/`)
+   - `types.ts` - `WatchlistEntry`, `PriceSnapshot`, input/value interfaces
+   - `db.ts` - Lazy Neon Postgres client (`getSql()`, reads `DATABASE_URL`)
+   - `queries.ts` - Query layer: watchlist CRUD + snapshot read/insert
+   - `delta.ts` - `shouldRecordSnapshot()` delta-storage rule (pure)
+   - `selection.ts` - Map scrape results to a stored snapshot (pure)
+   - `schema.sql` - `watchlist` + `price_snapshots` tables and index
+   - `__tests__/` - Delta (6 cases) + selection (5 cases) tests
+
 ### UI Components (`src/components/`)
 
 Components are organized by feature area, using shadcn/ui primitives:
@@ -82,6 +91,7 @@ Components are organized by feature area, using shadcn/ui primitives:
 - `hotels/page.tsx` - Hotels listing page
 - `hotels/[slug]/page.tsx` - Hotel detail pages
 - `search/page.tsx` - Search form and results page
+- `watchlist/page.tsx` - Manage tracked stays (add/remove/pause combos)
 - `layout.tsx` - Root layout with Mediterranean theme
 
 ### API Routes (`src/app/api/`)
@@ -90,6 +100,18 @@ Components are organized by feature area, using shadcn/ui primitives:
 - `GET /api/hotels` - All hotel configs
 - `GET /api/hotels/[slug]` - Single hotel config
 - `GET /api/weather` - Weather data for a location and date range
+- `GET /api/watchlist` - List tracked stays; `POST` to add (Zod-validated)
+- `DELETE /api/watchlist/[id]` - Remove a tracked stay; `PATCH` toggles `active`
+- `GET /api/cron/scrape` - Scheduled scraper (Bearer `CRON_SECRET`); delta-stores
+  a snapshot per active watchlist row only when the price changes
+
+### Environment Variables
+
+- `DATABASE_URL` - Neon Postgres connection string (tracking domain)
+- `CRON_SECRET` - Bearer token guarding `GET /api/cron/scrape`
+
+See `.env.example`. The external cron (cron-job.org, `0 */2 * * *`) calls the
+scrape route every 2 hours.
 
 ### Key Features
 
@@ -141,16 +163,19 @@ Each domain includes a `skill.md` file with step-by-step instructions for common
 - [`src/domains/scraping/skill.md`](src/domains/scraping/skill.md) - Add a new scraping strategy
 - [`src/domains/weather/skill.md`](src/domains/weather/skill.md) - Add a weather provider or modify scoring
 - [`src/domains/analysis/skill.md`](src/domains/analysis/skill.md) - Modify analysis weights
+- [`src/domains/tracking/skill.md`](src/domains/tracking/skill.md) - Schema, queries, delta rule, cron wiring
 - [`src/components/skill.md`](src/components/skill.md) - Add a UI component
 
 ## Testing
 
-99 tests across 5 test files using Vitest:
+111 tests across 7 test files using Vitest:
 
 - `src/domains/hotels/__tests__/registry.test.ts` (6 tests)
 - `src/domains/locations/__tests__/registry.test.ts` (3 tests)
 - `src/domains/scraping/__tests__/price-parser.test.ts` (31 tests)
 - `src/domains/weather/__tests__/scoring.test.ts` (39 tests)
 - `src/domains/analysis/__tests__/combined-scorer.test.ts` (20 tests)
+- `src/domains/tracking/__tests__/delta.test.ts` (6 tests)
+- `src/domains/tracking/__tests__/selection.test.ts` (5 tests)
 
 Always run `pnpm test` after making changes to verify nothing is broken.
