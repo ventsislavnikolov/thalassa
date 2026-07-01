@@ -4,7 +4,7 @@ import { getAllLocations, getLocation } from "../registry";
 describe("locations registry", () => {
   it("returns all locations", () => {
     const locations = getAllLocations();
-    expect(locations.length).toBe(18);
+    expect(locations.length).toBe(20);
     expect(locations.map((l) => l.slug)).toContain("pefkochori");
   });
 

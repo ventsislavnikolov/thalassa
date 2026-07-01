@@ -3,8 +3,10 @@ import analipsi from "./config/analipsi";
 import crete from "./config/crete";
 import fourka from "./config/fourka";
 import hanioti from "./config/hanioti";
+import hersonissos from "./config/hersonissos";
 import ierissos from "./config/ierissos";
 import kavala from "./config/kavala";
+import lachania from "./config/lachania";
 import milos from "./config/milos";
 import neaMoudania from "./config/nea-moudania";
 import neaRoda from "./config/nea-roda";
@@ -25,7 +27,9 @@ const locations: LocationConfig[] = [
   pefkochori,
   fourka,
   hanioti,
+  hersonissos,
   ierissos,
+  lachania,
   neaMoudania,
   kavala,
   milos,

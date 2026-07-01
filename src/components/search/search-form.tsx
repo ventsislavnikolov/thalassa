@@ -53,6 +53,9 @@ const DEFAULT_HOTEL_IDS = [
   "mountathos",
   "miraggio",
   "paralos",
+  "atriumprestige",
+  "nanagolden",
+  "makedoniapalace",
 ];
 
 export function SearchForm({
