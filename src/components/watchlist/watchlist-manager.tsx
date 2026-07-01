@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import type { HotelConfig } from "@/domains/hotels/types";
 import type { WatchlistEntry } from "@/domains/tracking/types";
+import { WatchlistItem } from "./watchlist-item";
 
 interface FormState {
   adults: number;
@@ -245,42 +245,13 @@ export function WatchlistManager() {
           </p>
         ) : null}
         {entries.map((entry) => (
-          <div
-            className="flex flex-wrap items-center justify-between gap-4 border-[#1e2a36] border-b px-5 py-4 last:border-b-0"
+          <WatchlistItem
+            entry={entry}
+            hotelName={hotelName(entry.hotelSlug)}
             key={entry.id}
-          >
-            <div className="min-w-0">
-              <p className="font-medium text-[#F5F7F8]">
-                {hotelName(entry.hotelSlug)}
-              </p>
-              <p className="text-[#738C8A] text-sm">
-                {entry.checkinDate} · {entry.nights} night
-                {entry.nights === 1 ? "" : "s"} · {entry.adults} adult
-                {entry.adults === 1 ? "" : "s"}
-                {entry.children > 0 ? ` · ${entry.children} children` : ""}
-                {entry.roomType ? ` · ${entry.roomType}` : ""}
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={entry.active}
-                  onCheckedChange={() => handleToggle(entry)}
-                />
-                <span className="text-[#738C8A] text-xs">
-                  {entry.active ? "Active" : "Paused"}
-                </span>
-              </div>
-              <Button
-                aria-label="Remove"
-                onClick={() => handleDelete(entry.id)}
-                size="icon"
-                variant="ghost"
-              >
-                <Trash2 className="size-4 text-[#738C8A]" />
-              </Button>
-            </div>
-          </div>
+            onDelete={handleDelete}
+            onToggle={handleToggle}
+          />
         ))}
       </div>
     </div>

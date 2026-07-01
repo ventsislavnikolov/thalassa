@@ -71,8 +71,9 @@ Each domain is self-contained with types, configs, logic, and tests:
    - `queries.ts` - Query layer: watchlist CRUD + snapshot read/insert
    - `delta.ts` - `shouldRecordSnapshot()` delta-storage rule (pure)
    - `selection.ts` - Map scrape results to a stored snapshot (pure)
+   - `history.ts` - `computePriceTrend()` current-vs-history stats (pure)
    - `schema.sql` - `watchlist` + `price_snapshots` tables and index
-   - `__tests__/` - Delta (6 cases) + selection (5 cases) tests
+   - `__tests__/` - Delta (6) + selection (5) + history (6) tests
 
 ### UI Components (`src/components/`)
 
@@ -83,6 +84,7 @@ Components are organized by feature area, using shadcn/ui primitives:
 - `search/` - Hotel selector, date picker, guest selector, search options, search form
 - `results/` - Price stats, price table, hotel comparison, monthly summary, export button
 - `weather/` - Beach score, weather card, weather grid, weather summary
+- `watchlist/` - Watchlist manager, item row, price history chart + trend stats
 - `ui/` - shadcn/ui primitives (button, card, input, select, calendar, etc.)
 
 ### Pages (`src/app/`)
@@ -102,6 +104,7 @@ Components are organized by feature area, using shadcn/ui primitives:
 - `GET /api/weather` - Weather data for a location and date range
 - `GET /api/watchlist` - List tracked stays; `POST` to add (Zod-validated)
 - `DELETE /api/watchlist/[id]` - Remove a tracked stay; `PATCH` toggles `active`
+- `GET /api/watchlist/[id]/history` - Snapshots + computed price trend for a stay
 - `GET /api/cron/scrape` - Scheduled scraper (Bearer `CRON_SECRET`); delta-stores
   a snapshot per active watchlist row only when the price changes
 
@@ -168,7 +171,7 @@ Each domain includes a `skill.md` file with step-by-step instructions for common
 
 ## Testing
 
-111 tests across 7 test files using Vitest:
+117 tests across 8 test files using Vitest:
 
 - `src/domains/hotels/__tests__/registry.test.ts` (6 tests)
 - `src/domains/locations/__tests__/registry.test.ts` (3 tests)
@@ -177,5 +180,6 @@ Each domain includes a `skill.md` file with step-by-step instructions for common
 - `src/domains/analysis/__tests__/combined-scorer.test.ts` (20 tests)
 - `src/domains/tracking/__tests__/delta.test.ts` (6 tests)
 - `src/domains/tracking/__tests__/selection.test.ts` (5 tests)
+- `src/domains/tracking/__tests__/history.test.ts` (6 tests)
 
 Always run `pnpm test` after making changes to verify nothing is broken.
