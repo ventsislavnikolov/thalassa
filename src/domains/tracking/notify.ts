@@ -1,3 +1,4 @@
+import { getHotel } from "@/domains/hotels/registry";
 import type { DealAlertResult } from "./alerts";
 import type { NewPriceSnapshot, WatchlistEntry } from "./types";
 
@@ -17,11 +18,25 @@ function getConfig(): ResendConfig | null {
   return { apiKey, from, to };
 }
 
+function hotelLabel(entry: WatchlistEntry): string {
+  try {
+    return getHotel(entry.hotelSlug).displayName;
+  } catch {
+    return entry.hotelSlug;
+  }
+}
+
+function money(snapshot: NewPriceSnapshot): string {
+  const amount =
+    snapshot.price === null ? "unavailable" : snapshot.price.toLocaleString();
+  return `${snapshot.currency} ${amount}`;
+}
+
 function buildSubject(
   entry: WatchlistEntry,
   snapshot: NewPriceSnapshot
 ): string {
-  return `Deal alert: ${entry.hotelSlug} → ${snapshot.currency} ${snapshot.price} for ${entry.checkinDate}`;
+  return `Deal alert: ${hotelLabel(entry)} → ${money(snapshot)} for ${entry.checkinDate}`;
 }
 
 function buildBody(
@@ -36,7 +51,7 @@ function buildBody(
   }${entry.roomType ? `, ${entry.roomType}` : ""}`;
 
   return [
-    `${entry.hotelSlug} is now ${snapshot.currency} ${snapshot.price}.`,
+    `${hotelLabel(entry)} is now ${money(snapshot)}.`,
     "",
     `Stay: ${stay}`,
     "",

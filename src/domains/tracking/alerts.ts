@@ -34,7 +34,9 @@ export function evaluateDealAlert(input: DealAlertInput): DealAlertResult {
     current <= targetPrice &&
     (previous === null || previous > targetPrice);
   if (hitTarget) {
-    reasons.push(`Price ${current} is at or below your target ${targetPrice}`);
+    reasons.push(
+      `Price ${current.toLocaleString()} is at or below your target ${targetPrice?.toLocaleString()}`
+    );
   }
 
   const dropPct =
@@ -46,7 +48,7 @@ export function evaluateDealAlert(input: DealAlertInput): DealAlertResult {
     alertPctDrop !== null && dropPct !== null && dropPct >= alertPctDrop;
   if (hitPctDrop && dropPct !== null) {
     reasons.push(
-      `Price dropped ${dropPct.toFixed(1)}% (from ${previous} to ${current}), at or beyond your ${alertPctDrop}% threshold`
+      `Price dropped ${dropPct.toFixed(1)}% (from ${previous?.toLocaleString()} to ${current.toLocaleString()}), at or beyond your ${alertPctDrop}% threshold`
     );
   }
 
