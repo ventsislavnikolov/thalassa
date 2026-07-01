@@ -18,11 +18,13 @@ import { WatchlistItem } from "./watchlist-item";
 
 interface FormState {
   adults: number;
+  alertPctDrop: string;
   checkinDate: string;
   children: number;
   hotelSlug: string;
   nights: number;
   roomType: string;
+  targetPrice: string;
 }
 
 const INITIAL_FORM: FormState = {
@@ -32,7 +34,18 @@ const INITIAL_FORM: FormState = {
   adults: 2,
   children: 0,
   roomType: "",
+  targetPrice: "",
+  alertPctDrop: "",
 };
+
+function toNumberOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") {
+    return null;
+  }
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : null;
+}
 
 export function WatchlistManager() {
   const [hotels, setHotels] = useState<HotelConfig[]>([]);
@@ -77,6 +90,8 @@ export function WatchlistManager() {
           adults: form.adults,
           children: form.children,
           roomType: form.roomType.trim() || null,
+          targetPrice: toNumberOrNull(form.targetPrice),
+          alertPctDrop: toNumberOrNull(form.alertPctDrop),
         }),
       });
       if (!res.ok) {
@@ -109,6 +124,10 @@ export function WatchlistManager() {
         prev.map((e) => (e.id === entry.id ? { ...e, active: !active } : e))
       );
     });
+  }
+
+  function handleUpdate(updated: WatchlistEntry) {
+    setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
   }
 
   async function handleDelete(id: number) {
@@ -223,6 +242,39 @@ export function WatchlistManager() {
           />
         </div>
 
+        <div className="space-y-1.5">
+          <Label className="text-[#A3B2B5]" htmlFor="targetPrice">
+            Target price <span className="text-[#536365]">(alert, €)</span>
+          </Label>
+          <Input
+            id="targetPrice"
+            min={0}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, targetPrice: e.target.value }))
+            }
+            placeholder="e.g. 1800"
+            type="number"
+            value={form.targetPrice}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-[#A3B2B5]" htmlFor="alertPctDrop">
+            Alert on % drop <span className="text-[#536365]">(optional)</span>
+          </Label>
+          <Input
+            id="alertPctDrop"
+            max={90}
+            min={1}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, alertPctDrop: e.target.value }))
+            }
+            placeholder="e.g. 10"
+            type="number"
+            value={form.alertPctDrop}
+          />
+        </div>
+
         <div className="flex items-end gap-3 sm:col-span-2 lg:col-span-3">
           <Button disabled={submitting} type="submit">
             {submitting ? (
@@ -251,6 +303,7 @@ export function WatchlistManager() {
             key={entry.id}
             onDelete={handleDelete}
             onToggle={handleToggle}
+            onUpdate={handleUpdate}
           />
         ))}
       </div>

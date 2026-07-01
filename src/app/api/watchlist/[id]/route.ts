@@ -3,11 +3,25 @@ import { z } from "zod/v4";
 import {
   deleteWatchlistEntry,
   setWatchlistActive,
+  updateWatchlistAlerts,
 } from "@/domains/tracking/queries";
+import type { WatchlistEntry } from "@/domains/tracking/types";
 
 export const dynamic = "force-dynamic";
 
-const patchSchema = z.object({ active: z.boolean() });
+const patchSchema = z
+  .object({
+    active: z.boolean().optional(),
+    targetPrice: z.number().positive().max(1_000_000).nullable().optional(),
+    alertPctDrop: z.number().int().min(1).max(90).nullable().optional(),
+  })
+  .refine(
+    (data) =>
+      data.active !== undefined ||
+      data.targetPrice !== undefined ||
+      data.alertPctDrop !== undefined,
+    { message: "No fields to update" }
+  );
 
 function parseId(raw: string): number | null {
   const id = Number(raw);
@@ -47,7 +61,20 @@ export async function PATCH(
     );
   }
 
-  const entry = await setWatchlistActive(id, parsed.data.active);
+  const data = parsed.data;
+  let entry: WatchlistEntry | null = null;
+
+  if (data.active !== undefined) {
+    entry = await setWatchlistActive(id, data.active);
+  }
+  if (data.targetPrice !== undefined || data.alertPctDrop !== undefined) {
+    entry = await updateWatchlistAlerts(
+      id,
+      data.targetPrice ?? null,
+      data.alertPctDrop ?? null
+    );
+  }
+
   if (!entry) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

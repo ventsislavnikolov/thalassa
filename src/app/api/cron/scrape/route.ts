@@ -3,22 +3,64 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getHotel } from "@/domains/hotels/registry";
 import { scrapeHotels } from "@/domains/scraping/engine";
 import type { SearchParams } from "@/domains/scraping/types";
+import { evaluateDealAlert } from "@/domains/tracking/alerts";
 import { shouldRecordSnapshot } from "@/domains/tracking/delta";
+import { sendDealAlert } from "@/domains/tracking/notify";
 import {
   getActiveWatchlist,
   getLatestSnapshot,
   insertSnapshot,
+  markAlerted,
 } from "@/domains/tracking/queries";
 import { selectResultForEntry, toSnapshot } from "@/domains/tracking/selection";
-import type { WatchlistEntry } from "@/domains/tracking/types";
+import type {
+  NewPriceSnapshot,
+  WatchlistEntry,
+} from "@/domains/tracking/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 interface CronSummary {
+  alerted: number;
   changed: number;
   checked: number;
   errors: { watchlistId: number; error: string }[];
+}
+
+async function maybeAlert(
+  entry: WatchlistEntry,
+  snapshot: NewPriceSnapshot,
+  previous: number | null,
+  summary: CronSummary
+): Promise<void> {
+  if (snapshot.price === null || !snapshot.available) {
+    return;
+  }
+  if (entry.targetPrice === null && entry.alertPctDrop === null) {
+    return;
+  }
+
+  const result = evaluateDealAlert({
+    current: snapshot.price,
+    previous,
+    targetPrice: entry.targetPrice,
+    alertPctDrop: entry.alertPctDrop,
+  });
+  if (!result.fired) {
+    return;
+  }
+
+  const status = await sendDealAlert(entry, snapshot, result);
+  if (status === "sent") {
+    await markAlerted(entry.id);
+    summary.alerted += 1;
+  } else if (status === "failed") {
+    summary.errors.push({
+      watchlistId: entry.id,
+      error: "Deal alert fired but the email failed to send",
+    });
+  }
 }
 
 function isAuthorized(request: NextRequest): boolean {
@@ -58,6 +100,8 @@ async function processEntry(
   if (shouldRecordSnapshot(latest, snapshot)) {
     await insertSnapshot(entry.id, snapshot);
     summary.changed += 1;
+    const previous = latest?.available ? latest.price : null;
+    await maybeAlert(entry, snapshot, previous, summary);
   }
 }
 
@@ -67,7 +111,12 @@ export async function GET(request: NextRequest) {
   }
 
   const entries = await getActiveWatchlist();
-  const summary: CronSummary = { checked: 0, changed: 0, errors: [] };
+  const summary: CronSummary = {
+    checked: 0,
+    changed: 0,
+    alerted: 0,
+    errors: [],
+  };
 
   for (const entry of entries) {
     summary.checked += 1;

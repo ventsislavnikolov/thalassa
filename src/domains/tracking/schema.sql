@@ -3,15 +3,19 @@
 -- the two tables; re-runnable (IF NOT EXISTS) for fresh environments.
 
 CREATE TABLE IF NOT EXISTS watchlist (
-  id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  hotel_slug   TEXT        NOT NULL,
-  checkin_date DATE        NOT NULL,
-  nights       INTEGER     NOT NULL CHECK (nights >= 1),
-  adults       INTEGER     NOT NULL CHECK (adults >= 1),
-  children     INTEGER     NOT NULL DEFAULT 0 CHECK (children >= 0),
-  room_type    TEXT,
-  active       BOOLEAN     NOT NULL DEFAULT TRUE,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  hotel_slug     TEXT        NOT NULL,
+  checkin_date   DATE        NOT NULL,
+  nights         INTEGER     NOT NULL CHECK (nights >= 1),
+  adults         INTEGER     NOT NULL CHECK (adults >= 1),
+  children       INTEGER     NOT NULL DEFAULT 0 CHECK (children >= 0),
+  room_type      TEXT,
+  active         BOOLEAN     NOT NULL DEFAULT TRUE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Deal-alert config (nullable = disabled):
+  target_price   NUMERIC(10,2),
+  alert_pct_drop INTEGER     CHECK (alert_pct_drop IS NULL OR (alert_pct_drop BETWEEN 1 AND 90)),
+  alerted_at     TIMESTAMPTZ,
   UNIQUE (hotel_slug, checkin_date, nights, adults, children, room_type)
 );
 

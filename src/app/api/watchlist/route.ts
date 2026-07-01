@@ -12,6 +12,8 @@ const createSchema = z.object({
   adults: z.number().int().min(1).max(8),
   children: z.number().int().min(0).max(6).default(0),
   roomType: z.string().min(1).nullish(),
+  targetPrice: z.number().positive().max(1_000_000).nullish(),
+  alertPctDrop: z.number().int().min(1).max(90).nullish(),
 });
 
 export async function GET() {
@@ -49,6 +51,8 @@ export async function POST(request: NextRequest) {
     adults: data.adults,
     children: data.children,
     roomType: data.roomType ?? null,
+    targetPrice: data.targetPrice ?? null,
+    alertPctDrop: data.alertPctDrop ?? null,
   });
 
   return NextResponse.json(entry, { status: 201 });

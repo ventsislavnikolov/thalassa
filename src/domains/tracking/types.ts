@@ -1,6 +1,8 @@
 export interface WatchlistEntry {
   active: boolean;
   adults: number;
+  alertedAt: string | null;
+  alertPctDrop: number | null;
   checkinDate: string; // YYYY-MM-DD
   children: number;
   createdAt: string;
@@ -8,15 +10,24 @@ export interface WatchlistEntry {
   id: number;
   nights: number;
   roomType: string | null;
+  targetPrice: number | null;
 }
 
 export interface NewWatchlistEntry {
   adults: number;
+  alertPctDrop?: number | null;
   checkinDate: string; // YYYY-MM-DD
   children: number;
   hotelSlug: string;
   nights: number;
   roomType?: string | null;
+  targetPrice?: number | null;
+}
+
+/** Editable deal-alert thresholds for a watchlist entry. */
+export interface AlertConfig {
+  alertPctDrop: number | null;
+  targetPrice: number | null;
 }
 
 export interface PriceSnapshot {

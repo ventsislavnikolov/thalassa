@@ -72,8 +72,10 @@ Each domain is self-contained with types, configs, logic, and tests:
    - `delta.ts` - `shouldRecordSnapshot()` delta-storage rule (pure)
    - `selection.ts` - Map scrape results to a stored snapshot (pure)
    - `history.ts` - `computePriceTrend()` current-vs-history stats (pure)
-   - `schema.sql` - `watchlist` + `price_snapshots` tables and index
-   - `__tests__/` - Delta (6) + selection (5) + history (6) tests
+   - `alerts.ts` - `evaluateDealAlert()` edge-triggered threshold check (pure)
+   - `notify.ts` - Send deal-alert emails via the Resend REST API
+   - `schema.sql` - `watchlist` (+ alert cols) + `price_snapshots` tables/index
+   - `__tests__/` - Delta (6) + selection (5) + history (6) + alerts (8) tests
 
 ### UI Components (`src/components/`)
 
@@ -104,14 +106,19 @@ Components are organized by feature area, using shadcn/ui primitives:
 - `GET /api/weather` - Weather data for a location and date range
 - `GET /api/watchlist` - List tracked stays; `POST` to add (Zod-validated)
 - `DELETE /api/watchlist/[id]` - Remove a tracked stay; `PATCH` toggles `active`
+  and updates deal-alert thresholds (`targetPrice`, `alertPctDrop`)
 - `GET /api/watchlist/[id]/history` - Snapshots + computed price trend for a stay
 - `GET /api/cron/scrape` - Scheduled scraper (Bearer `CRON_SECRET`); delta-stores
-  a snapshot per active watchlist row only when the price changes
+  a snapshot per active watchlist row only when the price changes, and emails a
+  deal alert when a price crosses the entry's target/`%`-drop threshold. Returns
+  `{ checked, changed, alerted, errors }`
 
 ### Environment Variables
 
 - `DATABASE_URL` - Neon Postgres connection string (tracking domain)
 - `CRON_SECRET` - Bearer token guarding `GET /api/cron/scrape`
+- `RESEND_API_KEY`, `ALERT_EMAIL_FROM`, `ALERT_EMAIL_TO` - deal-alert emails
+  (optional; alerts are disabled when unset, prices still recorded)
 
 See `.env.example`. The external cron (cron-job.org, `0 */2 * * *`) calls the
 scrape route every 2 hours.
@@ -171,7 +178,7 @@ Each domain includes a `skill.md` file with step-by-step instructions for common
 
 ## Testing
 
-117 tests across 8 test files using Vitest:
+125 tests across 9 test files using Vitest:
 
 - `src/domains/hotels/__tests__/registry.test.ts` (6 tests)
 - `src/domains/locations/__tests__/registry.test.ts` (3 tests)
@@ -181,5 +188,6 @@ Each domain includes a `skill.md` file with step-by-step instructions for common
 - `src/domains/tracking/__tests__/delta.test.ts` (6 tests)
 - `src/domains/tracking/__tests__/selection.test.ts` (5 tests)
 - `src/domains/tracking/__tests__/history.test.ts` (6 tests)
+- `src/domains/tracking/__tests__/alerts.test.ts` (8 tests)
 
 Always run `pnpm test` after making changes to verify nothing is broken.

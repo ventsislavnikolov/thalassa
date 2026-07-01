@@ -10,6 +10,8 @@ import type {
 type WatchlistRow = {
   active: boolean;
   adults: number;
+  alert_pct_drop: number | null;
+  alerted_at: string | null;
   checkin_date: string;
   children: number;
   created_at: string;
@@ -17,6 +19,7 @@ type WatchlistRow = {
   id: number | string;
   nights: number;
   room_type: string | null;
+  target_price: string | null;
 };
 
 type SnapshotRow = {
@@ -42,6 +45,10 @@ function mapWatchlist(row: WatchlistRow): WatchlistEntry {
     roomType: row.room_type,
     active: row.active,
     createdAt: row.created_at,
+    targetPrice: row.target_price === null ? null : Number(row.target_price),
+    alertPctDrop:
+      row.alert_pct_drop === null ? null : Number(row.alert_pct_drop),
+    alertedAt: row.alerted_at,
   };
 }
 
@@ -60,7 +67,8 @@ export async function getAllWatchlist(): Promise<WatchlistEntry[]> {
   const sql = getSql();
   const rows = (await sql`
     SELECT id, hotel_slug, checkin_date::text, nights, adults, children,
-           room_type, active, created_at::text
+           room_type, active, created_at::text, target_price::text,
+           alert_pct_drop, alerted_at::text
     FROM watchlist ORDER BY created_at DESC
   `) as WatchlistRow[];
   return rows.map(mapWatchlist);
@@ -70,7 +78,8 @@ export async function getActiveWatchlist(): Promise<WatchlistEntry[]> {
   const sql = getSql();
   const rows = (await sql`
     SELECT id, hotel_slug, checkin_date::text, nights, adults, children,
-           room_type, active, created_at::text
+           room_type, active, created_at::text, target_price::text,
+           alert_pct_drop, alerted_at::text
     FROM watchlist WHERE active = TRUE ORDER BY created_at DESC
   `) as WatchlistRow[];
   return rows.map(mapWatchlist);
@@ -82,14 +91,19 @@ export async function addWatchlistEntry(
   const sql = getSql();
   const rows = (await sql`
     INSERT INTO watchlist
-      (hotel_slug, checkin_date, nights, adults, children, room_type)
+      (hotel_slug, checkin_date, nights, adults, children, room_type,
+       target_price, alert_pct_drop)
     VALUES
       (${entry.hotelSlug}, ${entry.checkinDate}, ${entry.nights},
-       ${entry.adults}, ${entry.children}, ${entry.roomType ?? null})
+       ${entry.adults}, ${entry.children}, ${entry.roomType ?? null},
+       ${entry.targetPrice ?? null}, ${entry.alertPctDrop ?? null})
     ON CONFLICT (hotel_slug, checkin_date, nights, adults, children, room_type)
-      DO UPDATE SET active = TRUE
+      DO UPDATE SET active = TRUE,
+                    target_price = EXCLUDED.target_price,
+                    alert_pct_drop = EXCLUDED.alert_pct_drop
     RETURNING id, hotel_slug, checkin_date::text, nights, adults, children,
-              room_type, active, created_at::text
+              room_type, active, created_at::text, target_price::text,
+              alert_pct_drop, alerted_at::text
   `) as WatchlistRow[];
   return mapWatchlist(rows[0]);
 }
@@ -110,9 +124,32 @@ export async function setWatchlistActive(
   const rows = (await sql`
     UPDATE watchlist SET active = ${active} WHERE id = ${id}
     RETURNING id, hotel_slug, checkin_date::text, nights, adults, children,
-              room_type, active, created_at::text
+              room_type, active, created_at::text, target_price::text,
+              alert_pct_drop, alerted_at::text
   `) as WatchlistRow[];
   return rows.length > 0 ? mapWatchlist(rows[0]) : null;
+}
+
+export async function updateWatchlistAlerts(
+  id: number,
+  targetPrice: number | null,
+  alertPctDrop: number | null
+): Promise<WatchlistEntry | null> {
+  const sql = getSql();
+  const rows = (await sql`
+    UPDATE watchlist
+    SET target_price = ${targetPrice}, alert_pct_drop = ${alertPctDrop}
+    WHERE id = ${id}
+    RETURNING id, hotel_slug, checkin_date::text, nights, adults, children,
+              room_type, active, created_at::text, target_price::text,
+              alert_pct_drop, alerted_at::text
+  `) as WatchlistRow[];
+  return rows.length > 0 ? mapWatchlist(rows[0]) : null;
+}
+
+export async function markAlerted(id: number): Promise<void> {
+  const sql = getSql();
+  await sql`UPDATE watchlist SET alerted_at = now() WHERE id = ${id}`;
 }
 
 export async function getLatestSnapshot(

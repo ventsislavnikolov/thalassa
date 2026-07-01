@@ -11,6 +11,9 @@ Neon Postgres, and powers the scheduled scraper.
 - `delta.ts` — `shouldRecordSnapshot()`, the delta-storage rule (pure).
 - `selection.ts` — `selectResultForEntry()` / `toSnapshot()`, map scrape results
   to a stored snapshot (pure).
+- `history.ts` — `computePriceTrend()`, current-vs-history stats (pure).
+- `alerts.ts` — `evaluateDealAlert()`, edge-triggered threshold check (pure).
+- `notify.ts` — `sendDealAlert()`, Resend REST email (skipped when unconfigured).
 - `types.ts` — `WatchlistEntry`, `PriceSnapshot`, and input/value shapes.
 - `schema.sql` — source of truth for the two tables + index.
 
@@ -18,6 +21,20 @@ Neon Postgres, and powers the scheduled scraper.
 
 - `DATABASE_URL` — Neon connection string (set in Vercel + `.env.local`).
 - `CRON_SECRET` — bearer token guarding `GET /api/cron/scrape`.
+- `RESEND_API_KEY` / `ALERT_EMAIL_FROM` / `ALERT_EMAIL_TO` — deal-alert email
+  (optional; when any is missing, `sendDealAlert` returns `"skipped"`).
+
+## Skill: Deal alerts
+
+Per-watchlist thresholds live on the `watchlist` row: `target_price` and
+`alert_pct_drop` (both nullable = disabled). During the cron run, after a
+changed snapshot is stored, `evaluateDealAlert` compares the new price to the
+previous stored price. It is **edge-triggered**: the target alert fires only on
+the snapshot that crosses to at-or-below the target; the percent-drop alert
+fires only when the step down from the previous snapshot meets the threshold —
+so a crossing notifies once, not every run. On a successful send, `alerted_at`
+is stamped via `markAlerted`. Change thresholds in `alerts.ts` +
+`__tests__/alerts.test.ts`; swap the channel in `notify.ts`.
 
 ## Skill: Apply the schema to a fresh database
 
