@@ -3,7 +3,7 @@ import { getAllHotels, getHotel, getHotelsByStrategy } from "../registry";
 
 describe("hotels registry", () => {
   it("returns all visible hotels", () => {
-    expect(getAllHotels()).toHaveLength(23);
+    expect(getAllHotels()).toHaveLength(26);
   });
 
   it("gets hotel by id", () => {
@@ -25,7 +25,7 @@ describe("hotels registry", () => {
     const calendar = getHotelsByStrategy("calendar");
     const avl = getHotelsByStrategy("avl");
     expect(calendar).toHaveLength(4);
-    expect(avl).toHaveLength(19);
+    expect(avl).toHaveLength(22);
   });
 
   it("every hotel has a locationSlug", () => {

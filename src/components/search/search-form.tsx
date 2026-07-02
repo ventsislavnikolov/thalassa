@@ -56,6 +56,9 @@ const DEFAULT_HOTEL_IDS = [
   "atriumprestige",
   "nanagolden",
   "makedoniapalace",
+  "palmboutique",
+  "maritima",
+  "fourstones",
 ];
 
 export function SearchForm({
