@@ -1,3 +1,5 @@
+import type { WatchlistEntry } from "./types";
+
 export interface DealAlertInput {
   /** Percent-drop-vs-previous threshold (null = disabled). */
   alertPctDrop: number | null;
@@ -59,4 +61,80 @@ export function evaluateDealAlert(input: DealAlertInput): DealAlertResult {
     dropPct,
     reasons,
   };
+}
+
+/** Auto-alert defaults for entries with no explicit thresholds. */
+export const AUTO_DROP_PCT = 10;
+export const INSTANT_DROP_PCT = 25;
+export const MIN_SNAPSHOTS_FOR_LOW = 3;
+
+export interface AutoAlertInput {
+  current: number;
+  /** Lowest available price ever stored for this entry (null = none). */
+  historicalMin: number | null;
+  previous: number | null;
+  /** Number of prior available snapshots (guards the new-low signal). */
+  priorSnapshotCount: number;
+}
+
+export interface AutoAlertResult {
+  dropPct: number | null;
+  fired: boolean;
+  hitNewLow: boolean;
+  hitPctDrop: boolean;
+  /** True when the drop is large enough to warrant an immediate email. */
+  instant: boolean;
+  reasons: string[];
+}
+
+/**
+ * Default alerting for auto-tracked entries: fires on a >=10% step down from
+ * the previous snapshot, or on a new historical low once enough snapshots
+ * exist to make "low" meaningful. Drops of >=25% are flagged for an instant
+ * email on top of the daily digest.
+ */
+export function evaluateAutoAlert(input: AutoAlertInput): AutoAlertResult {
+  const { current, previous, historicalMin, priorSnapshotCount } = input;
+  const reasons: string[] = [];
+
+  const dropPct =
+    previous !== null && previous > 0
+      ? ((previous - current) / previous) * 100
+      : null;
+
+  const hitPctDrop = dropPct !== null && dropPct >= AUTO_DROP_PCT;
+  if (hitPctDrop && dropPct !== null) {
+    reasons.push(
+      `Price dropped ${dropPct.toFixed(1)}% (from ${previous?.toLocaleString()} to ${current.toLocaleString()})`
+    );
+  }
+
+  const hitNewLow =
+    historicalMin !== null &&
+    priorSnapshotCount >= MIN_SNAPSHOTS_FOR_LOW &&
+    current < historicalMin;
+  if (hitNewLow) {
+    reasons.push(
+      `New lowest price: ${current.toLocaleString()} (previous low ${historicalMin?.toLocaleString()})`
+    );
+  }
+
+  return {
+    fired: hitPctDrop || hitNewLow,
+    hitPctDrop,
+    hitNewLow,
+    dropPct,
+    instant: dropPct !== null && dropPct >= INSTANT_DROP_PCT,
+    reasons,
+  };
+}
+
+/**
+ * Entries with explicit thresholds use the edge-triggered custom path with
+ * immediate emails; everything else falls back to auto defaults + digest.
+ */
+export function resolveAlertMode(entry: WatchlistEntry): "custom" | "auto" {
+  return entry.targetPrice !== null || entry.alertPctDrop !== null
+    ? "custom"
+    : "auto";
 }

@@ -1,6 +1,4 @@
-import { getHotel } from "@/domains/hotels/registry";
-import type { DealAlertResult } from "./alerts";
-import type { NewPriceSnapshot, WatchlistEntry } from "./types";
+import type { EmailContent } from "./digest";
 
 interface ResendConfig {
   apiKey: string;
@@ -18,60 +16,18 @@ function getConfig(): ResendConfig | null {
   return { apiKey, from, to };
 }
 
-function hotelLabel(entry: WatchlistEntry): string {
-  try {
-    return getHotel(entry.hotelSlug).displayName;
-  } catch {
-    return entry.hotelSlug;
-  }
-}
-
-function money(snapshot: NewPriceSnapshot): string {
-  const amount =
-    snapshot.price === null ? "unavailable" : snapshot.price.toLocaleString();
-  return `${snapshot.currency} ${amount}`;
-}
-
-function buildSubject(
-  entry: WatchlistEntry,
-  snapshot: NewPriceSnapshot
-): string {
-  return `Deal alert: ${hotelLabel(entry)} → ${money(snapshot)} for ${entry.checkinDate}`;
-}
-
-function buildBody(
-  entry: WatchlistEntry,
-  snapshot: NewPriceSnapshot,
-  result: DealAlertResult
-): string {
-  const stay = `${entry.checkinDate}, ${entry.nights} night${
-    entry.nights === 1 ? "" : "s"
-  }, ${entry.adults} adult${entry.adults === 1 ? "" : "s"}${
-    entry.children > 0 ? `, ${entry.children} children` : ""
-  }${entry.roomType ? `, ${entry.roomType}` : ""}`;
-
-  return [
-    `${hotelLabel(entry)} is now ${money(snapshot)}.`,
-    "",
-    `Stay: ${stay}`,
-    "",
-    ...result.reasons.map((r) => `• ${r}`),
-  ].join("\n");
-}
-
 export type AlertSendResult = "sent" | "skipped" | "failed";
 
 /**
- * Send a deal-alert email via the Resend REST API.
+ * Send an email via the Resend REST API. Content (subject/text/html) is built
+ * by the pure helpers in digest.ts.
  * - "skipped": RESEND_API_KEY / ALERT_EMAIL_FROM / ALERT_EMAIL_TO not set, so
  *   alerts are disabled (the cron still records prices). Not an error.
  * - "failed": configured but the Resend request errored.
  * - "sent": delivered to Resend.
  */
-export async function sendDealAlert(
-  entry: WatchlistEntry,
-  snapshot: NewPriceSnapshot,
-  result: DealAlertResult
+export async function sendEmail(
+  content: EmailContent
 ): Promise<AlertSendResult> {
   const config = getConfig();
   if (!config) {
@@ -88,8 +44,9 @@ export async function sendDealAlert(
       body: JSON.stringify({
         from: config.from,
         to: config.to,
-        subject: buildSubject(entry, snapshot),
-        text: buildBody(entry, snapshot, result),
+        subject: content.subject,
+        text: content.text,
+        html: content.html,
       }),
     });
     return response.ok ? "sent" : "failed";

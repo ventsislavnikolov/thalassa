@@ -1,3 +1,6 @@
+/** 'manual' = created via the watchlist API; 'auto' = rolling-window sync. */
+export type WatchlistSource = "manual" | "auto";
+
 export interface WatchlistEntry {
   active: boolean;
   adults: number;
@@ -10,6 +13,7 @@ export interface WatchlistEntry {
   id: number;
   nights: number;
   roomType: string | null;
+  source: WatchlistSource;
   targetPrice: number | null;
 }
 
@@ -21,7 +25,35 @@ export interface NewWatchlistEntry {
   hotelSlug: string;
   nights: number;
   roomType?: string | null;
+  source?: WatchlistSource;
   targetPrice?: number | null;
+}
+
+/** A deal-alert occurrence queued for the daily digest email. */
+export interface AlertEvent {
+  createdAt: string;
+  digestedAt: string | null;
+  id: number;
+  minPrice: number | null;
+  previousPrice: number | null;
+  price: number;
+  reasons: string[];
+  watchlistId: number;
+}
+
+export interface NewAlertEvent {
+  minPrice: number | null;
+  previousPrice: number | null;
+  price: number;
+  reasons: string[];
+  watchlistId: number;
+}
+
+/** Aggregates over a watchlist entry's available snapshots. */
+export interface PriceStats {
+  avg: number | null;
+  count: number;
+  min: number | null;
 }
 
 /** Editable deal-alert thresholds for a watchlist entry. */

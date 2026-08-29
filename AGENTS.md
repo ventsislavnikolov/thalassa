@@ -10,7 +10,7 @@ Hotel price finder for 10 hotels in Greece. Domain model and glossary: `CONTEXT.
 
 ## Environment quirks (not discoverable from the repo)
 
-- Production scheduling is an EXTERNAL cron: cron-job.org calls `GET /api/cron/scrape` every 2 hours (`0 */2 * * *`) with `Bearer CRON_SECRET`. It is NOT in `vercel.json` — renaming the route or changing its auth silently breaks scheduled scraping.
+- Production scheduling is an EXTERNAL cron: cron-job.org calls `GET /api/cron/scrape` every 2 hours (`0 */2 * * *`) and `GET /api/cron/digest` daily at 18:00 UTC, both with `Bearer CRON_SECRET`. Neither is in `vercel.json` — renaming the routes or changing their auth silently breaks scheduled scraping/digests.
 - Deal-alert emails are silently disabled when the Resend env vars are unset (see `.env.example`); price snapshots are still recorded.
 
 ## Pointers
