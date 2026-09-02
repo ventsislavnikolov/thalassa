@@ -12,8 +12,7 @@ export default function HotelsPage() {
           Our Hotels
         </h1>
         <p className="mb-8 text-lg text-muted-foreground">
-          Browse {hotels.length} premium hotels across Halkidiki & Thessaloniki,
-          Greece
+          Browse {hotels.length} premium hotels across Greece and Bulgaria
         </p>
         <HotelGrid hotels={hotels} />
       </PageContainer>

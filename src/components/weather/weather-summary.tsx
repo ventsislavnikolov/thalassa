@@ -62,7 +62,7 @@ export function WeatherSummary({ analyses }: WeatherSummaryProps) {
             <h4 className="mb-2 font-semibold">Recommendation</h4>
             <p className="text-sm">
               {bestOverall?.recommendation ??
-                "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation in Greece."}
+                "Based on our analysis, the top-ranked dates offer the best combination of affordable pricing and favorable weather conditions for your beach vacation."}
             </p>
           </div>
         </div>

@@ -161,8 +161,8 @@ function SearchPageContent() {
                 Search Hotel Prices
               </h1>
               <p className="max-w-lg text-[#536365] text-lg leading-relaxed">
-                Compare real-time rates across premium Greek hotels.
-                Weather-informed recommendations included.
+                Compare real-time rates across premium hotels in Greece &
+                Bulgaria. Weather-informed recommendations included.
               </p>
             </div>
 

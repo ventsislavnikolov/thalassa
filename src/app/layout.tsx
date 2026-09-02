@@ -16,7 +16,7 @@ const dmSerifDisplay = DM_Serif_Display({
 export const metadata: Metadata = {
   title: "Thalassa",
   description:
-    "Find the best hotel deals across Halkidiki & Thessaloniki, Greece",
+    "Find the best hotel deals across Greece and the Bulgarian Black Sea coast",
 };
 
 export default function RootLayout({

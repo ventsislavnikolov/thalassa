@@ -1,6 +1,6 @@
-# 🏖️ Greece Hotels Price Finder
+# 🏖️ Thalassa — Hotel Price Finder
 
-A modern web application for finding the best hotel prices at Blue Carpet Suites and Cocooning Suites in Greece. Built with Next.js 15, TypeScript, and shadcn/ui.
+A modern web application for finding the best hotel prices at resort hotels in Greece and Bulgaria. Built with Next.js 15, TypeScript, and shadcn/ui.
 
 ## Features
 
@@ -174,4 +174,4 @@ This project uses **pnpm** for faster, more efficient package management:
 
 ---
 
-Built with ❤️ for finding the best vacation deals in Greece 🇬🇷
+Built with ❤️ for finding the best vacation deals in Greece 🇬🇷 and Bulgaria 🇧🇬

@@ -83,8 +83,8 @@ export default async function HotelDetailPage({
                   <span className="font-medium text-foreground">
                     {location.name}
                   </span>
-                  , {location.region}, Greece. One of the most sought-after
-                  destinations in the Mediterranean.
+                  , {location.region}, {location.country}. One of the most
+                  sought-after seaside destinations in the region.
                 </p>
               </CardContent>
             </Card>

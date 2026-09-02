@@ -1,7 +1,8 @@
 # Thalassa — Domain Context
 
-Web app for finding the best hotel prices across 10 hotels in Greece (Halkidiki
-and Kavala). Scrapes prices from reserve-online.net, scores weather via
+Web app for finding the best hotel prices across resort hotels in Greece
+(Halkidiki, Kavala, the islands) and Bulgaria (Obzor). Scrapes prices from the
+hotels' booking engines (reserve-online.net, hvdhotels.com), scores weather via
 Open-Meteo, and combines both into stay recommendations. Six self-contained
 domains live under `src/domains/`: hotels, locations, scraping, weather,
 analysis, tracking.

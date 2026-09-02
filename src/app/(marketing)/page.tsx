@@ -101,6 +101,12 @@ export default function HomePage() {
         ["santorini", "milos", "paxos"].includes(h.locationSlug)
       ).length,
     },
+    {
+      name: "Bulgarian Black Sea",
+      description: "All-inclusive resorts around Obzor",
+      image: "/images/locations/obzor.webp",
+      hotelCount: allHotels.filter((h) => h.locationSlug === "obzor").length,
+    },
   ];
 
   return (
@@ -136,13 +142,13 @@ export default function HomePage() {
               <br />
               hotel prices in
               <br />
-              <span className="text-[#A3B2B5]">Greece</span>
+              <span className="text-[#A3B2B5]">Greece & Bulgaria</span>
             </h1>
 
             <p className="mb-10 max-w-xl animate-delay-200 animate-fade-in-up text-[#536365] text-lg leading-relaxed">
               Compare real-time rates across {allHotels.length} handpicked
-              hotels in Halkidiki, Kavala & the Greek Islands. Weather-smart
-              recommendations included.
+              hotels in Halkidiki, Kavala, the Greek Islands & the Bulgarian
+              Black Sea coast. Weather-smart recommendations included.
             </p>
 
             {/* Search widget — glassmorphism */}
@@ -151,7 +157,7 @@ export default function HomePage() {
                 <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white/5 px-4 py-3">
                   <MapPin className="h-4 w-4 shrink-0 text-[#738C8A]" />
                   <span className="truncate text-[#A3B2B5] text-sm">
-                    Halkidiki, Kavala, Islands
+                    Halkidiki, Kavala, Islands, Obzor
                   </span>
                 </div>
                 <div className="hidden items-center gap-3 rounded-xl bg-white/5 px-4 py-3 sm:flex">
@@ -355,12 +361,12 @@ export default function HomePage() {
               Explore by Region
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-[#536365] text-sm">
-              From the three peninsulas of Halkidiki to the historic harbor of
-              Kavala and the iconic Greek Islands.
+              From the three peninsulas of Halkidiki and the Greek Islands to
+              the Black Sea resorts of Obzor, Bulgaria.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {destinationShowcase.map((dest, index) => (
               <div
                 className={`group relative animate-fade-in-up overflow-hidden rounded-2xl ${index === 0 ? "md:row-span-2" : ""} ${delayClasses[index]}`}
@@ -574,7 +580,7 @@ export default function HomePage() {
               <h2 className="mb-6 font-display text-3xl text-[#F5F7F8] leading-tight sm:text-4xl">
                 Plan Your
                 <br />
-                Greek Getaway
+                Seaside Getaway
               </h2>
               <p className="mb-10 max-w-md text-[#536365] leading-relaxed">
                 Whether you need help choosing the perfect property or want a
@@ -654,7 +660,7 @@ export default function HomePage() {
                   <textarea
                     className="w-full resize-none rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-[#F5F7F8] text-sm transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:outline-none focus:ring-1 focus:ring-[#2A4F58]/40"
                     id="contact-message"
-                    placeholder="Tell us about your ideal Greek getaway..."
+                    placeholder="Tell us about your ideal seaside getaway..."
                     rows={4}
                   />
                 </div>

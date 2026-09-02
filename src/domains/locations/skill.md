@@ -13,14 +13,14 @@ Adding a new geographic location for hotels. Required when a new hotel is in a t
 ### Steps
 
 1. **Research the location.**
-   Search the web for the town/area name + "Greece coordinates" to find:
+   Search the web for the town/area name + country + "coordinates" to find:
    - Full name and correct spelling
    - Region (e.g., "Halkidiki", "Central Macedonia")
    - Geographic coordinates (latitude/longitude in decimal degrees)
    If any of these cannot be determined, ask the user.
 
 2. **Find a location image.**
-   Search the web for the town/area name + "Greece" to find a representative image (beach, town view, landmark).
+   Search the web for the town/area name + country to find a representative image (beach, town view, landmark).
    Download it to `public/images/locations/<location-slug>.jpg`.
    If no suitable image is found, ask the user to provide one.
 
@@ -33,7 +33,7 @@ const myLocation: LocationConfig = {
   slug: "<location-slug>",         // lowercase with hyphens (e.g., "neos-marmaras")
   name: "<Location Name>",        // display name (e.g., "Neos Marmaras")
   region: "<Region>",             // geographic region (e.g., "Halkidiki")
-  country: "Greece",
+  country: "Greece", // or "Bulgaria"
   coordinates: {
     latitude: 40.05,              // decimal degrees
     longitude: 23.35,
