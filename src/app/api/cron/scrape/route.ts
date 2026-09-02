@@ -1,5 +1,6 @@
 import { addDays, format } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
+import { buildBookingUrl } from "@/domains/hotels/booking-url";
 import { getAllHotels, getHotel } from "@/domains/hotels/registry";
 import { scrapeHotels } from "@/domains/scraping/engine";
 import type { SearchParams } from "@/domains/scraping/types";
@@ -49,7 +50,7 @@ export const maxDuration = 60;
 
 const HOTELS_PER_RUN = 6;
 const SCRAPE_CONCURRENCY = 3;
-const AVL_DATES_PER_RUN = 4;
+const SINGLE_DATE_HOTEL_DATES_PER_RUN = 4;
 const CURSOR_KEY = "scrape_cursor";
 
 interface CronSummary {
@@ -73,12 +74,15 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 function bookingUrl(entry: WatchlistEntry): string {
-  const hotel = getHotel(entry.hotelSlug);
   const checkout = format(
     addDays(new Date(entry.checkinDate), entry.nights),
     "yyyy-MM-dd"
   );
-  return `${hotel.baseUrl}/?checkin=${entry.checkinDate}&checkout=${checkout}&adults=${entry.adults}`;
+  return buildBookingUrl(getHotel(entry.hotelSlug), {
+    adults: entry.adults,
+    checkin: entry.checkinDate,
+    checkout,
+  });
 }
 
 function toDigestItem(
@@ -209,20 +213,20 @@ async function processBatch(
 }
 
 /**
- * An avl-strategy hotel yields one date per scrape, so trim its batches to the
+ * Only calendar-strategy hotels return the whole window from a single call;
+ * every other engine yields one date per scrape, so trim those batches to the
  * nearest few check-ins per run; the cursor brings the rest around next runs.
- * Calendar-strategy hotels return the whole window from a single call.
  */
-function limitAvlBatches(batches: ScrapeBatch[]): ScrapeBatch[] {
+function limitSingleDateBatches(batches: ScrapeBatch[]): ScrapeBatch[] {
   const trimmed: ScrapeBatch[] = [];
   for (const batch of batches) {
-    if (getHotel(batch.hotelSlug).strategyType !== "avl") {
+    if (getHotel(batch.hotelSlug).strategyType === "calendar") {
       trimmed.push(batch);
       continue;
     }
     const entries = [...batch.entries]
       .sort((a, b) => a.checkinDate.localeCompare(b.checkinDate))
-      .slice(0, AVL_DATES_PER_RUN);
+      .slice(0, SINGLE_DATE_HOTEL_DATES_PER_RUN);
     for (const entry of entries) {
       trimmed.push({ ...batch, checkin: entry.checkinDate, entries: [entry] });
     }
@@ -282,7 +286,7 @@ export async function GET(request: NextRequest) {
   summary.cursor = nextOffset;
 
   const entries = await getActiveWatchlistForHotels(selected);
-  const batches = limitAvlBatches(groupEntriesForScraping(entries));
+  const batches = limitSingleDateBatches(groupEntriesForScraping(entries));
   await runWithConcurrency(
     batches.map((batch) => () => processBatch(batch, summary)),
     SCRAPE_CONCURRENCY

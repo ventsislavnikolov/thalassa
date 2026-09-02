@@ -1,8 +1,9 @@
 import { addDays, format, parse } from "date-fns";
 import { getHotel } from "@/domains/hotels/registry";
-import type { RoomType } from "@/domains/hotels/types";
+import type { RoomType, StrategyType } from "@/domains/hotels/types";
 import { AvlStrategy } from "./strategies/avl";
 import { CalendarStrategy } from "./strategies/calendar";
+import { HvdStrategy } from "./strategies/hvd";
 import type { PriceResult, ScrapingStrategy, SearchParams } from "./types";
 
 export interface ScrapeAllResult {
@@ -13,9 +14,16 @@ export interface ScrapeAllResult {
 
 const calendarStrategy = new CalendarStrategy();
 const avlStrategy = new AvlStrategy();
+const hvdStrategy = new HvdStrategy();
 
-function getStrategy(strategyType: "calendar" | "avl"): ScrapingStrategy {
-  return strategyType === "calendar" ? calendarStrategy : avlStrategy;
+const strategies: Record<StrategyType, ScrapingStrategy> = {
+  calendar: calendarStrategy,
+  avl: avlStrategy,
+  hvd: hvdStrategy,
+};
+
+function getStrategy(strategyType: StrategyType): ScrapingStrategy {
+  return strategies[strategyType];
 }
 
 function getHotelTimeout(): number {

@@ -1,5 +1,6 @@
 import { addDays, format } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
+import { buildBookingUrl } from "@/domains/hotels/booking-url";
 import { getHotel } from "@/domains/hotels/registry";
 import { buildDigest, type DigestItem } from "@/domains/tracking/digest";
 import { sendEmail } from "@/domains/tracking/notify";
@@ -23,12 +24,15 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 function bookingUrl(entry: WatchlistEntry): string {
-  const hotel = getHotel(entry.hotelSlug);
   const checkout = format(
     addDays(new Date(entry.checkinDate), entry.nights),
     "yyyy-MM-dd"
   );
-  return `${hotel.baseUrl}/?checkin=${entry.checkinDate}&checkout=${checkout}&adults=${entry.adults}`;
+  return buildBookingUrl(getHotel(entry.hotelSlug), {
+    adults: entry.adults,
+    checkin: entry.checkinDate,
+    checkout,
+  });
 }
 
 export async function GET(request: NextRequest) {

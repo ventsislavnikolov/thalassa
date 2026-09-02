@@ -8,10 +8,12 @@ analysis, tracking.
 
 ## Glossary
 
-- **Scraping strategy** — how a hotel's prices are fetched from
-  reserve-online.net. Two exist: **calendar** (HTML scraping of the `/calendar`
-  endpoint via Cheerio) and **AVL** (JSON from the `/avl` endpoint). Each hotel
-  config declares its strategy.
+- **Scraping strategy** — how a hotel's prices are fetched from its booking
+  engine. Three exist: **calendar** (HTML scraping of reserve-online.net's
+  `/calendar` endpoint via Cheerio), **AVL** (JSON from reserve-online.net's
+  `/avl` endpoint) and **hvd** (server-rendered search page of
+  reservations.hvdhotels.com, one stay per request). Each hotel config declares
+  its strategy.
 - **Beach score** — 0–100 weather suitability for a beach day, derived from
   temperature, precipitation, wind, and UV. Sea temperature is *estimated* from
   monthly climate averages (`weather/climate-data.ts`), not measured.

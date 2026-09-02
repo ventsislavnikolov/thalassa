@@ -4,7 +4,7 @@
 
 ### When to use
 
-The hotel uses a different booking system endpoint than the existing `/calendar` or `/avl` strategies.
+The hotel uses a different booking system than the existing strategies (`calendar`, `avl`, `hvd`).
 
 ### Prerequisites
 
@@ -63,7 +63,7 @@ export class MyNewStrategy implements ScrapingStrategy {
 
 ```typescript
 // Update the strategyType union
-strategyType: "calendar" | "avl" | "<strategy-name>";
+export type StrategyType = "calendar" | "avl" | "hvd" | "<strategy-name>";
 ```
 
 3. **Register in `src/domains/scraping/engine.ts`**:
@@ -76,9 +76,9 @@ import { MyNewStrategy } from "./strategies/<strategy-name>";
 const myNewStrategy = new MyNewStrategy();
 
 // Update getStrategy function
-function getStrategy(strategyType: "calendar" | "avl" | "<strategy-name>"): ScrapingStrategy {
-  if (strategyType === "<strategy-name>") return myNewStrategy;
-  return strategyType === "calendar" ? calendarStrategy : avlStrategy;
+const strategies: Record<StrategyType, ScrapingStrategy> = {
+  calendar: calendarStrategy, avl: avlStrategy, hvd: hvdStrategy,
+  "<strategy-name>": myNewStrategy,
 }
 ```
 

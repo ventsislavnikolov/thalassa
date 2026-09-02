@@ -1,4 +1,8 @@
-import type { HotelConfig, RoomType } from "@/domains/hotels/types";
+import type {
+  HotelConfig,
+  RoomType,
+  StrategyType,
+} from "@/domains/hotels/types";
 
 export interface SearchParams {
   adults: number;
@@ -38,7 +42,7 @@ export interface ScrapingStrategy {
     searchParams: SearchParams;
     signal?: AbortSignal;
   }): Promise<ScrapeResponse>;
-  type: "calendar" | "avl";
+  type: StrategyType;
 }
 
 export class ScrapingError extends Error {

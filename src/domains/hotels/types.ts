@@ -1,3 +1,6 @@
+/** Which booking engine a hotel's prices are fetched from; see scraping/strategies. */
+export type StrategyType = "calendar" | "avl" | "hvd";
+
 export interface HotelConfig {
   baseUrl: string;
   description?: string;
@@ -9,7 +12,7 @@ export interface HotelConfig {
   locationSlug: string;
   name: string;
   slug: string;
-  strategyType: "calendar" | "avl";
+  strategyType: StrategyType;
 }
 
 export interface RoomType {

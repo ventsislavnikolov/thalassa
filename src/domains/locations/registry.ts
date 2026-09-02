@@ -11,6 +11,7 @@ import milos from "./config/milos";
 import neaMoudania from "./config/nea-moudania";
 import neaRoda from "./config/nea-roda";
 import neosMarmaras from "./config/neos-marmaras";
+import obzor from "./config/obzor";
 import ouranoupolis from "./config/ouranoupolis";
 import paliouri from "./config/paliouri";
 import paxos from "./config/paxos";
@@ -35,6 +36,7 @@ const locations: LocationConfig[] = [
   milos,
   neaRoda,
   neosMarmaras,
+  obzor,
   ouranoupolis,
   paliouri,
   paxos,

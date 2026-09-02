@@ -59,6 +59,7 @@ const DEFAULT_HOTEL_IDS = [
   "palmboutique",
   "maritima",
   "fourstones",
+  "reinadelmar",
 ];
 
 export function SearchForm({

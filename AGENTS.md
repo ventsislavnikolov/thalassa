@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Hotel price finder for 10 hotels in Greece. Domain model and glossary: `CONTEXT.md`.
+Hotel price finder for resort hotels in Greece and Bulgaria. Domain model and glossary: `CONTEXT.md`.
 
 ## Rules
 

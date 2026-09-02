@@ -24,8 +24,9 @@ import palmBoutiqueSuites from "./config/palm-boutique-suites";
 import paralosLifestyleBeach from "./config/paralos-lifestyle-beach";
 import portoCarras from "./config/porto-carras";
 import potideaPalace from "./config/potidea-palace";
+import reinaDelMar from "./config/reina-del-mar";
 import stellaIsland from "./config/stella-island";
-import type { HotelConfig } from "./types";
+import type { HotelConfig, StrategyType } from "./types";
 
 const hotels: HotelConfig[] = [
   acroSuites,
@@ -55,6 +56,7 @@ const hotels: HotelConfig[] = [
   palmBoutiqueSuites,
   maritimaVillas,
   fourStonesVillas,
+  reinaDelMar,
 ];
 
 export function getAllHotels(): HotelConfig[] {
@@ -73,8 +75,6 @@ export function getHotel(idOrSlug: string): HotelConfig {
   return hotel;
 }
 
-export function getHotelsByStrategy(
-  strategyType: "calendar" | "avl"
-): HotelConfig[] {
+export function getHotelsByStrategy(strategyType: StrategyType): HotelConfig[] {
   return getAllHotels().filter((h) => h.strategyType === strategyType);
 }
