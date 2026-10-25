@@ -27,7 +27,7 @@ A modern web application for finding the best hotel prices at resort hotels in G
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24.22.1 or a newer 24.x (pinned in `.nvmrc`)
 - pnpm (recommended) or npm/yarn
 
 ### Installation
@@ -140,7 +140,7 @@ src/
 
 1. Build the project: `pnpm build`
 2. Deploy the `.next` folder
-3. Ensure Node.js 18+ runtime
+3. Ensure a Node.js 24.x runtime (24.22.1 or newer)
 
 ## Development
 
