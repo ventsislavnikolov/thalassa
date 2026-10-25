@@ -52,7 +52,7 @@ pnpm dlx shadcn@latest add [component-name]
 ## Troubleshooting
 
 - **Port in use**: The app will automatically use the next available port
-- **Node version**: Ensure you're using Node.js 18 or higher
+- **Node version**: Use the version in `.nvmrc` (`nvm use`); `engines` requires `>=24.22.1 <25`
 - **pnpm issues**: Try `pnpm install --force` to refresh dependencies
 
 ---
