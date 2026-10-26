@@ -5,7 +5,7 @@ Hotel price finder for resort hotels in Greece and Bulgaria. Domain model and gl
 ## Rules
 
 - Run `pnpm test` after every change.
-- Lint/format is Biome via ultracite (`pnpm check` / `pnpm fix`). There is no ESLint; `pnpm lint` does not exist — do not add either.
+- Lint/format is Biome via ultracite (`pnpm lint` / `pnpm fix`). There is no ESLint — do not add it.
 - The scrape routes (`/api/scrape`, `/api/cron/scrape`) hit the live reserve-online.net site. Don't trigger real scrapes in loops during dev; unit tests are network-free.
 
 ## Environment quirks (not discoverable from the repo)
