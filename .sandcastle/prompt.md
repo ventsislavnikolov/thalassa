@@ -28,7 +28,7 @@ Pick the highest-priority open issue that is not blocked by another open issue.
 1. **Explore** — read the issue carefully. Pull in the parent PRD if referenced. Read the relevant source files and tests before writing any code.
 2. **Plan** — decide what to change and why. Keep the change as small as possible.
 3. **Execute** — use RGR (Red → Green → Repeat → Refactor): write a failing test first, then write the implementation to pass it.
-4. **Verify** — run `pnpm exec tsc --noEmit`, `pnpm check`, and `pnpm test` before committing. Fix any failures before proceeding. (`check` is ultracite lint/format; `test` is vitest; there is no `typecheck` script. The husky pre-commit hook also runs `check`, so keep it clean.)
+4. **Verify** — run `pnpm typecheck`, `pnpm lint`, and `pnpm test` before committing. Fix any failures before proceeding. (`lint` is ultracite lint/format; `typecheck` is `tsc --noEmit`; `test` is vitest. The husky pre-commit hook runs `pnpm dlx ultracite fix` on staged files.)
 5. **Commit** — make a single git commit. The message MUST:
    - Start with `RALPH:` prefix
    - Include the task completed and any PRD reference

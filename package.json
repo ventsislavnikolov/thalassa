@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "fix": "npx ultracite fix",
     "dev": "next dev --turbopack",
-    "check": "npx ultracite check",
+    "lint": "npx ultracite check",
+    "typecheck": "tsc --noEmit",
     "env:pull": "npx ultracite env:pull",
     "commitlint": "npx --no -- commitlint --edit"
   },

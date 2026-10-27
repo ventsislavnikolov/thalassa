@@ -156,9 +156,9 @@ pnpm dlx shadcn@latest add [component-name]
 pnpm dev          # Start development server
 pnpm build        # Build for production
 pnpm start        # Start production server
-pnpm lint         # Run ESLint
-pnpm lint:fix     # Auto-fix linting issues
-pnpm type-check   # Run TypeScript checks
+pnpm lint         # Lint and format check (Ultracite/Biome)
+pnpm fix          # Auto-fix lint and format issues
+pnpm typecheck    # Run TypeScript checks
 pnpm clean        # Clean build cache
 pnpm setup        # Install deps + build
 ```
