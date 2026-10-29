@@ -1,4 +1,6 @@
 allowBuilds:
+  # Hooks are installed by `prepare`, not lefthook's postinstall.
+  lefthook: false
   esbuild: true
   sharp: true
 minimumReleaseAgeExclude:
