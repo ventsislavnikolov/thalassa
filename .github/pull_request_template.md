@@ -24,7 +24,7 @@ change" and say why. -->
 ## Deploy
 
 <!-- Delete if nothing to do. List env vars or Vercel settings that need a
-manual step. --> -->
+manual step. -->
 
 ## Notes and decisions for review
 
