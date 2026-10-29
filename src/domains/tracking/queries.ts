@@ -11,7 +11,7 @@ import type {
   WatchlistSource,
 } from "./types";
 
-type WatchlistRow = {
+interface WatchlistRow {
   active: boolean;
   adults: number;
   alert_pct_drop: number | null;
@@ -25,16 +25,16 @@ type WatchlistRow = {
   room_type: string | null;
   source: WatchlistSource;
   target_price: string | null;
-};
+}
 
-type SnapshotRow = {
+interface SnapshotRow {
   available: boolean;
   currency: string;
   id: number | string;
   price: string | null;
   scraped_at: string;
   watchlist_id: number | string;
-};
+}
 
 // NOTE: temporal columns are cast to ::text in every query below so the Neon
 // driver returns plain ISO strings ("YYYY-MM-DD" / RFC 3339) rather than JS
@@ -172,7 +172,7 @@ export async function getLatestSnapshot(
   if (rows.length === 0) {
     return null;
   }
-  const row = rows[0];
+  const [row] = rows;
   return {
     available: row.available,
     price: row.price === null ? null : Number(row.price),
@@ -227,7 +227,7 @@ export async function getPriceStats(watchlistId: number): Promise<PriceStats> {
     FROM price_snapshots
     WHERE watchlist_id = ${watchlistId} AND available AND price IS NOT NULL
   `) as { avg: string | null; count: number | string; min: string | null }[];
-  const row = rows[0];
+  const [row] = rows;
   return {
     avg: row.avg === null ? null : Number(row.avg),
     count: Number(row.count),
@@ -251,7 +251,7 @@ export async function setCronState(key: string, value: unknown): Promise<void> {
   `;
 }
 
-type AlertEventRow = {
+interface AlertEventRow {
   created_at: string;
   digested_at: string | null;
   id: number | string;
@@ -260,7 +260,7 @@ type AlertEventRow = {
   price: string;
   reasons: string[];
   watchlist_id: number | string;
-};
+}
 
 function mapAlertEvent(row: AlertEventRow): AlertEvent {
   return {

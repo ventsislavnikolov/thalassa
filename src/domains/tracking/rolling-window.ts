@@ -32,7 +32,7 @@ export function generateWindowDates(
   const start = addDays(parseISO(today), config.minDaysAhead);
   const dates: WindowDate[] = [];
   const span = config.maxDaysAhead - config.minDaysAhead;
-  for (let offset = 0; offset <= span; offset++) {
+  for (let offset = 0; offset <= span; offset += 1) {
     const day = addDays(start, offset);
     for (const target of config.checkinWeekdays) {
       if (getDay(day) === target.weekday) {

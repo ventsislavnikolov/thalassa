@@ -194,6 +194,7 @@ async function processBatch(
   for (const { entry, snapshot } of matchResultsToEntries(results, batch)) {
     summary.checked += 1;
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: a batch's entries run in order (read latest, write snapshot, maybe email); runWithConcurrency already parallelises across batches
       const latest = await getLatestSnapshot(entry.id);
       if (!shouldRecordSnapshot(latest, snapshot)) {
         continue;
@@ -263,6 +264,7 @@ export async function GET(request: NextRequest) {
   );
   for (const entry of plan.toUpsert) {
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: a fresh rolling window can upsert hundreds of rows; one insert at a time keeps the Neon load bounded
       await addWatchlistEntry(entry);
       summary.upserted += 1;
     } catch (error) {

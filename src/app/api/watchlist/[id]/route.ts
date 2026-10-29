@@ -61,7 +61,7 @@ export async function PATCH(
     );
   }
 
-  const data = parsed.data;
+  const { data } = parsed;
   let entry: WatchlistEntry | null = null;
 
   if (data.active !== undefined) {

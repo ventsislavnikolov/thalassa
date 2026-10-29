@@ -61,7 +61,7 @@ export function selectHotelsForRun(
     allHotelSlugs.length;
   const count = Math.min(hotelsPerRun, allHotelSlugs.length);
   const selected: string[] = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < count; i += 1) {
     selected.push(allHotelSlugs[(offset + i) % allHotelSlugs.length]);
   }
   return { nextOffset: (offset + count) % allHotelSlugs.length, selected };
@@ -100,6 +100,7 @@ export async function runWithConcurrency<T>(
         const index = next;
         next += 1;
         try {
+          // biome-ignore lint/performance/noAwaitInLoops: each worker finishes a task before taking the next; that is what caps concurrency at `limit`
           results[index] = await tasks[index]();
         } catch {
           results[index] = null;

@@ -2,6 +2,7 @@ import { addDays, format } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { analyzeDeals } from "@/domains/analysis/combined-scorer";
+import type { CombinedAnalysis } from "@/domains/analysis/types";
 import { getHotel } from "@/domains/hotels/registry";
 import { getLocation } from "@/domains/locations/registry";
 import {
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let weather = null;
+    let weather: CombinedAnalysis[] | null = null;
     if (includeWeather && result.results.length > 0) {
       try {
         const provider = new OpenMeteoProvider();

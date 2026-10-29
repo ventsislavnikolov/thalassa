@@ -90,11 +90,11 @@ describe("selectHotelsForRun", () => {
 
 describe("matchResultsToEntries", () => {
   it("matches multi-date results to entries by check-in date", () => {
-    const batch = groupEntriesForScraping([
+    const [batch] = groupEntriesForScraping([
       entry({ checkinDate: "2026-10-03", id: 1 }),
       entry({ checkinDate: "2026-10-10", id: 2 }),
       entry({ checkinDate: "2026-10-17", id: 3 }),
-    ])[0];
+    ]);
     const matched = matchResultsToEntries(
       [
         result({ date: "2026-10-03", stayTotal: 700 }),
@@ -116,9 +116,9 @@ describe("matchResultsToEntries", () => {
   });
 
   it("delegates room-type preference to selection", () => {
-    const batch = groupEntriesForScraping([
+    const [batch] = groupEntriesForScraping([
       entry({ id: 1, roomType: "SUITE" }),
-    ])[0];
+    ]);
     const matched = matchResultsToEntries(
       [
         result({ roomCode: "STD", stayTotal: 500 }),

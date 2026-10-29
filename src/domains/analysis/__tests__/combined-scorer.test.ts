@@ -114,7 +114,7 @@ describe("analyzeDeals", () => {
     ]);
 
     const results = analyzeDeals(prices, weatherMap, 3);
-    for (let i = 0; i < results.length - 1; i++) {
+    for (let i = 0; i < results.length - 1; i += 1) {
       expect(results[i].totalScore).toBeGreaterThanOrEqual(
         results[i + 1].totalScore
       );

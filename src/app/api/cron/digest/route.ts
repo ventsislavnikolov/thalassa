@@ -48,24 +48,25 @@ export async function GET(request: NextRequest) {
   const watchlist = await getAllWatchlist();
   const byId = new Map(watchlist.map((entry) => [entry.id, entry]));
 
-  const items: DigestItem[] = [];
-  for (const event of events) {
+  const watched = events.flatMap((event) => {
     const entry = byId.get(event.watchlistId);
-    if (!entry) {
-      continue;
-    }
-    const stats = await getPriceStats(entry.id);
-    items.push({
-      avgPrice: stats.avg,
-      bookingUrl: bookingUrl(entry),
-      entry,
-      hotelName: getHotel(entry.hotelSlug).displayName,
-      minPrice: event.minPrice ?? stats.min,
-      previousPrice: event.previousPrice,
-      price: event.price,
-      reasons: event.reasons,
-    });
-  }
+    return entry ? [{ entry, event }] : [];
+  });
+  const items: DigestItem[] = await Promise.all(
+    watched.map(async ({ entry, event }) => {
+      const stats = await getPriceStats(entry.id);
+      return {
+        avgPrice: stats.avg,
+        bookingUrl: bookingUrl(entry),
+        entry,
+        hotelName: getHotel(entry.hotelSlug).displayName,
+        minPrice: event.minPrice ?? stats.min,
+        previousPrice: event.previousPrice,
+        price: event.price,
+        reasons: event.reasons,
+      };
+    })
+  );
 
   const today = format(new Date(), "yyyy-MM-dd");
   const content = buildDigest(items, today);

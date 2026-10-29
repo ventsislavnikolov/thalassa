@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const data = parsed.data;
+  const { data } = parsed;
 
   let hotelSlug: string;
   try {
