@@ -16,9 +16,9 @@ export interface WeatherData {
 }
 
 export interface WeatherProvider {
-  fetchForecast(
+  fetchForecast: (
     coordinates: Coordinates,
     dates: string[],
     timezone: string
-  ): Promise<Map<string, WeatherData>>;
+  ) => Promise<Map<string, WeatherData>>;
 }

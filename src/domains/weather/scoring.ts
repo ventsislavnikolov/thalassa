@@ -183,7 +183,7 @@ export function estimateSeaTemperature({
   date,
   airTemp,
 }: SeaTemperatureInput): number {
-  const month = Number.parseInt(date.split("-")[1]);
+  const month = Number.parseInt(date.split("-")[1], 10);
   const baseSeaTemp = AEGEAN_SEA_TEMPS[month];
 
   if (baseSeaTemp === undefined) {
