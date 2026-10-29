@@ -14,7 +14,7 @@ import { OpenMeteoProvider } from "@/domains/weather/providers/open-meteo";
 
 const requestSchema = z.object({
   adults: z.number().min(1).max(8).default(2),
-  checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
   children: z.number().min(0).max(6).default(0),
   hotelSlugs: z.array(z.string()).min(1),
   includeWeather: z.boolean().default(false),

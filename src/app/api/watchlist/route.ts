@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const createSchema = z.object({
   adults: z.number().int().min(1).max(8),
   alertPctDrop: z.number().int().min(1).max(90).nullish(),
-  checkinDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  checkinDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
   children: z.number().int().min(0).max(6).default(0),
   hotelSlug: z.string().min(1),
   nights: z.number().int().min(1).max(30),

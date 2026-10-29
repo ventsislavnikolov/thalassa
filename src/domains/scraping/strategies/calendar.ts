@@ -44,29 +44,29 @@ function buildFormData(params: SearchParams): URLSearchParams {
 // Regex patterns for "Stay total" / "Общ престой" price extraction
 const TOTAL_PRICE_PATTERNS = [
   // US format with comma as thousands separator and dot as decimal
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-  /(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d,]+\.\d{2})/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // EU format with space as thousands separator and comma as decimal
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // Numbers without decimal places (like "2,347" or "2 347")
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // Fallback: simple numbers without separators
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d+)\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
 ];
 
 // General price patterns for both formats
 const GENERAL_PRICE_PATTERNS = [
-  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-  /([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
-  /([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d,]+\.\d{2})/iu,
+  /(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/iu,
+  /(?<price>[\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
 ];
 
 function matchPatterns(

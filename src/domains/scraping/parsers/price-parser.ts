@@ -1,7 +1,8 @@
-const ALL_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/g;
-const HAS_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/;
-const CURRENCY_PREFIX = /^(?:BGN|EUR|USD|лв|€|\$)\s*/i;
-const CURRENCY_SUFFIX = /\s*(?:BGN|EUR|USD|лв|€|\$)$/i;
+const ALL_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/gu;
+const HAS_WHITESPACE = /[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]/u;
+const CURRENCY_PREFIX = /^(?:BGN|EUR|USD|лв|€|\$)\s*/iu;
+const CURRENCY_SUFFIX = /\s*(?:BGN|EUR|USD|лв|€|\$)$/iu;
+const TWO_DIGITS = /^\d{2}$/u;
 
 function stripCurrency(raw: string): string {
   return raw.replace(CURRENCY_PREFIX, "").replace(CURRENCY_SUFFIX, "").trim();
@@ -30,7 +31,7 @@ export const PriceFormat = {
         .slice(commaIndex + 1)
         .replace(ALL_WHITESPACE, "");
 
-      if (afterComma.length === 2 && /^\d{2}$/.test(afterComma)) {
+      if (afterComma.length === 2 && TWO_DIGITS.test(afterComma)) {
         return "eu";
       }
       return "plain";
@@ -67,10 +68,10 @@ export function parsePrice(raw: string): number | null {
         const commaIndex = stripped.indexOf(",");
         const dotIndex = stripped.indexOf(".");
         if (commaIndex < dotIndex) {
-          normalized = stripped.replace(/,/g, "").replace(ALL_WHITESPACE, "");
+          normalized = stripped.replace(/,/gu, "").replace(ALL_WHITESPACE, "");
         } else {
           normalized = stripped
-            .replace(/\./g, "")
+            .replace(/\./gu, "")
             .replace(",", ".")
             .replace(ALL_WHITESPACE, "");
         }
@@ -82,7 +83,7 @@ export function parsePrice(raw: string): number | null {
     case "eu": {
       if (stripped.includes(".") && stripped.includes(",")) {
         normalized = stripped
-          .replace(/\./g, "")
+          .replace(/\./gu, "")
           .replace(",", ".")
           .replace(ALL_WHITESPACE, "");
       } else {
@@ -91,7 +92,7 @@ export function parsePrice(raw: string): number | null {
       break;
     }
     case "plain": {
-      normalized = stripped.replace(ALL_WHITESPACE, "").replace(/,/g, "");
+      normalized = stripped.replace(ALL_WHITESPACE, "").replace(/,/gu, "");
       break;
     }
   }

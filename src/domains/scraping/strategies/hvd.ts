@@ -14,9 +14,11 @@ import { ScrapingError } from "../types";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 const REQUEST_TIMEOUT = 30_000;
+const WHITESPACE_RUN = /\s+/gu;
+const TRAILING_AMOUNT = /(?<amount>[\d.]+)$/u;
 
 function parseCardPrice(text: string): number | null {
-  const match = text.replace(/\s+/g, "").match(/([\d.]+)$/);
+  const match = text.replace(WHITESPACE_RUN, "").match(TRAILING_AMOUNT);
   if (!match) {
     return null;
   }

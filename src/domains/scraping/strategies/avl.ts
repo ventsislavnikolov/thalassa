@@ -19,21 +19,21 @@ const MAX_PRICE = 50_000;
 
 // HTML price extraction patterns for fallback parsing
 const HTML_PRICE_PATTERNS = [
-  /<div class="val">([^<]+)<\/div>/gi,
-  /(\d{1,3}(?:\s\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/gi,
-  /<td[^>]*>([^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*)<\/td>/gi,
+  /<div class="val">[^<]+<\/div>/giu,
+  /\d{1,3}(?:\s\d{3})*,\d{2}\s*(?:лв|€|BGN|EUR)/giu,
+  /<td[^>]*>[^<]*\d{1,3}(?:\s\d{3})*,\d{2}[^<]*<\/td>/giu,
 ];
 
 const EXTRACTION_PATTERNS = [
-  /(\d{1,3}(?:\s\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/,
-  /(\d{1,3}(?:\s\d{3})*,\d{2})/,
-  /(\d+,\d{2})/,
+  /(?<price>\d{1,3}(?:\s\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/u,
+  /(?<price>\d{1,3}(?:\s\d{3})*,\d{2})/u,
+  /(?<price>\d+,\d{2})/u,
 ];
 
 const FALLBACK_PATTERNS = [
-  /(\d{1,2}(?:[\s,]\d{3})*,\d{2})\s*(?:лв|€|BGN|EUR)/gi,
-  /(\d{1,2}(?:[\s,]\d{3})*,\d{2})/gi,
-  /(\d{4,6})/gi,
+  /\d{1,2}(?:[\s,]\d{3})*,\d{2}\s*(?:лв|€|BGN|EUR)/giu,
+  /\d{1,2}(?:[\s,]\d{3})*,\d{2}/giu,
+  /\d{4,6}/giu,
 ];
 
 function isReasonablePrice(price: number): boolean {
@@ -149,7 +149,7 @@ function parseHtmlTextPrices(
           const roomName = `Room ${foundPrices + 1}`;
           prices.push(createPriceResult(testPrice, params, hotel));
           roomOptions.push({
-            code: roomName.toLowerCase().replace(/\s+/g, "-"),
+            code: roomName.toLowerCase().replace(/\s+/gu, "-"),
             name: roomName,
           });
           foundPrices++;
@@ -179,7 +179,7 @@ function parseHtmlTextPrices(
             const roomName = `Room ${foundPrices + 1}`;
             prices.push(createPriceResult(testPrice, params, hotel));
             roomOptions.push({
-              code: roomName.toLowerCase().replace(/\s+/g, "-"),
+              code: roomName.toLowerCase().replace(/\s+/gu, "-"),
               name: roomName,
             });
             foundPrices++;
