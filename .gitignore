@@ -25,6 +25,9 @@
 *.pem
 .playwright-cli
 
+# claude code local state and worktrees
+.claude/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

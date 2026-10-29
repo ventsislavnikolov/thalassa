@@ -34,5 +34,6 @@ analysis, tracking.
 ## Persistence
 
 Tracking is the only persistent domain: Neon Postgres via a lazy client
-(`tracking/db.ts`, `DATABASE_URL`), tables `watchlist` and `price_snapshots`
-(`tracking/schema.sql`). All other domains are stateless config + pure logic.
+(`tracking/db.ts`, `DATABASE_URL`), tables `watchlist`, `price_snapshots`,
+`cron_state` and `alert_events` (`tracking/schema.sql`). All other domains are
+stateless config + pure logic. Module notes: `docs/modules/`.
