@@ -62,8 +62,8 @@ export function SearchOptions({
       {/* Year search */}
       <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
         <div className="space-y-0.5">
-          <Label className="text-[#F5F7F8] text-sm">Year-long Search</Label>
-          <p className="text-[#536365] text-xs">
+          <Label className="text-sm text-[#F5F7F8]">Year-long Search</Label>
+          <p className="text-xs text-[#536365]">
             {yearSearchHint ??
               "Search for the best prices throughout the entire year"}
           </p>
@@ -80,10 +80,10 @@ export function SearchOptions({
           {/* Multi-month */}
           <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
             <div className="space-y-0.5">
-              <Label className="text-[#F5F7F8] text-sm">
+              <Label className="text-sm text-[#F5F7F8]">
                 Multi-Month Search
               </Label>
-              <p className="text-[#536365] text-xs">
+              <p className="text-xs text-[#536365]">
                 Search across multiple months for the best deals
               </p>
             </div>
@@ -121,11 +121,11 @@ export function SearchOptions({
       {/* Weather */}
       <div className="flex items-center justify-between rounded-lg border border-[#1e2a36] bg-[#111820] px-4 py-3">
         <div className="space-y-0.5">
-          <Label className="flex items-center gap-2 text-[#F5F7F8] text-sm">
+          <Label className="flex items-center gap-2 text-sm text-[#F5F7F8]">
             <CloudSun className="h-3.5 w-3.5 text-[#738C8A]" />
             Weather Analysis
           </Label>
-          <p className="text-[#536365] text-xs">
+          <p className="text-xs text-[#536365]">
             Include weather forecasts and beach conditions for top deals
           </p>
         </div>

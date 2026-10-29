@@ -100,8 +100,8 @@ function ResultsPageContent() {
       <section className="py-16">
         <PageContainer>
           <div className="mx-auto max-w-lg text-center">
-            <h1 className="mb-4 font-display text-3xl">No Search Parameters</h1>
-            <p className="mb-8 text-muted-foreground">
+            <h1 className="font-display mb-4 text-3xl">No Search Parameters</h1>
+            <p className="text-muted-foreground mb-8">
               Start a new search to find hotel prices.
             </p>
             <Button asChild>
@@ -121,7 +121,7 @@ function ResultsPageContent() {
     <section className="py-8">
       <PageContainer>
         <div className="mb-8">
-          <h1 className="mb-2 font-display text-3xl">Search Results</h1>
+          <h1 className="font-display mb-2 text-3xl">Search Results</h1>
           <Button asChild size="sm" variant="outline">
             <Link href="/search">New Search</Link>
           </Button>
@@ -131,8 +131,8 @@ function ResultsPageContent() {
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-primary border-b-2" />
-              <p className="font-medium text-lg">
+              <div className="border-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2" />
+              <p className="text-lg font-medium">
                 Searching for the best prices...
               </p>
               <p className="text-muted-foreground text-sm">
@@ -155,27 +155,27 @@ function ResultsPageContent() {
         {results && !loading && (
           <div className="space-y-8">
             {/* Search Summary */}
-            <div className="rounded-lg bg-card p-4 shadow-warm">
-              <div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+            <div className="bg-card shadow-warm rounded-lg p-4">
+              <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1">
                   <Calendar className="h-3.5 w-3.5" />
                   {parsed.checkin}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1">
                   <Moon className="h-3.5 w-3.5" />
                   {parsed.nights} nights
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1">
                   <Users className="h-3.5 w-3.5" />
                   {parsed.adults} adults
                   {parsed.children > 0 && `, ${parsed.children} children`}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1">
                   <Hotel className="h-3.5 w-3.5" />
                   {results.meta.hotelsSearched.length} hotel
                   {results.meta.hotelsSearched.length > 1 ? "s" : ""}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+                <span className="bg-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1">
                   <BarChart3 className="h-3.5 w-3.5" />
                   {results.meta.totalResults} dates found
                 </span>
@@ -227,7 +227,7 @@ function LoadingFallback() {
   return (
     <div className="flex min-h-[50vh] items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-primary border-b-2" />
+        <div className="border-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2" />
         <p className="text-muted-foreground text-sm">Loading results...</p>
       </div>
     </div>

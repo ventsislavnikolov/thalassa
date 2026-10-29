@@ -49,7 +49,7 @@ export default async function HotelDetailPage({
         <div className="absolute inset-0 bg-black/50" />
         <PageContainer className="relative z-10">
           <div className="mx-auto max-w-3xl text-center text-white">
-            <h1 className="mb-4 font-display text-4xl tracking-tight sm:text-5xl">
+            <h1 className="font-display mb-4 text-4xl tracking-tight sm:text-5xl">
               {hotel.displayName}
             </h1>
             <div className="mb-6 flex items-center justify-center gap-3">
@@ -80,7 +80,7 @@ export default async function HotelDetailPage({
               <CardContent>
                 <p className="text-muted-foreground">
                   Located in{" "}
-                  <span className="font-medium text-foreground">
+                  <span className="text-foreground font-medium">
                     {location.name}
                   </span>
                   , {location.region}, {location.country}. One of the most

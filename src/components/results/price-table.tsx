@@ -158,7 +158,7 @@ export function PriceTable({
         </div>
 
         {prices.length > 20 && (
-          <p className="mt-4 text-center text-muted-foreground text-sm">
+          <p className="text-muted-foreground mt-4 text-center text-sm">
             Showing top 20 results. Use export to see all {prices.length} dates.
           </p>
         )}

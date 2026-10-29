@@ -54,12 +54,12 @@ function ResultsSkeleton() {
       </div>
       {/* Table */}
       <div className="rounded-xl border border-[#1e2a36] bg-[#111820]">
-        <div className="border-[#1e2a36] border-b p-5">
+        <div className="border-b border-[#1e2a36] p-5">
           <Skeleton className="h-5 w-40 bg-[#1e2a36]" />
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
-            className="flex items-center gap-4 border-[#1e2a36] border-b p-4 last:border-0"
+            className="flex items-center gap-4 border-b border-[#1e2a36] p-4 last:border-0"
             key={i}
           >
             <Skeleton className="h-4 w-24 bg-[#1e2a36]" />
@@ -149,7 +149,7 @@ function SearchPageContent() {
         </div>
 
         <PageContainer className="relative">
-          <div className="mb-2 flex items-center gap-2 text-[#536365] text-sm">
+          <div className="mb-2 flex items-center gap-2 text-sm text-[#536365]">
             <span>Home</span>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-[#A3B2B5]">Price Search</span>
@@ -157,10 +157,10 @@ function SearchPageContent() {
 
           <div className="mt-6 flex items-end justify-between">
             <div>
-              <h1 className="mb-2 font-display text-4xl text-[#F5F7F8] tracking-tight lg:text-5xl">
+              <h1 className="font-display mb-2 text-4xl tracking-tight text-[#F5F7F8] lg:text-5xl">
                 Search Hotel Prices
               </h1>
-              <p className="max-w-lg text-[#536365] text-lg leading-relaxed">
+              <p className="max-w-lg text-lg leading-relaxed text-[#536365]">
                 Compare real-time rates across premium hotels in Greece &
                 Bulgaria. Weather-informed recommendations included.
               </p>
@@ -214,8 +214,8 @@ function SearchPageContent() {
           {loading && (
             <div className="pt-8">
               <div className="mb-6 flex items-center gap-3">
-                <div className="h-5 w-5 animate-spin rounded-full border-[#2E5BB1] border-b-2" />
-                <p className="font-medium text-[#A3B2B5] text-sm">
+                <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-[#2E5BB1]" />
+                <p className="text-sm font-medium text-[#A3B2B5]">
                   Searching for the best prices...
                 </p>
               </div>
@@ -229,10 +229,10 @@ function SearchPageContent() {
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-[#1e2a36] bg-[#111820]">
                 <Search className="h-8 w-8 text-[#293044]" />
               </div>
-              <h3 className="mb-2 font-display text-[#A3B2B5] text-xl">
+              <h3 className="font-display mb-2 text-xl text-[#A3B2B5]">
                 Ready to search
               </h3>
-              <p className="max-w-sm text-[#536365] text-sm">
+              <p className="max-w-sm text-sm text-[#536365]">
                 Configure your search above and compare prices across all
                 tracked hotels in real time.
               </p>
@@ -289,10 +289,10 @@ function SearchPageContent() {
                         <BarChart3 className="h-4 w-4 text-[#738C8A]" />
                       </div>
                       <div>
-                        <h2 className="font-display text-[#F5F7F8] text-xl">
+                        <h2 className="font-display text-xl text-[#F5F7F8]">
                           Price Overview
                         </h2>
-                        <p className="text-[#536365] text-xs">
+                        <p className="text-xs text-[#536365]">
                           Summary statistics for your search
                         </p>
                       </div>
@@ -308,10 +308,10 @@ function SearchPageContent() {
                         <Calendar className="h-4 w-4 text-[#2E5BB1]" />
                       </div>
                       <div>
-                        <h2 className="font-display text-[#F5F7F8] text-xl">
+                        <h2 className="font-display text-xl text-[#F5F7F8]">
                           Detailed Prices
                         </h2>
-                        <p className="text-[#536365] text-xs">
+                        <p className="text-xs text-[#536365]">
                           All available dates and pricing
                         </p>
                       </div>
@@ -341,10 +341,10 @@ function SearchPageContent() {
                             <Sparkles className="h-4 w-4 text-[#738C8A]" />
                           </div>
                           <div>
-                            <h2 className="font-display text-[#F5F7F8] text-xl">
+                            <h2 className="font-display text-xl text-[#F5F7F8]">
                               Weather Analysis
                             </h2>
-                            <p className="text-[#536365] text-xs">
+                            <p className="text-xs text-[#536365]">
                               Beach suitability and conditions forecast
                             </p>
                           </div>
@@ -377,8 +377,8 @@ function LoadingFallback() {
   return (
     <div className="noir-bg flex min-h-[50vh] items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-[#2E5BB1] border-b-2" />
-        <p className="text-[#536365] text-sm">Loading search...</p>
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#2E5BB1]" />
+        <p className="text-sm text-[#536365]">Loading search...</p>
       </div>
     </div>
   );

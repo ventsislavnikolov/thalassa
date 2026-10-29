@@ -123,16 +123,16 @@ export function SearchForm({
   return (
     <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-[#1e2a36] bg-[#0d1117]">
       {/* Form header */}
-      <div className="border-[#1e2a36] border-b px-6 py-5 sm:px-8">
+      <div className="border-b border-[#1e2a36] px-6 py-5 sm:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2E5BB1]/15">
             <Search className="h-4 w-4 text-[#2E5BB1]" />
           </div>
           <div>
-            <h2 className="font-display text-[#F5F7F8] text-lg">
+            <h2 className="font-display text-lg text-[#F5F7F8]">
               Price Search
             </h2>
-            <p className="text-[#536365] text-xs">
+            <p className="text-xs text-[#536365]">
               Find the best rates across {hotels.length || 15} hotels
             </p>
           </div>
@@ -141,10 +141,10 @@ export function SearchForm({
 
       <form onSubmit={handleSubmit}>
         {/* Section: When & Duration */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               When
             </span>
           </div>
@@ -173,10 +173,10 @@ export function SearchForm({
         </div>
 
         {/* Section: Guests */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Users className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Guests
             </span>
           </div>
@@ -190,13 +190,13 @@ export function SearchForm({
         </div>
 
         {/* Section: Hotels */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Hotel className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Hotels
             </span>
-            <span className="ml-auto rounded-md bg-[#2A4F58]/15 px-2 py-0.5 text-[#738C8A] text-[10px]">
+            <span className="ml-auto rounded-md bg-[#2A4F58]/15 px-2 py-0.5 text-[10px] text-[#738C8A]">
               {formData.hotelIds.length} selected
             </span>
           </div>
@@ -210,10 +210,10 @@ export function SearchForm({
         </div>
 
         {/* Section: Options */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Settings2 className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Options
             </span>
           </div>
@@ -266,7 +266,7 @@ export function SearchForm({
           >
             {loading ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                 Searching...
               </>
             ) : (
@@ -278,7 +278,7 @@ export function SearchForm({
           </Button>
 
           {formData.hotelIds.length === 0 && (
-            <p className="mt-3 text-center text-red-400 text-sm">
+            <p className="mt-3 text-center text-sm text-red-400">
               Please select at least one hotel to search
             </p>
           )}

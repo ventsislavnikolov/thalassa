@@ -283,16 +283,16 @@ export function WatchlistManager() {
               "Add to watchlist"
             )}
           </Button>
-          {error ? <span className="text-red-400 text-sm">{error}</span> : null}
+          {error ? <span className="text-sm text-red-400">{error}</span> : null}
         </div>
       </form>
 
       <div className="rounded-xl border border-[#1e2a36] bg-[#0b1116]">
         {loading ? (
-          <p className="p-5 text-[#536365] text-sm">Loading…</p>
+          <p className="p-5 text-sm text-[#536365]">Loading…</p>
         ) : null}
         {!loading && entries.length === 0 ? (
-          <p className="p-5 text-[#536365] text-sm">
+          <p className="p-5 text-sm text-[#536365]">
             No tracked stays yet. Add one above.
           </p>
         ) : null}

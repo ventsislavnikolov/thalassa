@@ -25,8 +25,8 @@ export function WeatherSummary({ analyses }: WeatherSummaryProps) {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="rounded-lg border p-4 text-center">
-              <h4 className="font-semibold text-secondary">Best Value</h4>
-              <p className="font-bold text-2xl">
+              <h4 className="text-secondary font-semibold">Best Value</h4>
+              <p className="text-2xl font-bold">
                 {bestOverall?.priceInfo.stayTotal.toFixed(2) ?? "0"} EUR
               </p>
               <p className="text-muted-foreground text-sm">
@@ -44,21 +44,21 @@ export function WeatherSummary({ analyses }: WeatherSummaryProps) {
             </div>
 
             <div className="rounded-lg border p-4 text-center">
-              <h4 className="font-semibold text-primary">Best Weather</h4>
-              <p className="font-bold text-2xl">{bestWeatherScore}/100</p>
+              <h4 className="text-primary font-semibold">Best Weather</h4>
+              <p className="text-2xl font-bold">{bestWeatherScore}/100</p>
               <p className="text-muted-foreground text-sm">Beach Score</p>
             </div>
 
             <div className="rounded-lg border p-4 text-center">
               <h4 className="font-semibold text-amber-600">Best Overall</h4>
-              <p className="font-bold text-2xl">
+              <p className="text-2xl font-bold">
                 {bestOverall?.totalScore.toFixed(1) ?? "0"}/100
               </p>
               <p className="text-muted-foreground text-sm">Combined Score</p>
             </div>
           </div>
 
-          <div className="rounded-lg bg-muted p-4">
+          <div className="bg-muted rounded-lg p-4">
             <h4 className="mb-2 font-semibold">Recommendation</h4>
             <p className="text-sm">
               {bestOverall?.recommendation ??

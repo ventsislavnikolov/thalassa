@@ -23,7 +23,7 @@ function Stat({
 }) {
   return (
     <div className="space-y-0.5">
-      <p className="text-[#536365] text-xs uppercase tracking-wide">{label}</p>
+      <p className="text-xs tracking-wide text-[#536365] uppercase">{label}</p>
       <p className={`font-medium ${accent ?? "text-[#F5F7F8]"}`}>{value}</p>
     </div>
   );
@@ -74,7 +74,7 @@ export function PriceTrendStats({ trend }: PriceTrendStatsProps) {
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {trend.isAtLow ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 font-medium text-green-400 text-xs">
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
             <Trophy className="size-3.5" /> At historical low
           </span>
         ) : changeLow === null ? null : (
@@ -93,7 +93,7 @@ export function PriceTrendStats({ trend }: PriceTrendStatsProps) {
           </span>
         )}
 
-        <span className="text-[#536365] text-xs">
+        <span className="text-xs text-[#536365]">
           {trend.pointCount} point{trend.pointCount === 1 ? "" : "s"}
         </span>
       </div>

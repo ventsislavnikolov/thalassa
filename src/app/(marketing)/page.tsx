@@ -130,14 +130,14 @@ export default function HomePage() {
 
         <PageContainer className="relative z-10 pt-20 pb-32">
           <div className="max-w-3xl">
-            <div className="mb-6 inline-flex animate-fade-in-up items-center gap-2 rounded-full border border-[#2A4F58]/40 bg-[#2A4F58]/15 px-4 py-1.5">
-              <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-emerald-400" />
-              <span className="text-[#A3B2B5] text-xs tracking-wide">
+            <div className="animate-fade-in-up mb-6 inline-flex items-center gap-2 rounded-full border border-[#2A4F58]/40 bg-[#2A4F58]/15 px-4 py-1.5">
+              <span className="animate-pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="text-xs tracking-wide text-[#A3B2B5]">
                 Live prices from {allHotels.length} hotels
               </span>
             </div>
 
-            <h1 className="mb-6 animate-delay-100 animate-fade-in-up font-display text-5xl text-[#F5F7F8] leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="animate-delay-100 animate-fade-in-up font-display mb-6 text-5xl leading-[1.05] tracking-tight text-[#F5F7F8] sm:text-6xl lg:text-7xl">
               Find the best
               <br />
               hotel prices in
@@ -145,7 +145,7 @@ export default function HomePage() {
               <span className="text-[#A3B2B5]">Greece & Bulgaria</span>
             </h1>
 
-            <p className="mb-10 max-w-xl animate-delay-200 animate-fade-in-up text-[#536365] text-lg leading-relaxed">
+            <p className="animate-delay-200 animate-fade-in-up mb-10 max-w-xl text-lg leading-relaxed text-[#536365]">
               Compare real-time rates across {allHotels.length} handpicked
               hotels in Halkidiki, Kavala, the Greek Islands & the Bulgarian
               Black Sea coast. Weather-smart recommendations included.
@@ -156,17 +156,17 @@ export default function HomePage() {
               <div className="glass-noir inline-flex flex-wrap items-center gap-3 rounded-2xl p-2 sm:flex-nowrap">
                 <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-white/5 px-4 py-3">
                   <MapPin className="h-4 w-4 shrink-0 text-[#738C8A]" />
-                  <span className="truncate text-[#A3B2B5] text-sm">
+                  <span className="truncate text-sm text-[#A3B2B5]">
                     Halkidiki, Kavala, Islands, Obzor
                   </span>
                 </div>
                 <div className="hidden items-center gap-3 rounded-xl bg-white/5 px-4 py-3 sm:flex">
                   <Sun className="h-4 w-4 shrink-0 text-[#738C8A]" />
-                  <span className="text-[#A3B2B5] text-sm">Any dates</span>
+                  <span className="text-sm text-[#A3B2B5]">Any dates</span>
                 </div>
                 <div className="hidden items-center gap-3 rounded-xl bg-white/5 px-4 py-3 sm:flex">
                   <Users className="h-4 w-4 shrink-0 text-[#738C8A]" />
-                  <span className="text-[#A3B2B5] text-sm">2 guests</span>
+                  <span className="text-sm text-[#A3B2B5]">2 guests</span>
                 </div>
                 <Button
                   asChild
@@ -184,7 +184,7 @@ export default function HomePage() {
         </PageContainer>
 
         <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
-          <ChevronDown className="h-5 w-5 animate-scroll-hint text-[#536365]" />
+          <ChevronDown className="animate-scroll-hint h-5 w-5 text-[#536365]" />
         </div>
       </section>
 
@@ -212,17 +212,17 @@ export default function HomePage() {
                 },
               ].map((stat, i) => (
                 <div
-                  className={`flex items-center gap-3 ${i > 0 ? "sm:border-[#1e2a36] sm:border-l sm:pl-6" : ""}`}
+                  className={`flex items-center gap-3 ${i > 0 ? "sm:border-l sm:border-[#1e2a36] sm:pl-6" : ""}`}
                   key={stat.label}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2A4F58]/20">
                     <stat.icon className="h-4.5 w-4.5 text-[#738C8A]" />
                   </div>
                   <div>
-                    <p className="animate-count-up font-display text-[#F5F7F8] text-xl leading-none">
+                    <p className="animate-count-up font-display text-xl leading-none text-[#F5F7F8]">
                       {stat.value}
                     </p>
-                    <p className="mt-0.5 text-[#536365] text-xs">
+                    <p className="mt-0.5 text-xs text-[#536365]">
                       {stat.label}
                     </p>
                   </div>
@@ -238,13 +238,13 @@ export default function HomePage() {
         <PageContainer>
           <div className="mb-14 flex items-end justify-between">
             <div>
-              <p className="mb-2 font-semibold text-[#2A4F58] text-xs uppercase tracking-[0.3em]">
+              <p className="mb-2 text-xs font-semibold tracking-[0.3em] text-[#2A4F58] uppercase">
                 All Properties
               </p>
               <h2 className="font-display text-3xl text-[#F5F7F8] sm:text-4xl">
                 Compare {allHotels.length} Hotels
               </h2>
-              <p className="mt-3 max-w-lg text-[#536365] text-sm leading-relaxed">
+              <p className="mt-3 max-w-lg text-sm leading-relaxed text-[#536365]">
                 Every hotel tracked in real-time. Click any card to see detailed
                 pricing, room types, and weather forecasts.
               </p>
@@ -286,7 +286,7 @@ export default function HomePage() {
                     {/* Property type badge */}
                     <div className="absolute top-3 left-3">
                       <span
-                        className={`inline-flex items-center rounded-md border px-2 py-0.5 font-medium text-[10px] uppercase tracking-wider ${typeColor}`}
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium tracking-wider uppercase ${typeColor}`}
                       >
                         {propertyType}
                       </span>
@@ -294,7 +294,7 @@ export default function HomePage() {
 
                     {/* Price badge placeholder */}
                     <div className="absolute top-3 right-3">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-[#070a0d]/70 px-2 py-1 text-[#738C8A] text-[10px] backdrop-blur-sm">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-[#070a0d]/70 px-2 py-1 text-[10px] text-[#738C8A] backdrop-blur-sm">
                         <TrendingDown className="h-3 w-3" />
                         Check price
                       </span>
@@ -303,7 +303,7 @@ export default function HomePage() {
                     {/* Weather indicator */}
                     <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-md bg-[#070a0d]/60 px-2 py-1 backdrop-blur-sm">
                       <CloudSun className="h-3 w-3 text-amber-400" />
-                      <span className="text-[#A3B2B5] text-[10px]">
+                      <span className="text-[10px] text-[#A3B2B5]">
                         Weather
                       </span>
                     </div>
@@ -311,17 +311,17 @@ export default function HomePage() {
 
                   {/* Card body */}
                   <div className="p-4">
-                    <h3 className="font-display text-[#F5F7F8] text-lg transition-colors group-hover:text-white">
+                    <h3 className="font-display text-lg text-[#F5F7F8] transition-colors group-hover:text-white">
                       {hotel.displayName}
                     </h3>
-                    <p className="mt-1 flex items-center gap-1.5 text-[#536365] text-xs">
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-[#536365]">
                       <MapPin className="h-3 w-3" />
                       {locationNames[hotel.locationSlug] || hotel.locationSlug}
                     </p>
 
                     {/* Action row */}
-                    <div className="mt-4 flex items-center justify-between border-[#1e2a36] border-t pt-3">
-                      <span className="animate-shimmer rounded bg-clip-text px-1 text-[#2A4F58] text-xs">
+                    <div className="mt-4 flex items-center justify-between border-t border-[#1e2a36] pt-3">
+                      <span className="animate-shimmer rounded bg-clip-text px-1 text-xs text-[#2A4F58]">
                         Search for best rates
                       </span>
                       <ChevronRight className="h-4 w-4 text-[#293044] transition-all group-hover:translate-x-0.5 group-hover:text-[#2E5BB1]" />
@@ -354,13 +354,13 @@ export default function HomePage() {
 
         <PageContainer className="relative">
           <div className="mb-14 text-center">
-            <p className="mb-2 font-semibold text-[#2A4F58] text-xs uppercase tracking-[0.3em]">
+            <p className="mb-2 text-xs font-semibold tracking-[0.3em] text-[#2A4F58] uppercase">
               Destinations
             </p>
             <h2 className="font-display text-3xl text-[#F5F7F8] sm:text-4xl">
               Explore by Region
             </h2>
-            <p className="mx-auto mt-3 max-w-lg text-[#536365] text-sm">
+            <p className="mx-auto mt-3 max-w-lg text-sm text-[#536365]">
               From the three peninsulas of Halkidiki and the Greek Islands to
               the Black Sea resorts of Obzor, Bulgaria.
             </p>
@@ -369,7 +369,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {destinationShowcase.map((dest, index) => (
               <div
-                className={`group relative animate-fade-in-up overflow-hidden rounded-2xl ${index === 0 ? "md:row-span-2" : ""} ${delayClasses[index]}`}
+                className={`group animate-fade-in-up relative overflow-hidden rounded-2xl ${index === 0 ? "md:row-span-2" : ""} ${delayClasses[index]}`}
                 key={dest.name}
               >
                 <div
@@ -392,7 +392,7 @@ export default function HomePage() {
                   <div className="absolute right-0 bottom-0 left-0 p-6">
                     <div className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-[#2A4F58]/30 px-2.5 py-1 backdrop-blur-sm">
                       <Hotel className="h-3 w-3 text-[#738C8A]" />
-                      <span className="text-[#A3B2B5] text-xs">
+                      <span className="text-xs text-[#A3B2B5]">
                         {dest.hotelCount}{" "}
                         {dest.hotelCount === 1 ? "hotel" : "hotels"}
                       </span>
@@ -400,7 +400,7 @@ export default function HomePage() {
                     <h3 className="font-display text-2xl text-[#F5F7F8]">
                       {dest.name}
                     </h3>
-                    <p className="mt-1 text-[#536365] text-sm">
+                    <p className="mt-1 text-sm text-[#536365]">
                       {dest.description}
                     </p>
                   </div>
@@ -415,7 +415,7 @@ export default function HomePage() {
       <section className="py-24">
         <PageContainer>
           <div className="mb-16 text-center">
-            <p className="mb-2 font-semibold text-[#2A4F58] text-xs uppercase tracking-[0.3em]">
+            <p className="mb-2 text-xs font-semibold tracking-[0.3em] text-[#2A4F58] uppercase">
               Simple process
             </p>
             <h2 className="font-display text-3xl text-[#F5F7F8] sm:text-4xl">
@@ -448,7 +448,7 @@ export default function HomePage() {
               },
             ].map((item, index) => (
               <div
-                className={`group relative animate-fade-in-up text-center ${delayClasses[index]}`}
+                className={`group animate-fade-in-up relative text-center ${delayClasses[index]}`}
                 key={item.step}
               >
                 {/* Step number */}
@@ -456,7 +456,7 @@ export default function HomePage() {
                   <div className="noir-card group-hover:glow-teal mx-auto flex h-20 w-20 items-center justify-center rounded-2xl transition-all duration-300 group-hover:border-[#2A4F58]/50">
                     <item.icon className="h-8 w-8 text-[#2A4F58] transition-colors group-hover:text-[#738C8A]" />
                   </div>
-                  <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#2E5BB1] font-mono text-white text-xs">
+                  <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#2E5BB1] font-mono text-xs text-white">
                     {item.step}
                   </span>
                 </div>
@@ -466,10 +466,10 @@ export default function HomePage() {
                   <div className="absolute top-10 left-[calc(50%+48px)] hidden h-px w-[calc(100%-96px)] bg-gradient-to-r from-[#1e2a36] to-[#1e2a36]/0 md:block" />
                 )}
 
-                <h3 className="mb-2 font-display text-[#F5F7F8] text-xl">
+                <h3 className="font-display mb-2 text-xl text-[#F5F7F8]">
                   {item.title}
                 </h3>
-                <p className="text-[#536365] text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed text-[#536365]">
                   {item.description}
                 </p>
               </div>
@@ -491,13 +491,13 @@ export default function HomePage() {
 
         <PageContainer className="relative">
           <div className="mx-auto mb-14 max-w-2xl text-center">
-            <p className="mb-2 font-semibold text-[#2A4F58] text-xs uppercase tracking-[0.3em]">
+            <p className="mb-2 text-xs font-semibold tracking-[0.3em] text-[#2A4F58] uppercase">
               Why Thalassa
             </p>
-            <h2 className="mb-4 font-display text-3xl text-[#F5F7F8] sm:text-4xl">
+            <h2 className="font-display mb-4 text-3xl text-[#F5F7F8] sm:text-4xl">
               Travel Intelligence, Perfected
             </h2>
-            <p className="text-[#536365] text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-[#536365]">
               We combine real-time market data with environmental analysis to
               find your ideal Mediterranean escape.
             </p>
@@ -547,10 +547,10 @@ export default function HomePage() {
                     style={{ color: feature.accent }}
                   />
                 </div>
-                <h3 className="mb-2 font-display text-[#F5F7F8] text-lg">
+                <h3 className="font-display mb-2 text-lg text-[#F5F7F8]">
                   {feature.title}
                 </h3>
-                <p className="text-[#536365] text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed text-[#536365]">
                   {feature.description}
                 </p>
               </div>
@@ -574,15 +574,15 @@ export default function HomePage() {
         <PageContainer className="relative z-10">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
-              <p className="mb-3 font-semibold text-[#2A4F58] text-xs uppercase tracking-[0.3em]">
+              <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-[#2A4F58] uppercase">
                 Get in Touch
               </p>
-              <h2 className="mb-6 font-display text-3xl text-[#F5F7F8] leading-tight sm:text-4xl">
+              <h2 className="font-display mb-6 text-3xl leading-tight text-[#F5F7F8] sm:text-4xl">
                 Plan Your
                 <br />
                 Seaside Getaway
               </h2>
-              <p className="mb-10 max-w-md text-[#536365] leading-relaxed">
+              <p className="mb-10 max-w-md leading-relaxed text-[#536365]">
                 Whether you need help choosing the perfect property or want a
                 custom price comparison, we are here to help.
               </p>
@@ -597,7 +597,7 @@ export default function HomePage() {
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2A4F58]/15">
                       <item.icon className="h-4 w-4 text-[#738C8A]" />
                     </div>
-                    <span className="text-[#A3B2B5] text-sm">{item.text}</span>
+                    <span className="text-sm text-[#A3B2B5]">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -609,13 +609,13 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div>
                     <label
-                      className="mb-2 block font-medium text-[#A3B2B5] text-sm"
+                      className="mb-2 block text-sm font-medium text-[#A3B2B5]"
                       htmlFor="contact-first-name"
                     >
                       First Name
                     </label>
                     <input
-                      className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-[#F5F7F8] text-sm transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:outline-none focus:ring-1 focus:ring-[#2A4F58]/40"
+                      className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-sm text-[#F5F7F8] transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-1 focus:ring-[#2A4F58]/40 focus:outline-none"
                       id="contact-first-name"
                       placeholder="Elena"
                       type="text"
@@ -623,13 +623,13 @@ export default function HomePage() {
                   </div>
                   <div>
                     <label
-                      className="mb-2 block font-medium text-[#A3B2B5] text-sm"
+                      className="mb-2 block text-sm font-medium text-[#A3B2B5]"
                       htmlFor="contact-last-name"
                     >
                       Last Name
                     </label>
                     <input
-                      className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-[#F5F7F8] text-sm transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:outline-none focus:ring-1 focus:ring-[#2A4F58]/40"
+                      className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-sm text-[#F5F7F8] transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-1 focus:ring-[#2A4F58]/40 focus:outline-none"
                       id="contact-last-name"
                       placeholder="Papadimitriou"
                       type="text"
@@ -638,13 +638,13 @@ export default function HomePage() {
                 </div>
                 <div>
                   <label
-                    className="mb-2 block font-medium text-[#A3B2B5] text-sm"
+                    className="mb-2 block text-sm font-medium text-[#A3B2B5]"
                     htmlFor="contact-email"
                   >
                     Email
                   </label>
                   <input
-                    className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-[#F5F7F8] text-sm transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:outline-none focus:ring-1 focus:ring-[#2A4F58]/40"
+                    className="w-full rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-sm text-[#F5F7F8] transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-1 focus:ring-[#2A4F58]/40 focus:outline-none"
                     id="contact-email"
                     placeholder="elena@example.com"
                     type="email"
@@ -652,13 +652,13 @@ export default function HomePage() {
                 </div>
                 <div>
                   <label
-                    className="mb-2 block font-medium text-[#A3B2B5] text-sm"
+                    className="mb-2 block text-sm font-medium text-[#A3B2B5]"
                     htmlFor="contact-message"
                   >
                     Message
                   </label>
                   <textarea
-                    className="w-full resize-none rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-[#F5F7F8] text-sm transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:outline-none focus:ring-1 focus:ring-[#2A4F58]/40"
+                    className="w-full resize-none rounded-lg border border-[#1e2a36] bg-[#0d1117] px-4 py-3 text-sm text-[#F5F7F8] transition-colors placeholder:text-[#293044] focus:border-[#2A4F58] focus:ring-1 focus:ring-[#2A4F58]/40 focus:outline-none"
                     id="contact-message"
                     placeholder="Tell us about your ideal seaside getaway..."
                     rows={4}
@@ -689,8 +689,8 @@ export default function HomePage() {
 
         <PageContainer className="relative">
           <div className="mx-auto max-w-3xl text-center">
-            <Waves className="mx-auto mb-6 h-8 w-8 animate-float text-[#2A4F58]" />
-            <h2 className="mb-4 font-display text-3xl text-[#F5F7F8] sm:text-4xl">
+            <Waves className="animate-float mx-auto mb-6 h-8 w-8 text-[#2A4F58]" />
+            <h2 className="font-display mb-4 text-3xl text-[#F5F7F8] sm:text-4xl">
               Ready to Find Your Perfect Stay?
             </h2>
             <p className="mb-10 text-[#536365]">

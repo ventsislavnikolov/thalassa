@@ -40,7 +40,7 @@ export function HotelSelector({
       <div className="flex items-center justify-between">
         <Label className="text-[#A3B2B5]">Hotels to Search</Label>
         <Button
-          className="h-auto border-[#1e2a36] bg-transparent px-2.5 py-1 text-[#738C8A] text-xs hover:bg-[#111820] hover:text-[#A3B2B5]"
+          className="h-auto border-[#1e2a36] bg-transparent px-2.5 py-1 text-xs text-[#738C8A] hover:bg-[#111820] hover:text-[#A3B2B5]"
           onClick={handleSelectAll}
           type="button"
           variant="outline"

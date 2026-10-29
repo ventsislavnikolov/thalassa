@@ -82,7 +82,7 @@ export function WatchlistItem({
   }
 
   return (
-    <div className="border-[#1e2a36] border-b last:border-b-0">
+    <div className="border-b border-[#1e2a36] last:border-b-0">
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
         <button
           className="flex min-w-0 items-center gap-3 text-left"
@@ -99,7 +99,7 @@ export function WatchlistItem({
               {hotelName}
               {hasAlert ? <Bell className="size-3.5 text-amber-400" /> : null}
             </p>
-            <p className="text-[#738C8A] text-sm">
+            <p className="text-sm text-[#738C8A]">
               {entry.checkinDate} · {entry.nights} night
               {entry.nights === 1 ? "" : "s"} · {entry.adults} adult
               {entry.adults === 1 ? "" : "s"}
@@ -114,7 +114,7 @@ export function WatchlistItem({
               checked={entry.active}
               onCheckedChange={() => onToggle(entry)}
             />
-            <span className="text-[#738C8A] text-xs">
+            <span className="text-xs text-[#738C8A]">
               {entry.active ? "Active" : "Paused"}
             </span>
           </div>
@@ -130,9 +130,9 @@ export function WatchlistItem({
       </div>
 
       {expanded ? (
-        <div className="space-y-5 border-[#1e2a36] border-t bg-[#070c10] px-5 py-5">
+        <div className="space-y-5 border-t border-[#1e2a36] bg-[#070c10] px-5 py-5">
           {loading ? (
-            <p className="flex items-center gap-2 text-[#536365] text-sm">
+            <p className="flex items-center gap-2 text-sm text-[#536365]">
               <Loader2 className="size-4 animate-spin" /> Loading price history…
             </p>
           ) : null}
@@ -143,21 +143,21 @@ export function WatchlistItem({
             </>
           ) : null}
           {!loading && history && !history.trend.hasData ? (
-            <p className="flex items-center gap-2 py-2 text-[#536365] text-sm">
+            <p className="flex items-center gap-2 py-2 text-sm text-[#536365]">
               <LineChart className="size-4" /> No price data yet — the scraper
               records a point every 2 hours when the price changes.
             </p>
           ) : null}
 
-          <div className="space-y-3 border-[#1e2a36] border-t pt-4">
+          <div className="space-y-3 border-t border-[#1e2a36] pt-4">
             <div className="flex items-center gap-2">
               <Bell className="size-4 text-amber-400" />
-              <p className="font-medium text-[#A3B2B5] text-sm">Deal alerts</p>
+              <p className="text-sm font-medium text-[#A3B2B5]">Deal alerts</p>
             </div>
             <div className="flex flex-wrap items-end gap-3">
               <div className="space-y-1.5">
                 <Label
-                  className="text-[#738C8A] text-xs"
+                  className="text-xs text-[#738C8A]"
                   htmlFor={`t-${entry.id}`}
                 >
                   Target price (€)
@@ -174,7 +174,7 @@ export function WatchlistItem({
               </div>
               <div className="space-y-1.5">
                 <Label
-                  className="text-[#738C8A] text-xs"
+                  className="text-xs text-[#738C8A]"
                   htmlFor={`p-${entry.id}`}
                 >
                   % drop
@@ -202,7 +202,7 @@ export function WatchlistItem({
                 )}
               </Button>
             </div>
-            <p className="text-[#536365] text-xs">
+            <p className="text-xs text-[#536365]">
               {entry.alertedAt
                 ? `Last alerted ${new Date(entry.alertedAt).toLocaleString()}`
                 : "No alerts sent yet. Emailed once when a threshold is crossed."}
