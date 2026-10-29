@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const cocooning: HotelConfig = {
-  id: "cocooning",
-  slug: "cocooning",
-  name: "Cocooning Suites",
-  displayName: "Cocooning Suites",
   baseUrl: "https://cocooningsuites.reserve-online.net",
-  strategyType: "calendar",
-  locationSlug: "pefkochori",
+  displayName: "Cocooning Suites",
+  id: "cocooning",
   image: "/images/hotels/cocooning.jpg",
+  locationSlug: "pefkochori",
+  name: "Cocooning Suites",
+  slug: "cocooning",
+  strategyType: "calendar",
 };
 
 export default cocooning;

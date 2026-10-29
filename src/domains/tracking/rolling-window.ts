@@ -12,11 +12,11 @@ export interface WindowConfig {
 
 /** Weekly 7-night stays with Saturday check-in, 14–90 days ahead, 2 adults. */
 export const DEFAULT_WINDOW: WindowConfig = {
-  minDaysAhead: 14,
-  maxDaysAhead: 90,
-  checkinWeekdays: [{ weekday: 6, nights: 7 }],
   adults: 2,
+  checkinWeekdays: [{ nights: 7, weekday: 6 }],
   children: 0,
+  maxDaysAhead: 90,
+  minDaysAhead: 14,
 };
 
 export interface WindowDate {
@@ -98,15 +98,15 @@ export function planWatchlistSync(
         continue;
       }
       toUpsert.push({
-        hotelSlug: slug,
-        checkinDate: date.checkinDate,
-        nights: date.nights,
         adults: config.adults,
+        checkinDate: date.checkinDate,
         children: config.children,
+        hotelSlug: slug,
+        nights: date.nights,
         source: "auto",
       });
     }
   }
 
-  return { toUpsert, toDeactivateIds };
+  return { toDeactivateIds, toUpsert };
 }

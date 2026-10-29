@@ -35,16 +35,16 @@ function parseSearchParams(params: URLSearchParams): ParsedParams | null {
   if (!(checkin && hotels)) return null;
 
   return {
-    checkin,
-    nights: Number.parseInt(params.get("nights") ?? "5", 10),
     adults: Number.parseInt(params.get("adults") ?? "2", 10),
+    checkin,
     children: Number.parseInt(params.get("children") ?? "0", 10),
     hotelSlugs: hotels.split(","),
-    searchMode: params.get("mode") ?? "single",
+    includeWeather: params.get("weather") === "true",
     months: params.get("months")
       ? Number.parseInt(params.get("months") as string, 10)
       : undefined,
-    includeWeather: params.get("weather") === "true",
+    nights: Number.parseInt(params.get("nights") ?? "5", 10),
+    searchMode: params.get("mode") ?? "single",
   };
 }
 
@@ -67,9 +67,9 @@ function ResultsPageContent() {
 
       try {
         const response = await fetch("/api/scrape", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(parsed),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
           signal: controller.signal,
         });
 

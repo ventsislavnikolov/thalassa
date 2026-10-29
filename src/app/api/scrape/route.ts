@@ -13,14 +13,14 @@ import type { SearchParams } from "@/domains/scraping/types";
 import { OpenMeteoProvider } from "@/domains/weather/providers/open-meteo";
 
 const requestSchema = z.object({
-  checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  nights: z.number().min(1).max(30).default(5),
   adults: z.number().min(1).max(8).default(2),
+  checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   children: z.number().min(0).max(6).default(0),
   hotelSlugs: z.array(z.string()).min(1),
-  searchMode: z.enum(["single", "multi-month", "year"]).default("single"),
-  months: z.number().min(1).max(12).optional(),
   includeWeather: z.boolean().default(false),
+  months: z.number().min(1).max(12).optional(),
+  nights: z.number().min(1).max(30).default(5),
+  searchMode: z.enum(["single", "multi-month", "year"]).default("single"),
 });
 
 export async function POST(request: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid request", details: parsed.error.issues },
+        { details: parsed.error.issues, error: "Invalid request" },
         { status: 400 }
       );
     }
@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
       "yyyy-MM-dd"
     );
     const searchParams: SearchParams = {
+      adults,
       checkin,
       checkout: checkoutDate,
-      nights,
-      adults,
       children,
-      infants: 0,
       currency: "EUR",
+      infants: 0,
+      nights,
     };
 
     let result: ScrapeAllResult;
@@ -104,15 +104,15 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
+      meta: {
+        errors: result.errors,
+        hotelsSearched: hotelIds,
+        searchDuration: Date.now() - startTime,
+        totalResults: result.results.length,
+      },
       results: result.results,
       roomOptions: result.roomOptions,
       weather,
-      meta: {
-        totalResults: result.results.length,
-        hotelsSearched: hotelIds,
-        searchDuration: Date.now() - startTime,
-        errors: result.errors,
-      },
     });
   } catch {
     return NextResponse.json(

@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      location: locationSlug,
       data: Array.from(weatherMap.values()),
+      location: locationSlug,
     });
   } catch {
     return NextResponse.json(

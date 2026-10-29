@@ -25,11 +25,11 @@ export function MonthlySummary({ prices }: MonthlySummaryProps) {
 
   const monthlyStats = Object.entries(monthlyData)
     .map(([month, totals]) => ({
-      month,
-      lowest: Math.min(...totals),
-      highest: Math.max(...totals),
       average: totals.reduce((sum, p) => sum + p, 0) / totals.length,
       count: totals.length,
+      highest: Math.max(...totals),
+      lowest: Math.min(...totals),
+      month,
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 

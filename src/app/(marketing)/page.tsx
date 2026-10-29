@@ -71,9 +71,7 @@ export default function HomePage() {
 
   const destinationShowcase = [
     {
-      name: "Halkidiki",
       description: "Crystal-clear waters across three peninsulas",
-      image: "/images/locations/vourvourou.jpg",
       hotelCount: allHotels.filter((h) =>
         [
           "pefkochori",
@@ -86,26 +84,28 @@ export default function HomePage() {
           "neos-marmaras",
         ].includes(h.locationSlug)
       ).length,
+      image: "/images/locations/vourvourou.jpg",
+      name: "Halkidiki",
     },
     {
-      name: "Kavala",
       description: "Historic port city meets coastal charm",
-      image: "/images/locations/kavala.jpg",
       hotelCount: allHotels.filter((h) => h.locationSlug === "kavala").length,
+      image: "/images/locations/kavala.jpg",
+      name: "Kavala",
     },
     {
-      name: "Greek Islands",
       description: "Santorini, Milos, Paxos & beyond",
-      image: "/images/locations/santorini.webp",
       hotelCount: allHotels.filter((h) =>
         ["santorini", "milos", "paxos"].includes(h.locationSlug)
       ).length,
+      image: "/images/locations/santorini.webp",
+      name: "Greek Islands",
     },
     {
-      name: "Bulgarian Black Sea",
       description: "All-inclusive resorts around Obzor",
-      image: "/images/locations/obzor.webp",
       hotelCount: allHotels.filter((h) => h.locationSlug === "obzor").length,
+      image: "/images/locations/obzor.webp",
+      name: "Bulgarian Black Sea",
     },
   ];
 
@@ -195,20 +195,20 @@ export default function HomePage() {
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-0">
               {[
                 {
-                  value: `${allHotels.length}`,
-                  label: "Hotels tracked",
                   icon: Hotel,
+                  label: "Hotels tracked",
+                  value: `${allHotels.length}`,
                 },
                 {
-                  value: `${locations.length}`,
-                  label: "Destinations",
                   icon: MapPin,
+                  label: "Destinations",
+                  value: `${locations.length}`,
                 },
-                { value: "Live", label: "Price tracking", icon: BarChart3 },
+                { icon: BarChart3, label: "Price tracking", value: "Live" },
                 {
-                  value: "Smart",
-                  label: "Weather analysis",
                   icon: CloudSun,
+                  label: "Weather analysis",
+                  value: "Smart",
                 },
               ].map((stat, i) => (
                 <div
@@ -426,25 +426,25 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-3">
             {[
               {
-                step: "01",
-                icon: Search,
-                title: "Search",
                 description:
                   "Pick your dates, guests, and preferred locations. We search all hotels simultaneously.",
+                icon: Search,
+                step: "01",
+                title: "Search",
               },
               {
-                step: "02",
-                icon: BarChart3,
-                title: "Compare",
                 description:
                   "See real-time prices side by side with weather scores and availability for every hotel.",
+                icon: BarChart3,
+                step: "02",
+                title: "Compare",
               },
               {
-                step: "03",
-                icon: Sparkles,
-                title: "Book Smart",
                 description:
                   "Our analysis combines price trends and weather data to highlight the best value deals.",
+                icon: Sparkles,
+                step: "03",
+                title: "Book Smart",
               },
             ].map((item, index) => (
               <div
@@ -506,32 +506,32 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                icon: Search,
-                title: "Multi-Property Search",
+                accent: "#2E5BB1",
                 description:
                   "Compare prices across all properties in a single, unified search",
-                accent: "#2E5BB1",
+                icon: Search,
+                title: "Multi-Property Search",
               },
               {
-                icon: Sun,
-                title: "Weather Intelligence",
+                accent: "#738C8A",
                 description:
                   "Beach suitability scoring with temperature, wind, UV & sea analysis",
-                accent: "#738C8A",
+                icon: Sun,
+                title: "Weather Intelligence",
               },
               {
-                icon: TrendingDown,
-                title: "Price Tracking",
+                accent: "#2A4F58",
                 description:
                   "Real-time rate monitoring with historical trend analysis",
-                accent: "#2A4F58",
+                icon: TrendingDown,
+                title: "Price Tracking",
               },
               {
-                icon: Shield,
-                title: "Trusted Sources",
+                accent: "#536365",
                 description:
                   "Direct hotel pricing with no hidden fees or third-party markups",
-                accent: "#536365",
+                icon: Shield,
+                title: "Trusted Sources",
               },
             ].map((feature, index) => (
               <div

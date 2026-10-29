@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const kavala: LocationConfig = {
-  slug: "kavala",
-  name: "Kavala",
-  region: "Eastern Macedonia",
-  country: "Greece",
   coordinates: {
     latitude: 40.05,
     longitude: 23.55,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/kavala.jpg",
+  name: "Kavala",
+  region: "Eastern Macedonia",
+  slug: "kavala",
+  timezone: "Europe/Athens",
 };
 
 export default kavala;

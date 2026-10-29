@@ -70,17 +70,17 @@ export function SearchForm({
   const [hotels, setHotels] = useState<HotelConfig[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [formData, setFormData] = useState<SearchFormParams>({
-    checkin: format(new Date(), "yyyy-MM-dd"),
-    nights: 5,
     adults: 2,
+    checkin: format(new Date(), "yyyy-MM-dd"),
     children: 0,
-    room: "standard",
-    months: 0,
+    enableMonthsSearch: false,
     hotelIds: defaultHotel ? [defaultHotel] : DEFAULT_HOTEL_IDS,
     includeWeather: false,
     isYearSearch: false,
+    months: 0,
+    nights: 5,
+    room: "standard",
     weatherLocation: "pefkochori",
-    enableMonthsSearch: false,
   });
 
   useEffect(() => {
@@ -241,8 +241,8 @@ export function SearchForm({
             onYearToggle={(checked) =>
               setFormData((prev) => ({
                 ...prev,
-                isYearSearch: checked,
                 enableMonthsSearch: checked,
+                isYearSearch: checked,
                 months: checked ? 12 : 0,
               }))
             }

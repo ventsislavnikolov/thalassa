@@ -79,38 +79,38 @@ function createWeatherDataFromForecast(
   const weatherCode = dailyData.weathercode[index] ?? 0;
 
   const description = getWeatherDescription(weatherCode);
-  const seaTemperature = estimateSeaTemperature({ date, airTemp: avgTemp });
+  const seaTemperature = estimateSeaTemperature({ airTemp: avgTemp, date });
   const beachConditions = calculateBeachConditions({
-    temperature: avgTemp,
     precipitation,
+    temperature: avgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: avgTemp,
     precipitation,
-    windSpeed,
+    temperature: avgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: avgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: avgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode,
-    description,
-    seaTemperature,
     beachConditions,
+    date,
+    description,
+    humidity,
+    precipitation,
     recommendation,
     score,
+    seaTemperature,
+    temperature: { avg: avgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode,
+    windSpeed,
   };
 }
 
@@ -129,38 +129,38 @@ function createWeatherDataFromHistorical(
   const weatherCode = dailyData.weathercode[index] ?? 0;
 
   const description = getWeatherDescription(weatherCode);
-  const seaTemperature = estimateSeaTemperature({ date, airTemp: avgTemp });
+  const seaTemperature = estimateSeaTemperature({ airTemp: avgTemp, date });
   const beachConditions = calculateBeachConditions({
-    temperature: avgTemp,
     precipitation,
+    temperature: avgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: avgTemp,
     precipitation,
-    windSpeed,
+    temperature: avgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: avgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: avgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode,
-    description,
-    seaTemperature,
     beachConditions,
+    date,
+    description,
+    humidity,
+    precipitation,
     recommendation: `${recommendation} (Historical estimate)`,
     score,
+    seaTemperature,
+    temperature: { avg: avgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode,
+    windSpeed,
   };
 }
 
@@ -184,58 +184,58 @@ function createClimateBasedWeatherData(
   const humidity = month >= 11 || month <= 3 ? 70 : 60;
 
   const seaTemperature = estimateSeaTemperature({
-    date,
     airTemp: adjustedAvgTemp,
+    date,
   });
   const beachConditions = calculateBeachConditions({
-    temperature: adjustedAvgTemp,
     precipitation,
+    temperature: adjustedAvgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: adjustedAvgTemp,
     precipitation,
-    windSpeed,
+    temperature: adjustedAvgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: adjustedAvgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: adjustedAvgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode: precipitation > 2 ? 61 : 0,
-    description: precipitation > 2 ? "Light rain" : "Clear sky",
-    seaTemperature,
     beachConditions,
+    date,
+    description: precipitation > 2 ? "Light rain" : "Clear sky",
+    humidity,
+    precipitation,
     recommendation: `${recommendation} (Climate estimate)`,
     score,
+    seaTemperature,
+    temperature: { avg: adjustedAvgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode: precipitation > 2 ? 61 : 0,
+    windSpeed,
   };
 }
 
 function createFallbackWeatherData(date: string): WeatherData {
   const avgTemp = 25;
   return {
-    date,
-    temperature: { min: 22, max: 28, avg: avgTemp },
-    precipitation: 0,
-    windSpeed: 10,
-    humidity: 60,
-    uvIndex: 7,
-    weatherCode: 0,
-    description: "Clear sky",
-    seaTemperature: estimateSeaTemperature({ date, airTemp: avgTemp }),
     beachConditions: "Good for beach activities",
+    date,
+    description: "Clear sky",
+    humidity: 60,
+    precipitation: 0,
     recommendation: "Good weather conditions expected",
     score: 75,
+    seaTemperature: estimateSeaTemperature({ airTemp: avgTemp, date }),
+    temperature: { avg: avgTemp, max: 28, min: 22 },
+    uvIndex: 7,
+    weatherCode: 0,
+    windSpeed: 10,
   };
 }
 
@@ -300,13 +300,13 @@ export class OpenMeteoProvider implements WeatherProvider {
 
     const response = await axios.get(FORECAST_API_URL, {
       params: {
+        daily: DAILY_FORECAST_PARAMS,
+        end_date: endDate,
+        forecast_days: FORECAST_RANGE_DAYS,
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         start_date: startDate,
-        end_date: endDate,
-        daily: DAILY_FORECAST_PARAMS,
         timezone,
-        forecast_days: FORECAST_RANGE_DAYS,
       },
     });
     const data = response.data;
@@ -343,11 +343,11 @@ export class OpenMeteoProvider implements WeatherProvider {
     try {
       const response = await axios.get(ARCHIVE_API_URL, {
         params: {
+          daily: DAILY_ARCHIVE_PARAMS,
+          end_date: endDate,
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
           start_date: startDate,
-          end_date: endDate,
-          daily: DAILY_ARCHIVE_PARAMS,
           timezone,
         },
       });

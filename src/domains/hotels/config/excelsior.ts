@@ -1,15 +1,15 @@
 import type { HotelConfig } from "../types";
 
 const excelsior: HotelConfig = {
-  id: "excelsior",
-  slug: "excelsior",
-  name: "The Excelsior",
-  displayName: "The Excelsior",
   baseUrl: "https://excelsiorthessaloniki.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "thessaloniki",
+  displayName: "The Excelsior",
   hidden: true,
+  id: "excelsior",
   image: "/images/hotels/excelsior.jpg",
+  locationSlug: "thessaloniki",
+  name: "The Excelsior",
+  slug: "excelsior",
+  strategyType: "avl",
 };
 
 export default excelsior;

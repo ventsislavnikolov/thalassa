@@ -19,9 +19,9 @@ const WEATHER_LOCATIONS = getAllLocations()
       (h) => h.locationSlug === location.slug
     );
     return {
-      value: location.slug,
-      label: `${location.name} (${hotels.map((h) => h.name).join(", ")})`,
       hasHotels: hotels.length > 0,
+      label: `${location.name} (${hotels.map((h) => h.name).join(", ")})`,
+      value: location.slug,
     };
   })
   .filter((loc) => loc.hasHotels);

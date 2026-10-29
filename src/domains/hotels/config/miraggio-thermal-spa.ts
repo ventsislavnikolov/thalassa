@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const miraggioThermalSpa: HotelConfig = {
-  id: "miraggio",
-  slug: "miraggio-thermal-spa",
-  name: "Miraggio Thermal Spa Resort",
-  displayName: "Miraggio Thermal Spa Resort",
   baseUrl: "https://miraggiothermalsparesort.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "paliouri",
+  displayName: "Miraggio Thermal Spa Resort",
+  id: "miraggio",
   image: "/images/hotels/miraggio-thermal-spa.jpg",
+  locationSlug: "paliouri",
+  name: "Miraggio Thermal Spa Resort",
+  slug: "miraggio-thermal-spa",
+  strategyType: "avl",
 };
 
 export default miraggioThermalSpa;

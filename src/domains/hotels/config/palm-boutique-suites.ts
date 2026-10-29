@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const palmBoutiqueSuites: HotelConfig = {
-  id: "palmboutique",
-  slug: "palm-boutique-suites",
-  name: "Palm Boutique Suites",
-  displayName: "Palm Boutique Suites",
   baseUrl: "https://palmboutiquesuites.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "pefkochori",
+  displayName: "Palm Boutique Suites",
+  id: "palmboutique",
   image: "/images/hotels/palm-boutique-suites.jpg",
+  locationSlug: "pefkochori",
+  name: "Palm Boutique Suites",
+  slug: "palm-boutique-suites",
+  strategyType: "avl",
 };
 
 export default palmBoutiqueSuites;

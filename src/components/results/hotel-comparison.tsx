@@ -38,10 +38,10 @@ function computeHotelStats(prices: PriceResult[]): Record<string, HotelStats> {
       data.totals.reduce((sum, p) => sum + p, 0) / data.totals.length;
 
     stats[hotelId] = {
-      name: data.name,
-      lowest,
       average,
       count: data.totals.length,
+      lowest,
+      name: data.name,
       savings: 0,
     };
   }

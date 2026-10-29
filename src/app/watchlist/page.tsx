@@ -2,8 +2,8 @@ import { PageContainer } from "@/components/layout/page-container";
 import { WatchlistManager } from "@/components/watchlist/watchlist-manager";
 
 export const metadata = {
-  title: "Watchlist · Thalassa",
   description: "Track hotel stays and monitor their prices over time.",
+  title: "Watchlist · Thalassa",
 };
 
 export default function WatchlistPage() {

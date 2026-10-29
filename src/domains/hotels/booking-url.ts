@@ -26,6 +26,7 @@ export function buildHvdSearchUrl(
       children_ages: Array.from({ length: children }, () => DEFAULT_CHILD_AGE),
     },
   ]);
+  // biome-ignore assist/source/useSortedKeys: query order matches the HVD engine's own search URLs (also the scrape URL)
   const query = new URLSearchParams({
     lng: "en-GB",
     currency: "EUR",

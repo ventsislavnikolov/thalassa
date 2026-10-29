@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const mediteKassandra: HotelConfig = {
-  id: "meditekassandra",
-  slug: "medite-kassandra",
-  name: "Medite Kassandra Resort",
-  displayName: "Medite Kassandra Resort",
   baseUrl: "https://meditekassandraresort.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "nea-moudania",
+  displayName: "Medite Kassandra Resort",
+  id: "meditekassandra",
   image: "/images/hotels/medite-kassandra.jpg",
+  locationSlug: "nea-moudania",
+  name: "Medite Kassandra Resort",
+  slug: "medite-kassandra",
+  strategyType: "avl",
 };
 
 export default mediteKassandra;

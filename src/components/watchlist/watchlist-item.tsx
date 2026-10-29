@@ -66,12 +66,12 @@ export function WatchlistItem({
     setSavingAlerts(true);
     try {
       const res = await fetch(`/api/watchlist/${entry.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          targetPrice: toNumberOrNull(target),
           alertPctDrop: toNumberOrNull(pctDrop),
+          targetPrice: toNumberOrNull(target),
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
       if (res.ok) {
         onUpdate((await res.json()) as WatchlistEntry);

@@ -23,6 +23,7 @@ function delay(ms: number): Promise<void> {
 function buildFormData(params: SearchParams): URLSearchParams {
   const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
 
+  // biome-ignore assist/source/useSortedKeys: field order mirrors the reserve-online.net calendar form this POST replays
   return new URLSearchParams({
     voucher: "",
     room: params.room || "",
@@ -130,23 +131,23 @@ function parseCalendarHtml(
     const dayOfWeek = format(dateObj, "EEEE");
 
     prices.push({
+      averagePerNight: avgPerNight,
+      currency: searchParams.currency || "EUR",
       date,
       dayOfWeek,
-      averagePerNight: avgPerNight,
-      stayTotal,
-      isLowestRate,
-      nights: searchParams.nights,
-      currency: searchParams.currency || "EUR",
       hotelId: hotel.id,
       hotelName: hotel.name,
+      isLowestRate,
+      nights: searchParams.nights,
+      stayTotal,
     });
   });
 
   return {
-    prices,
-    roomOptions,
     hotelId: hotel.id,
     hotelName: hotel.name,
+    prices,
+    roomOptions,
   };
 }
 
@@ -175,8 +176,8 @@ export class CalendarStrategy implements ScrapingStrategy {
         const response = await this.fetchSingle(roomParams);
         const tagged = response.prices.map((p) => ({
           ...p,
-          roomType: room.name,
           roomCode: room.code,
+          roomType: room.name,
         }));
         allPrices.push(...tagged);
 
@@ -189,10 +190,10 @@ export class CalendarStrategy implements ScrapingStrategy {
     }
 
     return {
-      prices: allPrices,
-      roomOptions,
       hotelId: hotel.id,
       hotelName: hotel.name,
+      prices: allPrices,
+      roomOptions,
     };
   }
 
@@ -210,8 +211,8 @@ export class CalendarStrategy implements ScrapingStrategy {
           "Content-Type": "application/x-www-form-urlencoded",
           "User-Agent": USER_AGENT,
         },
-        timeout: REQUEST_TIMEOUT,
         signal,
+        timeout: REQUEST_TIMEOUT,
       });
 
       return parseCalendarHtml(response.data, searchParams, hotel);

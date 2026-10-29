@@ -4,33 +4,33 @@ import type { WatchlistEntry } from "../types";
 
 function entry(overrides: Partial<WatchlistEntry>): WatchlistEntry {
   return {
-    id: 1,
-    hotelSlug: "stella-island",
-    checkinDate: "2026-10-03",
-    nights: 7,
-    adults: 2,
-    children: 0,
-    roomType: null,
     active: true,
-    createdAt: "2026-08-29T00:00:00Z",
-    targetPrice: null,
-    alertPctDrop: null,
+    adults: 2,
     alertedAt: null,
+    alertPctDrop: null,
+    checkinDate: "2026-10-03",
+    children: 0,
+    createdAt: "2026-08-29T00:00:00Z",
+    hotelSlug: "stella-island",
+    id: 1,
+    nights: 7,
+    roomType: null,
     source: "auto",
+    targetPrice: null,
     ...overrides,
   };
 }
 
 function item(overrides: Partial<DigestItem>): DigestItem {
   return {
+    avgPrice: 1100,
+    bookingUrl: "https://stellaisland.reserve-online.net/?checkin=2026-10-03",
     entry: entry({}),
     hotelName: "Stella Island",
-    price: 900,
-    previousPrice: 1000,
     minPrice: 850,
-    avgPrice: 1100,
+    previousPrice: 1000,
+    price: 900,
     reasons: ["Price dropped 10.0%"],
-    bookingUrl: "https://stellaisland.reserve-online.net/?checkin=2026-10-03",
     ...overrides,
   };
 }
@@ -95,7 +95,7 @@ describe("buildRichAlertEmail", () => {
 
   it("shows a dash for missing history values", () => {
     const content = buildRichAlertEmail(
-      item({ previousPrice: null, minPrice: null, avgPrice: null })
+      item({ avgPrice: null, minPrice: null, previousPrice: null })
     );
     expect(content.text).toContain("was –");
   });

@@ -6,18 +6,18 @@ export interface MonthlyClimate {
 }
 
 export const CHALKIDIKI_CLIMATE: Record<number, MonthlyClimate> = {
-  1: { minTemp: 5, maxTemp: 12, precipitation: 8, windSpeed: 15 },
-  2: { minTemp: 6, maxTemp: 14, precipitation: 6, windSpeed: 14 },
-  3: { minTemp: 8, maxTemp: 17, precipitation: 5, windSpeed: 13 },
-  4: { minTemp: 12, maxTemp: 21, precipitation: 3, windSpeed: 12 },
-  5: { minTemp: 17, maxTemp: 26, precipitation: 2, windSpeed: 11 },
-  6: { minTemp: 22, maxTemp: 31, precipitation: 1, windSpeed: 10 },
-  7: { minTemp: 24, maxTemp: 33, precipitation: 0.5, windSpeed: 10 },
-  8: { minTemp: 24, maxTemp: 33, precipitation: 0.5, windSpeed: 10 },
-  9: { minTemp: 20, maxTemp: 28, precipitation: 2, windSpeed: 11 },
-  10: { minTemp: 15, maxTemp: 23, precipitation: 4, windSpeed: 12 },
-  11: { minTemp: 10, maxTemp: 18, precipitation: 6, windSpeed: 13 },
-  12: { minTemp: 7, maxTemp: 14, precipitation: 8, windSpeed: 14 },
+  1: { maxTemp: 12, minTemp: 5, precipitation: 8, windSpeed: 15 },
+  2: { maxTemp: 14, minTemp: 6, precipitation: 6, windSpeed: 14 },
+  3: { maxTemp: 17, minTemp: 8, precipitation: 5, windSpeed: 13 },
+  4: { maxTemp: 21, minTemp: 12, precipitation: 3, windSpeed: 12 },
+  5: { maxTemp: 26, minTemp: 17, precipitation: 2, windSpeed: 11 },
+  6: { maxTemp: 31, minTemp: 22, precipitation: 1, windSpeed: 10 },
+  7: { maxTemp: 33, minTemp: 24, precipitation: 0.5, windSpeed: 10 },
+  8: { maxTemp: 33, minTemp: 24, precipitation: 0.5, windSpeed: 10 },
+  9: { maxTemp: 28, minTemp: 20, precipitation: 2, windSpeed: 11 },
+  10: { maxTemp: 23, minTemp: 15, precipitation: 4, windSpeed: 12 },
+  11: { maxTemp: 18, minTemp: 10, precipitation: 6, windSpeed: 13 },
+  12: { maxTemp: 14, minTemp: 7, precipitation: 8, windSpeed: 14 },
 };
 
 export const UV_BY_MONTH: Record<number, number> = {

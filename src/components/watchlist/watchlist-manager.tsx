@@ -28,14 +28,14 @@ interface FormState {
 }
 
 const INITIAL_FORM: FormState = {
-  hotelSlug: "",
-  checkinDate: "",
-  nights: 5,
   adults: 2,
+  alertPctDrop: "",
+  checkinDate: "",
   children: 0,
+  hotelSlug: "",
+  nights: 5,
   roomType: "",
   targetPrice: "",
-  alertPctDrop: "",
 };
 
 function toNumberOrNull(value: string): number | null {
@@ -81,18 +81,18 @@ export function WatchlistManager() {
     setError(null);
     try {
       const res = await fetch("/api/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          hotelSlug: form.hotelSlug,
-          checkinDate: form.checkinDate,
-          nights: form.nights,
           adults: form.adults,
+          alertPctDrop: toNumberOrNull(form.alertPctDrop),
+          checkinDate: form.checkinDate,
           children: form.children,
+          hotelSlug: form.hotelSlug,
+          nights: form.nights,
           roomType: form.roomType.trim() || null,
           targetPrice: toNumberOrNull(form.targetPrice),
-          alertPctDrop: toNumberOrNull(form.alertPctDrop),
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       if (!res.ok) {
         throw new Error("Request failed");
@@ -116,9 +116,9 @@ export function WatchlistManager() {
       prev.map((e) => (e.id === entry.id ? { ...e, active } : e))
     );
     await fetch(`/api/watchlist/${entry.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ active }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
     }).catch(() => {
       setEntries((prev) =>
         prev.map((e) => (e.id === entry.id ? { ...e, active: !active } : e))

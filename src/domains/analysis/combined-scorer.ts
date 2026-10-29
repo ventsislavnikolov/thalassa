@@ -64,14 +64,14 @@ export function analyzeDeals(
     );
 
     analyses.push({
+      overallRank: 0,
       priceInfo,
-      weatherData,
+      priceRank: 0,
+      recommendation,
       totalScore,
       valueScore,
-      recommendation,
-      priceRank: 0,
+      weatherData,
       weatherRank: 0,
-      overallRank: 0,
     });
   }
 

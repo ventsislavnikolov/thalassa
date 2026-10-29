@@ -10,34 +10,34 @@ import type { WatchlistEntry } from "../types";
 
 function entry(overrides: Partial<WatchlistEntry>): WatchlistEntry {
   return {
-    id: 1,
-    hotelSlug: "stella-island",
-    checkinDate: "2026-10-03",
-    nights: 7,
-    adults: 2,
-    children: 0,
-    roomType: null,
     active: true,
-    createdAt: "2026-08-29T00:00:00Z",
-    targetPrice: null,
-    alertPctDrop: null,
+    adults: 2,
     alertedAt: null,
+    alertPctDrop: null,
+    checkinDate: "2026-10-03",
+    children: 0,
+    createdAt: "2026-08-29T00:00:00Z",
+    hotelSlug: "stella-island",
+    id: 1,
+    nights: 7,
+    roomType: null,
     source: "auto",
+    targetPrice: null,
     ...overrides,
   };
 }
 
 function result(overrides: Partial<PriceResult>): PriceResult {
   return {
+    averagePerNight: 100,
+    currency: "EUR",
     date: "2026-10-03",
     dayOfWeek: "Saturday",
-    averagePerNight: 100,
-    stayTotal: 700,
-    nights: 7,
-    currency: "EUR",
     hotelId: "stella-island",
     hotelName: "Stella Island",
     isLowestRate: true,
+    nights: 7,
+    stayTotal: 700,
     ...overrides,
   } as PriceResult;
 }
@@ -45,10 +45,10 @@ function result(overrides: Partial<PriceResult>): PriceResult {
 describe("groupEntriesForScraping", () => {
   it("groups entries by hotel and occupancy, tracking earliest check-in", () => {
     const batches = groupEntriesForScraping([
-      entry({ id: 1, checkinDate: "2026-10-10" }),
-      entry({ id: 2, checkinDate: "2026-10-03" }),
-      entry({ id: 3, hotelSlug: "avaton" }),
-      entry({ id: 4, adults: 4 }),
+      entry({ checkinDate: "2026-10-10", id: 1 }),
+      entry({ checkinDate: "2026-10-03", id: 2 }),
+      entry({ hotelSlug: "avaton", id: 3 }),
+      entry({ adults: 4, id: 4 }),
     ]);
     expect(batches).toHaveLength(3);
     const stella = batches.find(
@@ -64,15 +64,15 @@ describe("selectHotelsForRun", () => {
 
   it("selects a slice and advances the offset", () => {
     expect(selectHotelsForRun(slugs, 0, 2)).toEqual({
-      selected: ["a", "b"],
       nextOffset: 2,
+      selected: ["a", "b"],
     });
   });
 
   it("wraps around the end of the list", () => {
     expect(selectHotelsForRun(slugs, 4, 2)).toEqual({
-      selected: ["e", "a"],
       nextOffset: 1,
+      selected: ["e", "a"],
     });
   });
 
@@ -82,8 +82,8 @@ describe("selectHotelsForRun", () => {
 
   it("handles an empty list", () => {
     expect(selectHotelsForRun([], 3, 2)).toEqual({
-      selected: [],
       nextOffset: 0,
+      selected: [],
     });
   });
 });
@@ -91,9 +91,9 @@ describe("selectHotelsForRun", () => {
 describe("matchResultsToEntries", () => {
   it("matches multi-date results to entries by check-in date", () => {
     const batch = groupEntriesForScraping([
-      entry({ id: 1, checkinDate: "2026-10-03" }),
-      entry({ id: 2, checkinDate: "2026-10-10" }),
-      entry({ id: 3, checkinDate: "2026-10-17" }),
+      entry({ checkinDate: "2026-10-03", id: 1 }),
+      entry({ checkinDate: "2026-10-10", id: 2 }),
+      entry({ checkinDate: "2026-10-17", id: 3 }),
     ])[0];
     const matched = matchResultsToEntries(
       [
@@ -103,15 +103,15 @@ describe("matchResultsToEntries", () => {
       batch
     );
     expect(matched[0].snapshot).toEqual({
-      price: 700,
-      currency: "EUR",
       available: true,
+      currency: "EUR",
+      price: 700,
     });
     expect(matched[1].snapshot.price).toBe(900);
     expect(matched[2].snapshot).toEqual({
-      price: null,
-      currency: "EUR",
       available: false,
+      currency: "EUR",
+      price: null,
     });
   });
 
@@ -121,8 +121,8 @@ describe("matchResultsToEntries", () => {
     ])[0];
     const matched = matchResultsToEntries(
       [
-        result({ stayTotal: 500, roomCode: "STD" }),
-        result({ stayTotal: 800, roomCode: "SUITE" }),
+        result({ roomCode: "STD", stayTotal: 500 }),
+        result({ roomCode: "SUITE", stayTotal: 800 }),
       ],
       batch
     );

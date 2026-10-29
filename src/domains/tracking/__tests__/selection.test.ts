@@ -56,14 +56,14 @@ describe("selectResultForEntry", () => {
 describe("toSnapshot", () => {
   it("marks a missing result as unavailable", () => {
     expect(toSnapshot(null)).toEqual({
-      price: null,
-      currency: "EUR",
       available: false,
+      currency: "EUR",
+      price: null,
     });
   });
 
   it("captures price and currency from a result", () => {
-    const snapshot = toSnapshot(result({ stayTotal: 420, currency: "USD" }));
-    expect(snapshot).toEqual({ price: 420, currency: "USD", available: true });
+    const snapshot = toSnapshot(result({ currency: "USD", stayTotal: 420 }));
+    expect(snapshot).toEqual({ available: true, currency: "USD", price: 420 });
   });
 });

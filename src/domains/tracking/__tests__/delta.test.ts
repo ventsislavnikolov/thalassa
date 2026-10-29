@@ -3,10 +3,10 @@ import { shouldRecordSnapshot } from "../delta";
 import type { SnapshotValue } from "../types";
 
 const available = (price: number): SnapshotValue => ({
-  price,
   available: true,
+  price,
 });
-const unavailable: SnapshotValue = { price: null, available: false };
+const unavailable: SnapshotValue = { available: false, price: null };
 
 describe("shouldRecordSnapshot", () => {
   it("records the first snapshot when there is no history", () => {

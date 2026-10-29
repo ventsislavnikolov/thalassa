@@ -16,6 +16,12 @@ describe("buildBookingUrl", () => {
     expect(url.origin + url.pathname).toBe(
       "https://reservations.hvdhotels.com/hvd-reina-del-mar/search/"
     );
+    expect([...url.searchParams.keys()]).toEqual([
+      "lng",
+      "currency",
+      "dates",
+      "guests",
+    ]);
     expect(url.searchParams.get("dates")).toBe("2026-09-06~2026-09-12");
     expect(url.searchParams.get("currency")).toBe("EUR");
     expect(JSON.parse(url.searchParams.get("guests") ?? "")).toEqual([

@@ -28,9 +28,9 @@ function buildPoints(priced: (PriceSnapshot & { price: number })[]): Point[] {
   const spanP = maxP - minP || 1;
 
   return priced.map((s, i) => ({
+    available: s.available,
     price: s.price,
     scrapedAt: s.scrapedAt,
-    available: s.available,
     x: PAD_X + ((times[i] - minT) / spanT) * (WIDTH - 2 * PAD_X),
     y: PAD_Y + (1 - (s.price - minP) / spanP) * (HEIGHT - 2 * PAD_Y),
   }));

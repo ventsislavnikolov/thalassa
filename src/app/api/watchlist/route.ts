@@ -6,14 +6,14 @@ import { addWatchlistEntry, getAllWatchlist } from "@/domains/tracking/queries";
 export const dynamic = "force-dynamic";
 
 const createSchema = z.object({
-  hotelSlug: z.string().min(1),
-  checkinDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  nights: z.number().int().min(1).max(30),
   adults: z.number().int().min(1).max(8),
+  alertPctDrop: z.number().int().min(1).max(90).nullish(),
+  checkinDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   children: z.number().int().min(0).max(6).default(0),
+  hotelSlug: z.string().min(1),
+  nights: z.number().int().min(1).max(30),
   roomType: z.string().min(1).nullish(),
   targetPrice: z.number().positive().max(1_000_000).nullish(),
-  alertPctDrop: z.number().int().min(1).max(90).nullish(),
 });
 
 export async function GET() {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid request", details: parsed.error.issues },
+      { details: parsed.error.issues, error: "Invalid request" },
       { status: 400 }
     );
   }
@@ -45,14 +45,14 @@ export async function POST(request: NextRequest) {
   }
 
   const entry = await addWatchlistEntry({
-    hotelSlug,
-    checkinDate: data.checkinDate,
-    nights: data.nights,
     adults: data.adults,
+    alertPctDrop: data.alertPctDrop ?? null,
+    checkinDate: data.checkinDate,
     children: data.children,
+    hotelSlug,
+    nights: data.nights,
     roomType: data.roomType ?? null,
     targetPrice: data.targetPrice ?? null,
-    alertPctDrop: data.alertPctDrop ?? null,
   });
 
   return NextResponse.json(entry, { status: 201 });

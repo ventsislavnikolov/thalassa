@@ -58,22 +58,22 @@ export function parseHvdHtml(
     }
 
     prices.push({
+      averagePerNight: stayTotal / params.nights,
+      currency: params.currency || "EUR",
       date: params.checkin,
       dayOfWeek,
-      averagePerNight: stayTotal / params.nights,
-      stayTotal,
-      isLowestRate: false,
-      nights: params.nights,
-      currency: params.currency || "EUR",
       hotelId: hotel.id,
       hotelName: hotel.name,
+      isLowestRate: false,
+      nights: params.nights,
       roomCode,
       roomType: roomName,
+      stayTotal,
     });
     roomOptions.push({ code: roomCode, name: roomName });
   });
 
-  return { prices, roomOptions, hotelId: hotel.id, hotelName: hotel.name };
+  return { hotelId: hotel.id, hotelName: hotel.name, prices, roomOptions };
 }
 
 export class HvdStrategy implements ScrapingStrategy {
@@ -92,8 +92,8 @@ export class HvdStrategy implements ScrapingStrategy {
         {
           headers: { "User-Agent": USER_AGENT },
           responseType: "text",
-          timeout: REQUEST_TIMEOUT,
           signal,
+          timeout: REQUEST_TIMEOUT,
         }
       );
       return parseHvdHtml(response.data, searchParams, hotel);

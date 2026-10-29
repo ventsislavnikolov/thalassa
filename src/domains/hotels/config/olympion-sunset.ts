@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const olympionSunset: HotelConfig = {
-  id: "olympionsunset",
-  slug: "olympion-sunset",
-  name: "Olympion Sunset",
-  displayName: "Olympion Sunset Resort",
   baseUrl: "https://olympion-sunset.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "fourka",
+  displayName: "Olympion Sunset Resort",
+  id: "olympionsunset",
   image: "/images/hotels/olympion-sunset.jpg",
+  locationSlug: "fourka",
+  name: "Olympion Sunset",
+  slug: "olympion-sunset",
+  strategyType: "avl",
 };
 
 export default olympionSunset;

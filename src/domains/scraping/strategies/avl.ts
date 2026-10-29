@@ -47,6 +47,7 @@ function buildAvlFormData(
   const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
   const checkoutDate = addDays(checkinDate, params.nights);
 
+  // biome-ignore assist/source/useSortedKeys: field order mirrors the reserve-online.net booking form this POST replays
   return new URLSearchParams({
     htl_code: "",
     src: "261",
@@ -72,15 +73,15 @@ function createPriceResult(
   hotel: HotelConfig
 ): PriceResult {
   return {
+    averagePerNight: price / params.nights,
+    currency: params.currency || "EUR",
     date: params.checkin,
     dayOfWeek: format(parse(params.checkin, "yyyy-MM-dd", new Date()), "EEEE"),
-    averagePerNight: price / params.nights,
-    stayTotal: price,
-    isLowestRate: false,
-    nights: params.nights,
-    currency: params.currency || "EUR",
     hotelId: hotel.id,
     hotelName: hotel.name,
+    isLowestRate: false,
+    nights: params.nights,
+    stayTotal: price,
   };
 }
 
@@ -204,10 +205,10 @@ function parseAvlHtml(
   // Short response likely means error/no availability
   if (actualHtml.length < 300) {
     return {
-      prices: [],
-      roomOptions: [],
       hotelId: hotel.id,
       hotelName: hotel.name,
+      prices: [],
+      roomOptions: [],
     };
   }
 
@@ -247,8 +248,8 @@ export class AvlStrategy implements ScrapingStrategy {
           "Content-Type": "application/x-www-form-urlencoded",
           "User-Agent": USER_AGENT,
         },
-        timeout: REQUEST_TIMEOUT,
         signal,
+        timeout: REQUEST_TIMEOUT,
       });
 
       const html =

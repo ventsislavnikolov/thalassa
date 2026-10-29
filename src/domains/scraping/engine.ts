@@ -17,8 +17,8 @@ const avlStrategy = new AvlStrategy();
 const hvdStrategy = new HvdStrategy();
 
 const strategies: Record<StrategyType, ScrapingStrategy> = {
-  calendar: calendarStrategy,
   avl: avlStrategy,
+  calendar: calendarStrategy,
   hvd: hvdStrategy,
 };
 
@@ -68,7 +68,7 @@ export async function scrapeHotels(
       allRoomOptions.push(...response.roomOptions);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
-      errors.push({ hotel: hotelId, error: message });
+      errors.push({ error: message, hotel: hotelId });
     }
   }
 
@@ -76,7 +76,7 @@ export async function scrapeHotels(
     (a, b) => a.stayTotal - b.stayTotal
   );
 
-  return { results: sortedResults, roomOptions: allRoomOptions, errors };
+  return { errors, results: sortedResults, roomOptions: allRoomOptions };
 }
 
 export async function scrapeHotelsMultiMonth(
@@ -113,7 +113,7 @@ export async function scrapeHotelsMultiMonth(
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Unknown error";
-        errors.push({ hotel: hotelId, error: message });
+        errors.push({ error: message, hotel: hotelId });
       }
 
       // Fetch additional months
@@ -156,7 +156,7 @@ export async function scrapeHotelsMultiMonth(
     try {
       await withTimeout(processHotel(), hotelTimeout);
     } catch {
-      errors.push({ hotel: hotelId, error: "Hotel processing timeout" });
+      errors.push({ error: "Hotel processing timeout", hotel: hotelId });
     }
   }
 
@@ -164,5 +164,5 @@ export async function scrapeHotelsMultiMonth(
     (a, b) => a.stayTotal - b.stayTotal
   );
 
-  return { results: sortedResults, roomOptions: allRoomOptions, errors };
+  return { errors, results: sortedResults, roomOptions: allRoomOptions };
 }

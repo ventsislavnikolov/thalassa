@@ -36,18 +36,18 @@ export async function sendEmail(
 
   try {
     const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+      body: JSON.stringify({
+        from: config.from,
+        html: content.html,
+        subject: content.subject,
+        text: content.text,
+        to: config.to,
+      }),
       headers: {
         Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: config.from,
-        to: config.to,
-        subject: content.subject,
-        text: content.text,
-        html: content.html,
-      }),
+      method: "POST",
     });
     return response.ok ? "sent" : "failed";
   } catch {

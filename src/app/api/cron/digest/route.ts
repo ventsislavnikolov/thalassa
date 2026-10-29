@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
   const events = await getUndigestedAlertEvents();
   if (events.length === 0) {
-    return NextResponse.json({ sent: false, events: 0 });
+    return NextResponse.json({ events: 0, sent: false });
   }
 
   const watchlist = await getAllWatchlist();
@@ -56,14 +56,14 @@ export async function GET(request: NextRequest) {
     }
     const stats = await getPriceStats(entry.id);
     items.push({
+      avgPrice: stats.avg,
+      bookingUrl: bookingUrl(entry),
       entry,
       hotelName: getHotel(entry.hotelSlug).displayName,
-      price: event.price,
-      previousPrice: event.previousPrice,
       minPrice: event.minPrice ?? stats.min,
-      avgPrice: stats.avg,
+      previousPrice: event.previousPrice,
+      price: event.price,
       reasons: event.reasons,
-      bookingUrl: bookingUrl(entry),
     });
   }
 
@@ -71,18 +71,18 @@ export async function GET(request: NextRequest) {
   const content = buildDigest(items, today);
   if (!content) {
     await markEventsDigested(events.map((e) => e.id));
-    return NextResponse.json({ sent: false, events: events.length });
+    return NextResponse.json({ events: events.length, sent: false });
   }
 
   const status = await sendEmail(content);
   if (status === "failed") {
     return NextResponse.json(
-      { sent: false, events: events.length, error: "Email failed to send" },
+      { error: "Email failed to send", events: events.length, sent: false },
       { status: 500 }
     );
   }
   // "skipped" (Resend not configured) still clears the queue so events don't
   // pile up forever; snapshots remain the durable record.
   await markEventsDigested(events.map((e) => e.id));
-  return NextResponse.json({ sent: status === "sent", events: events.length });
+  return NextResponse.json({ events: events.length, sent: status === "sent" });
 }

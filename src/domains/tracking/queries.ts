@@ -41,31 +41,31 @@ type SnapshotRow = {
 // Date objects. Keep the casts when editing these statements.
 function mapWatchlist(row: WatchlistRow): WatchlistEntry {
   return {
-    id: Number(row.id),
-    hotelSlug: row.hotel_slug,
-    checkinDate: row.checkin_date,
-    nights: Number(row.nights),
-    adults: Number(row.adults),
-    children: Number(row.children),
-    roomType: row.room_type,
-    source: row.source,
     active: row.active,
-    createdAt: row.created_at,
-    targetPrice: row.target_price === null ? null : Number(row.target_price),
+    adults: Number(row.adults),
+    alertedAt: row.alerted_at,
     alertPctDrop:
       row.alert_pct_drop === null ? null : Number(row.alert_pct_drop),
-    alertedAt: row.alerted_at,
+    checkinDate: row.checkin_date,
+    children: Number(row.children),
+    createdAt: row.created_at,
+    hotelSlug: row.hotel_slug,
+    id: Number(row.id),
+    nights: Number(row.nights),
+    roomType: row.room_type,
+    source: row.source,
+    targetPrice: row.target_price === null ? null : Number(row.target_price),
   };
 }
 
 function mapSnapshot(row: SnapshotRow): PriceSnapshot {
   return {
-    id: Number(row.id),
-    watchlistId: Number(row.watchlist_id),
-    price: row.price === null ? null : Number(row.price),
-    currency: row.currency,
     available: row.available,
+    currency: row.currency,
+    id: Number(row.id),
+    price: row.price === null ? null : Number(row.price),
     scrapedAt: String(row.scraped_at),
+    watchlistId: Number(row.watchlist_id),
   };
 }
 
@@ -174,8 +174,8 @@ export async function getLatestSnapshot(
   }
   const row = rows[0];
   return {
-    price: row.price === null ? null : Number(row.price),
     available: row.available,
+    price: row.price === null ? null : Number(row.price),
   };
 }
 
@@ -229,9 +229,9 @@ export async function getPriceStats(watchlistId: number): Promise<PriceStats> {
   `) as { avg: string | null; count: number | string; min: string | null }[];
   const row = rows[0];
   return {
-    min: row.min === null ? null : Number(row.min),
     avg: row.avg === null ? null : Number(row.avg),
     count: Number(row.count),
+    min: row.min === null ? null : Number(row.min),
   };
 }
 
@@ -264,15 +264,15 @@ type AlertEventRow = {
 
 function mapAlertEvent(row: AlertEventRow): AlertEvent {
   return {
-    id: Number(row.id),
-    watchlistId: Number(row.watchlist_id),
-    price: Number(row.price),
-    previousPrice:
-      row.previous_price === null ? null : Number(row.previous_price),
-    minPrice: row.min_price === null ? null : Number(row.min_price),
-    reasons: row.reasons,
     createdAt: row.created_at,
     digestedAt: row.digested_at,
+    id: Number(row.id),
+    minPrice: row.min_price === null ? null : Number(row.min_price),
+    previousPrice:
+      row.previous_price === null ? null : Number(row.previous_price),
+    price: Number(row.price),
+    reasons: row.reasons,
+    watchlistId: Number(row.watchlist_id),
   };
 }
 

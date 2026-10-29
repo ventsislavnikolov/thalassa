@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const hanioti: LocationConfig = {
-  slug: "hanioti",
-  name: "Hanioti",
-  region: "Halkidiki",
-  country: "Greece",
   coordinates: {
     latitude: 39.97,
     longitude: 23.52,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/hanioti.jpg",
+  name: "Hanioti",
+  region: "Halkidiki",
+  slug: "hanioti",
+  timezone: "Europe/Athens",
 };
 
 export default hanioti;

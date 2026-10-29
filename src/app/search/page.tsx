@@ -92,18 +92,18 @@ function SearchPageContent() {
 
     try {
       const response = await fetch("/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          checkin: params.checkin,
-          nights: params.nights,
           adults: params.adults,
+          checkin: params.checkin,
           children: params.children,
           hotelSlugs: params.hotelIds,
-          searchMode: deriveSearchMode(params),
-          months: params.months || undefined,
           includeWeather: params.includeWeather,
+          months: params.months || undefined,
+          nights: params.nights,
+          searchMode: deriveSearchMode(params),
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
 
       if (!response.ok) {

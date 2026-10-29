@@ -31,11 +31,11 @@ export function selectResultForEntry(
 /** Convert a selected result (or its absence) into a snapshot to store. */
 export function toSnapshot(result: PriceResult | null): NewPriceSnapshot {
   if (!result) {
-    return { price: null, currency: "EUR", available: false };
+    return { available: false, currency: "EUR", price: null };
   }
   return {
-    price: result.stayTotal,
-    currency: result.currency,
     available: true,
+    currency: result.currency,
+    price: result.stayTotal,
   };
 }

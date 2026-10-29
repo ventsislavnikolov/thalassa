@@ -88,15 +88,15 @@ export function buildDigest(
   const html = `<h2 style="margin:0 0 16px 0">Price changes worth a look</h2>
 <p style="margin:0 0 16px 0;color:#64748b">${escapeHtml(date)}</p>
 ${sorted.map(itemHtml).join("\n")}`;
-  return { subject, text, html };
+  return { html, subject, text };
 }
 
 /** Rich single-deal email for instant/custom alerts. */
 export function buildRichAlertEmail(item: DigestItem): EmailContent {
   const subject = `Deal alert: ${item.hotelName} → ${money(item.price)} for ${item.entry.checkinDate}`;
   return {
+    html: itemHtml(item),
     subject,
     text: itemText(item),
-    html: itemHtml(item),
   };
 }
