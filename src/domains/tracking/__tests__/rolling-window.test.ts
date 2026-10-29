@@ -8,19 +8,19 @@ import type { WatchlistEntry } from "../types";
 
 function entry(overrides: Partial<WatchlistEntry>): WatchlistEntry {
   return {
-    id: 1,
-    hotelSlug: "stella-island",
-    checkinDate: "2026-10-03",
-    nights: 7,
-    adults: 2,
-    children: 0,
-    roomType: null,
     active: true,
-    createdAt: "2026-08-29T00:00:00Z",
-    targetPrice: null,
-    alertPctDrop: null,
+    adults: 2,
     alertedAt: null,
+    alertPctDrop: null,
+    checkinDate: "2026-10-03",
+    children: 0,
+    createdAt: "2026-08-29T00:00:00Z",
+    hotelSlug: "stella-island",
+    id: 1,
+    nights: 7,
+    roomType: null,
     source: "auto",
+    targetPrice: null,
     ...overrides,
   };
 }
@@ -49,12 +49,12 @@ describe("generateWindowDates", () => {
   it("supports multiple weekday targets", () => {
     const dates = generateWindowDates("2026-08-29", {
       ...DEFAULT_WINDOW,
-      minDaysAhead: 1,
-      maxDaysAhead: 7,
       checkinWeekdays: [
-        { weekday: 5, nights: 2 },
-        { weekday: 1, nights: 5 },
+        { nights: 2, weekday: 5 },
+        { nights: 5, weekday: 1 },
       ],
+      maxDaysAhead: 7,
+      minDaysAhead: 1,
     });
     expect(dates.map((d) => d.nights).sort()).toEqual([2, 5]);
   });
@@ -73,7 +73,7 @@ describe("planWatchlistSync", () => {
   it("skips entries that already exist regardless of source", () => {
     const existing = [
       entry({ checkinDate: "2026-09-12", source: "manual" }),
-      entry({ id: 2, checkinDate: "2026-09-19" }),
+      entry({ checkinDate: "2026-09-19", id: 2 }),
     ];
     const plan = planWatchlistSync(
       "2026-08-29",
@@ -91,9 +91,9 @@ describe("planWatchlistSync", () => {
 
   it("deactivates active entries with past check-in dates, any source", () => {
     const existing = [
-      entry({ id: 5, checkinDate: "2026-08-15", source: "manual" }),
-      entry({ id: 6, checkinDate: "2026-08-22" }),
-      entry({ id: 7, checkinDate: "2026-08-01", active: false }),
+      entry({ checkinDate: "2026-08-15", id: 5, source: "manual" }),
+      entry({ checkinDate: "2026-08-22", id: 6 }),
+      entry({ active: false, checkinDate: "2026-08-01", id: 7 }),
     ];
     const plan = planWatchlistSync("2026-08-29", [], DEFAULT_WINDOW, existing);
     expect(plan.toDeactivateIds).toEqual([5, 6]);
@@ -101,7 +101,7 @@ describe("planWatchlistSync", () => {
 
   it("never deactivates future manual entries", () => {
     const existing = [
-      entry({ id: 9, checkinDate: "2026-12-24", source: "manual" }),
+      entry({ checkinDate: "2026-12-24", id: 9, source: "manual" }),
     ];
     const plan = planWatchlistSync("2026-08-29", [], DEFAULT_WINDOW, existing);
     expect(plan.toDeactivateIds).toEqual([]);

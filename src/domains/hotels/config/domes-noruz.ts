@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const domesNoruz: HotelConfig = {
-  id: "dnoruzkass",
-  slug: "domes-noruz",
-  name: "Domes Noruz Kassandra",
-  displayName: "Domes Noruz Kassandra",
   baseUrl: "https://domesnoruzkassandra.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "hanioti",
+  displayName: "Domes Noruz Kassandra",
+  id: "dnoruzkass",
   image: "/images/hotels/domes-noruz.avif",
+  locationSlug: "hanioti",
+  name: "Domes Noruz Kassandra",
+  slug: "domes-noruz",
+  strategyType: "avl",
 };
 
 export default domesNoruz;

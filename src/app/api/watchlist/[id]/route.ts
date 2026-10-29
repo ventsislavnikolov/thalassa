@@ -12,8 +12,8 @@ export const dynamic = "force-dynamic";
 const patchSchema = z
   .object({
     active: z.boolean().optional(),
-    targetPrice: z.number().positive().max(1_000_000).nullable().optional(),
     alertPctDrop: z.number().int().min(1).max(90).nullable().optional(),
+    targetPrice: z.number().positive().max(1_000_000).nullable().optional(),
   })
   .refine(
     (data) =>
@@ -41,7 +41,7 @@ export async function DELETE(
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json({ id, deleted: true });
+  return NextResponse.json({ deleted: true, id });
 }
 
 export async function PATCH(
@@ -56,12 +56,12 @@ export async function PATCH(
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid request", details: parsed.error.issues },
+      { details: parsed.error.issues, error: "Invalid request" },
       { status: 400 }
     );
   }
 
-  const data = parsed.data;
+  const { data } = parsed;
   let entry: WatchlistEntry | null = null;
 
   if (data.active !== undefined) {

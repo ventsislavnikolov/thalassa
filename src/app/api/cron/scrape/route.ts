@@ -93,14 +93,14 @@ function toDigestItem(
   reasons: string[]
 ): DigestItem {
   return {
+    avgPrice: stats.avg,
+    bookingUrl: bookingUrl(entry),
     entry,
     hotelName: getHotel(entry.hotelSlug).displayName,
-    price: snapshot.price ?? 0,
-    previousPrice: previous,
     minPrice: stats.min,
-    avgPrice: stats.avg,
+    previousPrice: previous,
+    price: snapshot.price ?? 0,
     reasons,
-    bookingUrl: bookingUrl(entry),
   };
 }
 
@@ -117,10 +117,10 @@ async function handleAlerts(
 
   if (resolveAlertMode(entry) === "custom") {
     const result = evaluateDealAlert({
+      alertPctDrop: entry.alertPctDrop,
       current: snapshot.price,
       previous,
       targetPrice: entry.targetPrice,
-      alertPctDrop: entry.alertPctDrop,
     });
     if (!result.fired) {
       return;
@@ -132,8 +132,8 @@ async function handleAlerts(
       summary.alerted += 1;
     } else if (status === "failed") {
       summary.errors.push({
-        watchlistId: entry.id,
         error: "Deal alert fired but the email failed to send",
+        watchlistId: entry.id,
       });
     }
     return;
@@ -141,19 +141,19 @@ async function handleAlerts(
 
   const result = evaluateAutoAlert({
     current: snapshot.price,
-    previous,
     historicalMin: stats.min,
+    previous,
     priorSnapshotCount: stats.count,
   });
   if (!result.fired) {
     return;
   }
   await insertAlertEvent({
-    watchlistId: entry.id,
-    price: snapshot.price,
-    previousPrice: previous,
     minPrice: stats.min,
+    previousPrice: previous,
+    price: snapshot.price,
     reasons: result.reasons,
+    watchlistId: entry.id,
   });
   summary.eventsQueued += 1;
 
@@ -164,8 +164,8 @@ async function handleAlerts(
       summary.alerted += 1;
     } else if (status === "failed") {
       summary.errors.push({
-        watchlistId: entry.id,
         error: "Instant alert fired but the email failed to send",
+        watchlistId: entry.id,
       });
     }
   }
@@ -177,16 +177,16 @@ async function processBatch(
 ): Promise<void> {
   const hotel = getHotel(batch.hotelSlug);
   const searchParams: SearchParams = {
+    adults: batch.adults,
     checkin: batch.checkin,
     checkout: format(
       addDays(new Date(batch.checkin), batch.nights),
       "yyyy-MM-dd"
     ),
-    nights: batch.nights,
-    adults: batch.adults,
     children: batch.children,
-    infants: 0,
     currency: "EUR",
+    infants: 0,
+    nights: batch.nights,
   };
 
   const { results } = await scrapeHotels([hotel.id], searchParams);
@@ -194,6 +194,7 @@ async function processBatch(
   for (const { entry, snapshot } of matchResultsToEntries(results, batch)) {
     summary.checked += 1;
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: a batch's entries run in order (read latest, write snapshot, maybe email); runWithConcurrency already parallelises across batches
       const latest = await getLatestSnapshot(entry.id);
       if (!shouldRecordSnapshot(latest, snapshot)) {
         continue;
@@ -205,8 +206,8 @@ async function processBatch(
       await handleAlerts(entry, snapshot, previous, stats, summary);
     } catch (error) {
       summary.errors.push({
-        watchlistId: entry.id,
         error: error instanceof Error ? error.message : "Unknown error",
+        watchlistId: entry.id,
       });
     }
   }
@@ -241,15 +242,15 @@ export async function GET(request: NextRequest) {
 
   const today = format(new Date(), "yyyy-MM-dd");
   const summary: CronSummary = {
-    hotels: [],
-    cursor: 0,
-    upserted: 0,
-    deactivated: 0,
-    checked: 0,
-    changed: 0,
-    eventsQueued: 0,
     alerted: 0,
+    changed: 0,
+    checked: 0,
+    cursor: 0,
+    deactivated: 0,
     errors: [],
+    eventsQueued: 0,
+    hotels: [],
+    upserted: 0,
   };
 
   summary.deactivated = await deactivateExpired(today);
@@ -263,12 +264,13 @@ export async function GET(request: NextRequest) {
   );
   for (const entry of plan.toUpsert) {
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: a fresh rolling window can upsert hundreds of rows; one insert at a time keeps the Neon load bounded
       await addWatchlistEntry(entry);
       summary.upserted += 1;
     } catch (error) {
       summary.errors.push({
-        watchlistId: null,
         error: error instanceof Error ? error.message : "Unknown error",
+        watchlistId: null,
       });
     }
   }

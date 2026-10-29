@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import type { ScrapeApiResponse } from "@/app/api/scrape/types";
 import { PageContainer } from "@/components/layout/page-container";
 import { ExportButton } from "@/components/results/export-button";
@@ -31,20 +31,27 @@ import { WeatherGrid } from "@/components/weather/weather-grid";
 import { WeatherSummary } from "@/components/weather/weather-summary";
 
 function deriveSearchMode(params: SearchFormParams): string {
-  if (params.isYearSearch) return "year";
-  if (params.enableMonthsSearch && params.months > 0) return "multi-month";
+  if (params.isYearSearch) {
+    return "year";
+  }
+  if (params.enableMonthsSearch && params.months > 0) {
+    return "multi-month";
+  }
   return "single";
 }
+
+const STAT_SKELETON_KEYS = ["lowest", "average", "highest"];
+const ROW_SKELETON_KEYS = ["row-1", "row-2", "row-3", "row-4", "row-5"];
 
 function ResultsSkeleton() {
   return (
     <div className="space-y-8">
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
+        {STAT_SKELETON_KEYS.map((key) => (
           <div
             className="rounded-xl border border-[#1e2a36] bg-[#111820] p-5"
-            key={i}
+            key={key}
           >
             <Skeleton className="mb-3 h-4 w-24 bg-[#1e2a36]" />
             <Skeleton className="mb-2 h-8 w-32 bg-[#1e2a36]" />
@@ -54,13 +61,13 @@ function ResultsSkeleton() {
       </div>
       {/* Table */}
       <div className="rounded-xl border border-[#1e2a36] bg-[#111820]">
-        <div className="border-[#1e2a36] border-b p-5">
+        <div className="border-b border-[#1e2a36] p-5">
           <Skeleton className="h-5 w-40 bg-[#1e2a36]" />
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
+        {ROW_SKELETON_KEYS.map((key) => (
           <div
-            className="flex items-center gap-4 border-[#1e2a36] border-b p-4 last:border-0"
-            key={i}
+            className="flex items-center gap-4 border-b border-[#1e2a36] p-4 last:border-0"
+            key={key}
           >
             <Skeleton className="h-4 w-24 bg-[#1e2a36]" />
             <Skeleton className="h-4 w-32 bg-[#1e2a36]" />
@@ -84,7 +91,7 @@ function SearchPageContent() {
     null
   );
 
-  const handleSearch = async (params: SearchFormParams) => {
+  const handleSearch = useCallback(async (params: SearchFormParams) => {
     setLoading(true);
     setError(null);
     setResults(null);
@@ -92,18 +99,18 @@ function SearchPageContent() {
 
     try {
       const response = await fetch("/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          checkin: params.checkin,
-          nights: params.nights,
           adults: params.adults,
+          checkin: params.checkin,
           children: params.children,
           hotelSlugs: params.hotelIds,
-          searchMode: deriveSearchMode(params),
-          months: params.months || undefined,
           includeWeather: params.includeWeather,
+          months: params.months || undefined,
+          nights: params.nights,
+          searchMode: deriveSearchMode(params),
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
 
       if (!response.ok) {
@@ -120,11 +127,11 @@ function SearchPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleModifySearch = () => {
+  const handleModifySearch = useCallback(() => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   const isMultiHotel =
     results !== null && results.meta.hotelsSearched.length > 1;
@@ -149,7 +156,7 @@ function SearchPageContent() {
         </div>
 
         <PageContainer className="relative">
-          <div className="mb-2 flex items-center gap-2 text-[#536365] text-sm">
+          <div className="mb-2 flex items-center gap-2 text-sm text-[#536365]">
             <span>Home</span>
             <ChevronRight className="h-3.5 w-3.5" />
             <span className="text-[#A3B2B5]">Price Search</span>
@@ -157,10 +164,10 @@ function SearchPageContent() {
 
           <div className="mt-6 flex items-end justify-between">
             <div>
-              <h1 className="mb-2 font-display text-4xl text-[#F5F7F8] tracking-tight lg:text-5xl">
+              <h1 className="font-display mb-2 text-4xl tracking-tight text-[#F5F7F8] lg:text-5xl">
                 Search Hotel Prices
               </h1>
-              <p className="max-w-lg text-[#536365] text-lg leading-relaxed">
+              <p className="max-w-lg text-lg leading-relaxed text-[#536365]">
                 Compare real-time rates across premium hotels in Greece &
                 Bulgaria. Weather-informed recommendations included.
               </p>
@@ -202,26 +209,26 @@ function SearchPageContent() {
 
         <PageContainer className="relative">
           {/* Error */}
-          {error && (
+          {error ? (
             <div className="mb-6 pt-8">
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             </div>
-          )}
+          ) : null}
 
           {/* Loading */}
-          {loading && (
+          {loading ? (
             <div className="pt-8">
               <div className="mb-6 flex items-center gap-3">
-                <div className="h-5 w-5 animate-spin rounded-full border-[#2E5BB1] border-b-2" />
-                <p className="font-medium text-[#A3B2B5] text-sm">
+                <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-[#2E5BB1]" />
+                <p className="text-sm font-medium text-[#A3B2B5]">
                   Searching for the best prices...
                 </p>
               </div>
               <ResultsSkeleton />
             </div>
-          )}
+          ) : null}
 
           {/* Empty state — no search yet */}
           {!(results || loading || error) && (
@@ -229,10 +236,10 @@ function SearchPageContent() {
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border border-[#1e2a36] bg-[#111820]">
                 <Search className="h-8 w-8 text-[#293044]" />
               </div>
-              <h3 className="mb-2 font-display text-[#A3B2B5] text-xl">
+              <h3 className="font-display mb-2 text-xl text-[#A3B2B5]">
                 Ready to search
               </h3>
-              <p className="max-w-sm text-[#536365] text-sm">
+              <p className="max-w-sm text-sm text-[#536365]">
                 Configure your search above and compare prices across all
                 tracked hotels in real time.
               </p>
@@ -243,7 +250,7 @@ function SearchPageContent() {
           {results && !loading && (
             <div className="animate-fade-in-up space-y-8 pt-8">
               {/* Search Summary — sticky */}
-              {searchContext && (
+              {searchContext ? (
                 <div className="glass-noir sticky top-0 z-10 rounded-xl px-5 py-3.5">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2E5BB1]/15 px-3 py-1.5 text-[#6B9AE8]">
@@ -279,7 +286,7 @@ function SearchPageContent() {
                     </Button>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {results.results.length > 0 ? (
                 <>
@@ -289,10 +296,10 @@ function SearchPageContent() {
                         <BarChart3 className="h-4 w-4 text-[#738C8A]" />
                       </div>
                       <div>
-                        <h2 className="font-display text-[#F5F7F8] text-xl">
+                        <h2 className="font-display text-xl text-[#F5F7F8]">
                           Price Overview
                         </h2>
-                        <p className="text-[#536365] text-xs">
+                        <p className="text-xs text-[#536365]">
                           Summary statistics for your search
                         </p>
                       </div>
@@ -300,7 +307,9 @@ function SearchPageContent() {
                     <PriceStats prices={results.results} />
                   </div>
 
-                  {isMultiHotel && <HotelComparison prices={results.results} />}
+                  {isMultiHotel ? (
+                    <HotelComparison prices={results.results} />
+                  ) : null}
 
                   <div>
                     <div className="mb-4 flex items-center gap-3">
@@ -308,10 +317,10 @@ function SearchPageContent() {
                         <Calendar className="h-4 w-4 text-[#2E5BB1]" />
                       </div>
                       <div>
-                        <h2 className="font-display text-[#F5F7F8] text-xl">
+                        <h2 className="font-display text-xl text-[#F5F7F8]">
                           Detailed Prices
                         </h2>
-                        <p className="text-[#536365] text-xs">
+                        <p className="text-xs text-[#536365]">
                           All available dates and pricing
                         </p>
                       </div>
@@ -322,7 +331,9 @@ function SearchPageContent() {
                     />
                   </div>
 
-                  {isMultiMonth && <MonthlySummary prices={results.results} />}
+                  {isMultiMonth ? (
+                    <MonthlySummary prices={results.results} />
+                  ) : null}
 
                   <div className="flex justify-end">
                     <ExportButton
@@ -341,10 +352,10 @@ function SearchPageContent() {
                             <Sparkles className="h-4 w-4 text-[#738C8A]" />
                           </div>
                           <div>
-                            <h2 className="font-display text-[#F5F7F8] text-xl">
+                            <h2 className="font-display text-xl text-[#F5F7F8]">
                               Weather Analysis
                             </h2>
-                            <p className="text-[#536365] text-xs">
+                            <p className="text-xs text-[#536365]">
                               Beach suitability and conditions forecast
                             </p>
                           </div>
@@ -377,8 +388,8 @@ function LoadingFallback() {
   return (
     <div className="noir-bg flex min-h-[50vh] items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-[#2E5BB1] border-b-2" />
-        <p className="text-[#536365] text-sm">Loading search...</p>
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#2E5BB1]" />
+        <p className="text-sm text-[#536365]">Loading search...</p>
       </div>
     </div>
   );

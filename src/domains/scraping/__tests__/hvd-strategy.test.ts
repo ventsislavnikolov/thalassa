@@ -4,22 +4,22 @@ import { parseHvdHtml } from "../strategies/hvd";
 import type { SearchParams } from "../types";
 
 const hotel: HotelConfig = {
-  id: "reinadelmar",
-  slug: "reina-del-mar",
-  name: "HVD Reina Del Mar",
-  displayName: "HVD Reina Del Mar",
   baseUrl: "https://reservations.hvdhotels.com/hvd-reina-del-mar",
-  strategyType: "hvd",
-  locationSlug: "obzor",
+  displayName: "HVD Reina Del Mar",
+  id: "reinadelmar",
   image: "/images/hotels/reina-del-mar.webp",
+  locationSlug: "obzor",
+  name: "HVD Reina Del Mar",
+  slug: "reina-del-mar",
+  strategyType: "hvd",
 };
 
 const params: SearchParams = {
+  adults: 2,
   checkin: "2026-09-06",
   checkout: "2026-09-12",
-  nights: 6,
-  adults: 2,
   children: 0,
+  nights: 6,
 };
 
 function card(id: number, title: string, priceHtml: string): string {
@@ -54,14 +54,14 @@ describe("parseHvdHtml", () => {
 
     expect(prices).toHaveLength(2);
     expect(prices[0]).toMatchObject({
+      currency: "EUR",
       date: "2026-09-06",
       dayOfWeek: "Sunday",
-      stayTotal: 1821.6,
-      nights: 6,
-      currency: "EUR",
       hotelId: "reinadelmar",
+      nights: 6,
       roomCode: "4286",
       roomType: "Standard double room with park view",
+      stayTotal: 1821.6,
     });
     expect(prices[0].averagePerNight).toBeCloseTo(303.6);
     expect(roomOptions).toEqual([
@@ -92,10 +92,10 @@ describe("parseHvdHtml", () => {
 
     expect(parseHvdHtml(html, params, hotel).prices).toEqual([]);
     expect(parseHvdHtml("<main></main>", params, hotel)).toEqual({
-      prices: [],
-      roomOptions: [],
       hotelId: "reinadelmar",
       hotelName: "HVD Reina Del Mar",
+      prices: [],
+      roomOptions: [],
     });
   });
 });

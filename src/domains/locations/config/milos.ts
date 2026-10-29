@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const milos: LocationConfig = {
-  slug: "milos",
-  name: "Milos",
-  region: "Cyclades",
-  country: "Greece",
   coordinates: {
     latitude: 36.74,
     longitude: 24.43,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/milos.png",
+  name: "Milos",
+  region: "Cyclades",
+  slug: "milos",
+  timezone: "Europe/Athens",
 };
 
 export default milos;

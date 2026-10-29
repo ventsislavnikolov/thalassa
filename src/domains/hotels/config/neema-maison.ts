@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const neemaMaison: HotelConfig = {
-  id: "neemamais",
-  slug: "neema-maison",
-  name: "Neema Maison",
-  displayName: "Neema Maison",
   baseUrl: "https://neemamaison.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "santorini",
+  displayName: "Neema Maison",
+  id: "neemamais",
   image: "/images/hotels/neema-maison.webp",
+  locationSlug: "santorini",
+  name: "Neema Maison",
+  slug: "neema-maison",
+  strategyType: "avl",
 };
 
 export default neemaMaison;

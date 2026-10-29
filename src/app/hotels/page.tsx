@@ -8,10 +8,10 @@ export default function HotelsPage() {
   return (
     <section className="py-16">
       <PageContainer>
-        <h1 className="mb-2 font-display text-4xl tracking-tight">
+        <h1 className="font-display mb-2 text-4xl tracking-tight">
           Our Hotels
         </h1>
-        <p className="mb-8 text-lg text-muted-foreground">
+        <p className="text-muted-foreground mb-8 text-lg">
           Browse {hotels.length} premium hotels across Greece and Bulgaria
         </p>
         <HotelGrid hotels={hotels} />

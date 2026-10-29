@@ -76,29 +76,29 @@ describe("analyzeDeals", () => {
     stayTotal: number,
     hotelId = "hotel-1"
   ): PriceResult => ({
+    averagePerNight: stayTotal / 3,
+    currency: "EUR",
     date,
     dayOfWeek: "Monday",
-    averagePerNight: stayTotal / 3,
-    stayTotal,
-    isLowestRate: false,
-    nights: 3,
-    currency: "EUR",
     hotelId,
     hotelName: "Test Hotel",
+    isLowestRate: false,
+    nights: 3,
+    stayTotal,
   });
 
   const makeWeather = (date: string, score: number): WeatherData => ({
-    date,
-    temperature: { min: 20, max: 30, avg: 25 },
-    precipitation: 0,
-    windSpeed: 10,
-    humidity: 50,
-    uvIndex: 5,
-    weatherCode: 0,
-    description: "Clear sky",
     beachConditions: "Perfect",
+    date,
+    description: "Clear sky",
+    humidity: 50,
+    precipitation: 0,
     recommendation: "Excellent",
     score,
+    temperature: { avg: 25, max: 30, min: 20 },
+    uvIndex: 5,
+    weatherCode: 0,
+    windSpeed: 10,
   });
 
   it("returns analyses sorted by totalScore descending", () => {
@@ -114,7 +114,7 @@ describe("analyzeDeals", () => {
     ]);
 
     const results = analyzeDeals(prices, weatherMap, 3);
-    for (let i = 0; i < results.length - 1; i++) {
+    for (let i = 0; i < results.length - 1; i += 1) {
       expect(results[i].totalScore).toBeGreaterThanOrEqual(
         results[i + 1].totalScore
       );

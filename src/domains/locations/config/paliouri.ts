@@ -1,13 +1,13 @@
 import type { LocationConfig } from "../types";
 
 const paliouri: LocationConfig = {
-  slug: "paliouri",
+  coordinates: { latitude: 39.953, longitude: 23.685 },
+  country: "Greece",
+  image: "/images/locations/paliouri.jpg",
   name: "Paliouri",
   region: "Halkidiki",
-  country: "Greece",
-  coordinates: { latitude: 39.953, longitude: 23.685 },
+  slug: "paliouri",
   timezone: "Europe/Athens",
-  image: "/images/locations/paliouri.jpg",
 };
 
 export default paliouri;

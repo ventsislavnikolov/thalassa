@@ -55,10 +55,10 @@ export function evaluateDealAlert(input: DealAlertInput): DealAlertResult {
   }
 
   return {
-    fired: hitTarget || hitPctDrop,
-    hitTarget,
-    hitPctDrop,
     dropPct,
+    fired: hitTarget || hitPctDrop,
+    hitPctDrop,
+    hitTarget,
     reasons,
   };
 }
@@ -120,10 +120,10 @@ export function evaluateAutoAlert(input: AutoAlertInput): AutoAlertResult {
   }
 
   return {
-    fired: hitPctDrop || hitNewLow,
-    hitPctDrop,
-    hitNewLow,
     dropPct,
+    fired: hitPctDrop || hitNewLow,
+    hitNewLow,
+    hitPctDrop,
     instant: dropPct !== null && dropPct >= INSTANT_DROP_PCT,
     reasons,
   };

@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const avaton: HotelConfig = {
-  id: "avatonlr",
-  slug: "avaton",
-  name: "Avaton Luxury Beach Resort",
-  displayName: "Avaton Luxury Beach Resort",
   baseUrl: "https://avatonluxuryresort.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "nea-roda",
+  displayName: "Avaton Luxury Beach Resort",
+  id: "avatonlr",
   image: "/images/hotels/avaton.jpg",
+  locationSlug: "nea-roda",
+  name: "Avaton Luxury Beach Resort",
+  slug: "avaton",
+  strategyType: "avl",
 };
 
 export default avaton;

@@ -17,7 +17,7 @@ interface HotelCardProps {
 
 export function HotelCard({ hotel }: HotelCardProps) {
   return (
-    <Card className="group overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-warm">
+    <Card className="group hover:shadow-warm overflow-hidden pt-0 transition-all duration-300 hover:-translate-y-1">
       <div className="relative h-48 overflow-hidden">
         <Image
           alt={hotel.displayName}

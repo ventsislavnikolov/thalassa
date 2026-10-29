@@ -4,6 +4,7 @@ import type { HotelConfig } from "@/domains/hotels/types";
 import { extractRoomOptions, loadHtml } from "../parsers/html-parser";
 import { parsePrice } from "../parsers/price-parser";
 import type {
+  FetchPricesParams,
   PriceResult,
   ScrapeResponse,
   ScrapingStrategy,
@@ -23,6 +24,7 @@ function delay(ms: number): Promise<void> {
 function buildFormData(params: SearchParams): URLSearchParams {
   const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
 
+  // biome-ignore assist/source/useSortedKeys: field order mirrors the reserve-online.net calendar form this POST replays
   return new URLSearchParams({
     voucher: "",
     room: params.room || "",
@@ -43,29 +45,29 @@ function buildFormData(params: SearchParams): URLSearchParams {
 // Regex patterns for "Stay total" / "Общ престой" price extraction
 const TOTAL_PRICE_PATTERNS = [
   // US format with comma as thousands separator and dot as decimal
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-  /(?:Stay total:|Общ престой:).*?([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d,]+\.\d{2})/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // EU format with space as thousands separator and comma as decimal
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]\d{3})*,\d{2})\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // Numbers without decimal places (like "2,347" or "2 347")
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d{1,3}(?:[\s\u00A0\u2000-\u200A\u202F\u205F\u3000,]\d{3})+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
   // Fallback: simple numbers without separators
-  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(\d+)\b/i,
-  /(?:Stay total:|Общ престой:).*?(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:Stay total:|Общ престой:).*?<b>(\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/i,
+  /(?:Stay total:|Общ престой:)\s*(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>\d+)\b/iu,
+  /(?:Stay total:|Общ престой:).*?(?<price>\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:Stay total:|Общ престой:).*?<b>(?<price>\d+)\b[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)?<\/b>/iu,
 ];
 
 // General price patterns for both formats
 const GENERAL_PRICE_PATTERNS = [
-  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d,]+\.\d{2})/i,
-  /([\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
-  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/i,
-  /([\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/i,
+  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d,]+\.\d{2})/iu,
+  /(?<price>[\d,]+\.\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
+  /(?:BGN|лв|EUR|€)[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?<price>[\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})/iu,
+  /(?<price>[\d\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+,\d{2})[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]*(?:BGN|лв|EUR|€)/iu,
 ];
 
 function matchPatterns(
@@ -74,7 +76,9 @@ function matchPatterns(
 ): RegExpMatchArray | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) return match;
+    if (match) {
+      return match;
+    }
   }
   return null;
 }
@@ -93,7 +97,9 @@ function parseCalendarHtml(
     const date = $cell.attr("data-date");
     const title = $cell.attr("data-title") || "";
 
-    if (!date) return;
+    if (!date) {
+      return;
+    }
 
     const cellText = $cell.text() || "";
 
@@ -106,10 +112,14 @@ function parseCalendarHtml(
       priceMatch = matchPatterns(cellText, GENERAL_PRICE_PATTERNS);
     }
 
-    if (!priceMatch) return;
+    if (!priceMatch) {
+      return;
+    }
 
     const priceValue = parsePrice(priceMatch[1]);
-    if (priceValue === null) return;
+    if (priceValue === null) {
+      return;
+    }
 
     let stayTotal: number;
     let avgPerNight: number;
@@ -130,97 +140,97 @@ function parseCalendarHtml(
     const dayOfWeek = format(dateObj, "EEEE");
 
     prices.push({
+      averagePerNight: avgPerNight,
+      currency: searchParams.currency || "EUR",
       date,
       dayOfWeek,
-      averagePerNight: avgPerNight,
-      stayTotal,
-      isLowestRate,
-      nights: searchParams.nights,
-      currency: searchParams.currency || "EUR",
       hotelId: hotel.id,
       hotelName: hotel.name,
+      isLowestRate,
+      nights: searchParams.nights,
+      stayTotal,
     });
   });
 
   return {
-    prices,
-    roomOptions,
     hotelId: hotel.id,
     hotelName: hotel.name,
+    prices,
+    roomOptions,
+  };
+}
+
+async function fetchCalendarPage({
+  hotel,
+  searchParams,
+  signal,
+}: FetchPricesParams): Promise<ScrapeResponse> {
+  const formData = buildFormData(searchParams);
+
+  try {
+    const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": USER_AGENT,
+      },
+      signal,
+      timeout: REQUEST_TIMEOUT,
+    });
+
+    return parseCalendarHtml(response.data, searchParams, hotel);
+  } catch (error) {
+    throw new ScrapingError(`Failed to fetch calendar data for ${hotel.name}`, {
+      cause: error,
+      hotelId: hotel.id,
+    });
+  }
+}
+
+async function fetchCalendarPrices(
+  params: FetchPricesParams
+): Promise<ScrapeResponse> {
+  const { hotel } = params;
+  const initial = await fetchCalendarPage(params);
+  const { roomOptions } = initial;
+
+  if (roomOptions.length === 0) {
+    return initial;
+  }
+
+  const allPrices: PriceResult[] = [];
+
+  for (const room of roomOptions) {
+    try {
+      const roomParams = {
+        ...params,
+        searchParams: { ...params.searchParams, room: room.code },
+      };
+      // biome-ignore lint/performance/noAwaitInLoops: rooms are fetched one at a time, ROOM_FETCH_DELAY apart, to throttle requests to the live booking site
+      const response = await fetchCalendarPage(roomParams);
+      const tagged = response.prices.map((p) => ({
+        ...p,
+        roomCode: room.code,
+        roomType: room.name,
+      }));
+      allPrices.push(...tagged);
+
+      if (room !== roomOptions.at(-1)) {
+        await delay(ROOM_FETCH_DELAY);
+      }
+    } catch {
+      // Continue with other rooms even if one fails
+    }
+  }
+
+  return {
+    hotelId: hotel.id,
+    hotelName: hotel.name,
+    prices: allPrices,
+    roomOptions,
   };
 }
 
 export class CalendarStrategy implements ScrapingStrategy {
+  readonly fetchPrices = fetchCalendarPrices;
   type = "calendar" as const;
-
-  async fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel } = params;
-    const initial = await this.fetchSingle(params);
-    const { roomOptions } = initial;
-
-    if (roomOptions.length === 0) return initial;
-
-    const allPrices: PriceResult[] = [];
-
-    for (const room of roomOptions) {
-      try {
-        const roomParams = {
-          ...params,
-          searchParams: { ...params.searchParams, room: room.code },
-        };
-        const response = await this.fetchSingle(roomParams);
-        const tagged = response.prices.map((p) => ({
-          ...p,
-          roomType: room.name,
-          roomCode: room.code,
-        }));
-        allPrices.push(...tagged);
-
-        if (room !== roomOptions[roomOptions.length - 1]) {
-          await delay(ROOM_FETCH_DELAY);
-        }
-      } catch {
-        // Continue with other rooms even if one fails
-      }
-    }
-
-    return {
-      prices: allPrices,
-      roomOptions,
-      hotelId: hotel.id,
-      hotelName: hotel.name,
-    };
-  }
-
-  private async fetchSingle(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel, searchParams, signal } = params;
-    const formData = buildFormData(searchParams);
-
-    try {
-      const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": USER_AGENT,
-        },
-        timeout: REQUEST_TIMEOUT,
-        signal,
-      });
-
-      return parseCalendarHtml(response.data, searchParams, hotel);
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch calendar data for ${hotel.name}`,
-        hotel.id,
-        error
-      );
-    }
-  }
 }

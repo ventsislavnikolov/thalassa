@@ -10,72 +10,72 @@ import {
 describe("calculateBeachScore", () => {
   it("returns 100 for perfect beach conditions", () => {
     const score = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 8,
     });
     expect(score).toBe(100);
   });
 
   it("returns high score for good conditions", () => {
     const score = calculateBeachScore({
-      temperature: 25,
       precipitation: 0.5,
-      windSpeed: 12,
+      temperature: 25,
       uvIndex: 7,
+      windSpeed: 12,
     });
     expect(score).toBeGreaterThanOrEqual(80);
   });
 
   it("returns low score for bad conditions", () => {
     const score = calculateBeachScore({
-      temperature: 10,
       precipitation: 10,
-      windSpeed: 30,
+      temperature: 10,
       uvIndex: 0,
+      windSpeed: 30,
     });
     expect(score).toBeLessThanOrEqual(10);
   });
 
   it("penalizes heavy rain", () => {
     const dryScore = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 8,
     });
     const rainyScore = calculateBeachScore({
-      temperature: 26,
       precipitation: 8,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 8,
     });
     expect(rainyScore).toBeLessThan(dryScore);
   });
 
   it("penalizes strong wind", () => {
     const calmScore = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 8,
     });
     const windyScore = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 30,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 30,
     });
     expect(windyScore).toBeLessThan(calmScore);
   });
 
   it("gives partial temperature score for warm but not ideal temps", () => {
     const score = calculateBeachScore({
-      temperature: 21,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 21,
       uvIndex: 5,
+      windSpeed: 8,
     });
     // temp 21 in 20-32 range = 30, precip 0 = 30, wind 8 = 20, uv 5 = 10
     expect(score).toBe(90);
@@ -83,20 +83,20 @@ describe("calculateBeachScore", () => {
 
   it("gives minimal temperature score for extreme cold", () => {
     const score = calculateBeachScore({
-      temperature: 5,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 5,
       uvIndex: 5,
+      windSpeed: 8,
     });
     expect(score).toBe(65);
   });
 
   it("clamps score to 0-100 range", () => {
     const score = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 5,
+      temperature: 26,
       uvIndex: 6,
+      windSpeed: 5,
     });
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
@@ -104,16 +104,16 @@ describe("calculateBeachScore", () => {
 
   it("gives partial UV score for high UV", () => {
     const moderateUv = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 5,
+      windSpeed: 8,
     });
     const highUv = calculateBeachScore({
-      temperature: 26,
       precipitation: 0,
-      windSpeed: 8,
+      temperature: 26,
       uvIndex: 10,
+      windSpeed: 8,
     });
     expect(highUv).toBeLessThanOrEqual(moderateUv);
   });
@@ -122,8 +122,8 @@ describe("calculateBeachScore", () => {
 describe("calculateBeachConditions", () => {
   it("returns rainy conditions text for heavy rain", () => {
     const result = calculateBeachConditions({
-      temperature: 25,
       precipitation: 6,
+      temperature: 25,
       windSpeed: 10,
     });
     expect(result).toContain("Rainy");
@@ -131,8 +131,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns cold conditions text for low temperature", () => {
     const result = calculateBeachConditions({
-      temperature: 15,
       precipitation: 0,
+      temperature: 15,
       windSpeed: 10,
     });
     expect(result.toLowerCase()).toContain("cold");
@@ -140,8 +140,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns windy conditions text for strong wind", () => {
     const result = calculateBeachConditions({
-      temperature: 25,
       precipitation: 0,
+      temperature: 25,
       windSpeed: 30,
     });
     expect(result.toLowerCase()).toContain("windy");
@@ -149,8 +149,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns hot conditions text for very high temperature", () => {
     const result = calculateBeachConditions({
-      temperature: 37,
       precipitation: 0,
+      temperature: 37,
       windSpeed: 10,
     });
     expect(result.toLowerCase()).toContain("hot");
@@ -158,8 +158,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns perfect beach weather for ideal conditions", () => {
     const result = calculateBeachConditions({
-      temperature: 27,
       precipitation: 0,
+      temperature: 27,
       windSpeed: 10,
     });
     expect(result).toContain("Perfect");
@@ -167,8 +167,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns good for beach for good conditions", () => {
     const result = calculateBeachConditions({
-      temperature: 23,
       precipitation: 1,
+      temperature: 23,
       windSpeed: 18,
     });
     expect(result.toLowerCase()).toContain("good");
@@ -176,8 +176,8 @@ describe("calculateBeachConditions", () => {
 
   it("returns fair conditions for marginal weather", () => {
     const result = calculateBeachConditions({
-      temperature: 20,
       precipitation: 3,
+      temperature: 20,
       windSpeed: 22,
     });
     expect(result.toLowerCase()).toContain("fair");
@@ -187,9 +187,9 @@ describe("calculateBeachConditions", () => {
 describe("generateWeatherRecommendation", () => {
   it("returns exceptional for score >= 90", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 0,
       score: 95,
       temperature: 27,
-      precipitation: 0,
       windSpeed: 8,
     });
     expect(result).toContain("Exceptional");
@@ -197,9 +197,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns excellent for score >= 80", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 0,
       score: 85,
       temperature: 25,
-      precipitation: 0,
       windSpeed: 10,
     });
     expect(result).toContain("Excellent");
@@ -207,9 +207,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns very good for score >= 70", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 1,
       score: 75,
       temperature: 24,
-      precipitation: 1,
       windSpeed: 12,
     });
     expect(result).toContain("Very good");
@@ -217,9 +217,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns good for score >= 60", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 2,
       score: 65,
       temperature: 22,
-      precipitation: 2,
       windSpeed: 15,
     });
     expect(result).toContain("Good");
@@ -227,9 +227,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns fair for score >= 50", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 3,
       score: 55,
       temperature: 20,
-      precipitation: 3,
       windSpeed: 18,
     });
     expect(result).toContain("Fair");
@@ -237,9 +237,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns rainy recommendation for heavy precipitation", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 8,
       score: 30,
       temperature: 22,
-      precipitation: 8,
       windSpeed: 10,
     });
     expect(result).toContain("Rainy");
@@ -247,9 +247,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns cold recommendation for low temperature", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 0,
       score: 30,
       temperature: 12,
-      precipitation: 0,
       windSpeed: 10,
     });
     expect(result.toLowerCase()).toContain("cold");
@@ -257,9 +257,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns windy recommendation for strong wind", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 0,
       score: 30,
       temperature: 25,
-      precipitation: 0,
       windSpeed: 30,
     });
     expect(result.toLowerCase()).toContain("windy");
@@ -267,9 +267,9 @@ describe("generateWeatherRecommendation", () => {
 
   it("returns moderate recommendation as default", () => {
     const result = generateWeatherRecommendation({
+      precipitation: 3,
       score: 30,
       temperature: 20,
-      precipitation: 3,
       windSpeed: 20,
     });
     expect(result).toContain("Moderate");
@@ -308,41 +308,41 @@ describe("getWeatherDescription", () => {
 
 describe("estimateSeaTemperature", () => {
   it("returns warm temperature for summer months", () => {
-    const temp = estimateSeaTemperature({ date: "2025-07-15", airTemp: 28 });
+    const temp = estimateSeaTemperature({ airTemp: 28, date: "2025-07-15" });
     expect(temp).toBeGreaterThanOrEqual(24);
     expect(temp).toBeLessThanOrEqual(28);
   });
 
   it("returns cool temperature for winter months", () => {
-    const temp = estimateSeaTemperature({ date: "2025-01-15", airTemp: 10 });
+    const temp = estimateSeaTemperature({ airTemp: 10, date: "2025-01-15" });
     expect(temp).toBeGreaterThanOrEqual(15);
     expect(temp).toBeLessThanOrEqual(16);
   });
 
   it("adjusts based on air temperature", () => {
-    const coolAir = estimateSeaTemperature({ date: "2025-07-15", airTemp: 20 });
-    const warmAir = estimateSeaTemperature({ date: "2025-07-15", airTemp: 30 });
+    const coolAir = estimateSeaTemperature({ airTemp: 20, date: "2025-07-15" });
+    const warmAir = estimateSeaTemperature({ airTemp: 30, date: "2025-07-15" });
     expect(warmAir).toBeGreaterThan(coolAir);
   });
 
   it("clamps to minimum of 15", () => {
-    const temp = estimateSeaTemperature({ date: "2025-01-15", airTemp: -5 });
+    const temp = estimateSeaTemperature({ airTemp: -5, date: "2025-01-15" });
     expect(temp).toBeGreaterThanOrEqual(15);
   });
 
   it("clamps to maximum of 28", () => {
-    const temp = estimateSeaTemperature({ date: "2025-08-15", airTemp: 45 });
+    const temp = estimateSeaTemperature({ airTemp: 45, date: "2025-08-15" });
     expect(temp).toBeLessThanOrEqual(28);
   });
 
   it("returns reasonable temperature for spring", () => {
-    const temp = estimateSeaTemperature({ date: "2025-04-15", airTemp: 20 });
+    const temp = estimateSeaTemperature({ airTemp: 20, date: "2025-04-15" });
     expect(temp).toBeGreaterThanOrEqual(15);
     expect(temp).toBeLessThanOrEqual(22);
   });
 
   it("defaults to 20 for invalid month", () => {
-    const temp = estimateSeaTemperature({ date: "2025-13-15", airTemp: 22 });
+    const temp = estimateSeaTemperature({ airTemp: 22, date: "2025-13-15" });
     expect(temp).toBe(20);
   });
 });

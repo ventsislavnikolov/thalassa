@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const potideaPalace: HotelConfig = {
-  id: "potideapalace",
-  slug: "potidea-palace",
-  name: "Potidea Palace",
-  displayName: "Potidea Palace",
   baseUrl: "https://potideapalace.reserve-online.net",
-  strategyType: "calendar",
-  locationSlug: "nea-moudania",
+  displayName: "Potidea Palace",
+  id: "potideapalace",
   image: "/images/hotels/potidea-palace.jpg",
+  locationSlug: "nea-moudania",
+  name: "Potidea Palace",
+  slug: "potidea-palace",
+  strategyType: "calendar",
 };
 
 export default potideaPalace;

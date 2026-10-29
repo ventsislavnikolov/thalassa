@@ -4,19 +4,19 @@ import type { WatchlistEntry } from "../types";
 
 function entry(overrides: Partial<WatchlistEntry>): WatchlistEntry {
   return {
-    id: 1,
-    hotelSlug: "stella-island",
-    checkinDate: "2026-10-03",
-    nights: 7,
-    adults: 2,
-    children: 0,
-    roomType: null,
     active: true,
-    createdAt: "2026-08-29T00:00:00Z",
-    targetPrice: null,
-    alertPctDrop: null,
+    adults: 2,
     alertedAt: null,
+    alertPctDrop: null,
+    checkinDate: "2026-10-03",
+    children: 0,
+    createdAt: "2026-08-29T00:00:00Z",
+    hotelSlug: "stella-island",
+    id: 1,
+    nights: 7,
+    roomType: null,
     source: "auto",
+    targetPrice: null,
     ...overrides,
   };
 }
@@ -25,8 +25,8 @@ describe("evaluateAutoAlert", () => {
   it("fires on a drop of exactly 10%", () => {
     const result = evaluateAutoAlert({
       current: 900,
-      previous: 1000,
       historicalMin: null,
+      previous: 1000,
       priorSnapshotCount: 1,
     });
     expect(result.fired).toBe(true);
@@ -37,8 +37,8 @@ describe("evaluateAutoAlert", () => {
   it("does not fire below the 10% threshold", () => {
     const result = evaluateAutoAlert({
       current: 950,
-      previous: 1000,
       historicalMin: null,
+      previous: 1000,
       priorSnapshotCount: 1,
     });
     expect(result.fired).toBe(false);
@@ -48,8 +48,8 @@ describe("evaluateAutoAlert", () => {
   it("flags instant on drops of 25% or more", () => {
     const result = evaluateAutoAlert({
       current: 750,
-      previous: 1000,
       historicalMin: null,
+      previous: 1000,
       priorSnapshotCount: 1,
     });
     expect(result.fired).toBe(true);
@@ -59,8 +59,8 @@ describe("evaluateAutoAlert", () => {
   it("fires on a new historical low with enough snapshots", () => {
     const result = evaluateAutoAlert({
       current: 800,
-      previous: 820,
       historicalMin: 810,
+      previous: 820,
       priorSnapshotCount: 3,
     });
     expect(result.fired).toBe(true);
@@ -71,8 +71,8 @@ describe("evaluateAutoAlert", () => {
   it("ignores a new low with fewer than 3 prior snapshots", () => {
     const result = evaluateAutoAlert({
       current: 800,
-      previous: 820,
       historicalMin: 810,
+      previous: 820,
       priorSnapshotCount: 2,
     });
     expect(result.fired).toBe(false);
@@ -81,8 +81,8 @@ describe("evaluateAutoAlert", () => {
   it("handles a null previous price", () => {
     const result = evaluateAutoAlert({
       current: 500,
-      previous: null,
       historicalMin: null,
+      previous: null,
       priorSnapshotCount: 0,
     });
     expect(result.fired).toBe(false);

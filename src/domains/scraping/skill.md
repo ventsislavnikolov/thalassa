@@ -17,45 +17,41 @@ The hotel uses a different booking system than the existing strategies (`calenda
 1. **Create strategy file** at `src/domains/scraping/strategies/<strategy-name>.ts`:
 
 ```typescript
-import type { HotelConfig } from "@/domains/hotels/types";
 import type {
-  PriceResult,
+  FetchPricesParams,
   ScrapeResponse,
   ScrapingStrategy,
-  SearchParams,
 } from "../types";
 import { ScrapingError } from "../types";
 
-export class MyNewStrategy implements ScrapingStrategy {
-  type = "<strategy-name>" as const;
+async function fetchMyNewPrices({
+  hotel,
+  searchParams,
+  signal,
+}: FetchPricesParams): Promise<ScrapeResponse> {
+  try {
+    // 1. Build request (URL, headers, form data)
+    // 2. Fetch HTML from the hotel's booking endpoint
+    // 3. Parse HTML to extract PriceResult[]
+    // 4. Extract room options if available
 
-  async fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel, searchParams, signal } = params;
-
-    try {
-      // 1. Build request (URL, headers, form data)
-      // 2. Fetch HTML from the hotel's booking endpoint
-      // 3. Parse HTML to extract PriceResult[]
-      // 4. Extract room options if available
-
-      return {
-        prices: [],       // PriceResult[]
-        roomOptions: [],  // RoomType[]
-        hotelId: hotel.id,
-        hotelName: hotel.name,
-      };
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch data for ${hotel.name}`,
-        hotel.id,
-        error
-      );
-    }
+    return {
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      prices: [], // PriceResult[]
+      roomOptions: [], // RoomType[]
+    };
+  } catch (error) {
+    throw new ScrapingError(`Failed to fetch data for ${hotel.name}`, {
+      cause: error,
+      hotelId: hotel.id,
+    });
   }
+}
+
+export class MyNewStrategy implements ScrapingStrategy {
+  readonly fetchPrices = fetchMyNewPrices;
+  type = "<strategy-name>" as const;
 }
 ```
 
@@ -98,7 +94,7 @@ pnpm test    # verify existing tests still pass
 - `ScrapingStrategy`: must implement `type` and `fetchPrices()`
 - `SearchParams`: checkin, checkout, nights, adults, children, currency
 - `PriceResult`: date, dayOfWeek, averagePerNight, stayTotal, hotelId, etc.
-- `ScrapingError`: wraps errors with hotelId for debugging
+- `ScrapingError`: wraps errors with hotelId (and the original error as `cause`) for debugging
 
 ### Validation
 

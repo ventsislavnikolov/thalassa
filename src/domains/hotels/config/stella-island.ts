@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const stellaIsland: HotelConfig = {
-  id: "stellaisla",
-  slug: "stella-island",
-  name: "Stella Island Luxury Resort & Spa",
-  displayName: "Stella Island Luxury Resort & Spa",
   baseUrl: "https://stellaisland.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "analipsi",
+  displayName: "Stella Island Luxury Resort & Spa",
+  id: "stellaisla",
   image: "/images/hotels/stella-island.jpg",
+  locationSlug: "analipsi",
+  name: "Stella Island Luxury Resort & Spa",
+  slug: "stella-island",
+  strategyType: "avl",
 };
 
 export default stellaIsland;

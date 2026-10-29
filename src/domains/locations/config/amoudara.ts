@@ -1,13 +1,13 @@
 import type { LocationConfig } from "../types";
 
 const amoudara: LocationConfig = {
-  slug: "amoudara",
+  coordinates: { latitude: 35.339, longitude: 25.083 },
+  country: "Greece",
+  image: "/images/locations/amoudara.jpg",
   name: "Amoudara",
   region: "Crete",
-  country: "Greece",
-  coordinates: { latitude: 35.339, longitude: 25.083 },
+  slug: "amoudara",
   timezone: "Europe/Athens",
-  image: "/images/locations/amoudara.jpg",
 };
 
 export default amoudara;

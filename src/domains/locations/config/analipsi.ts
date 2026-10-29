@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const analipsi: LocationConfig = {
-  slug: "analipsi",
-  name: "Analipsi",
-  region: "Crete",
-  country: "Greece",
   coordinates: {
     latitude: 35.317,
     longitude: 25.383,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/analipsi.jpg",
+  name: "Analipsi",
+  region: "Crete",
+  slug: "analipsi",
+  timezone: "Europe/Athens",
 };
 
 export default analipsi;

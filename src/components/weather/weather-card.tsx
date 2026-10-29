@@ -23,7 +23,7 @@ function getWeatherIcon(description: string) {
     return <Sun className="h-5 w-5 text-yellow-500" />;
   }
   if (description.includes("cloud")) {
-    return <Cloud className="h-5 w-5 text-muted-foreground" />;
+    return <Cloud className="text-muted-foreground h-5 w-5" />;
   }
   if (description.includes("rain") || description.includes("drizzle")) {
     return <Droplets className="h-5 w-5 text-teal-500" />;
@@ -32,18 +32,24 @@ function getWeatherIcon(description: string) {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 80) return "text-secondary";
-  if (score >= 60) return "text-amber-600";
+  if (score >= 80) {
+    return "text-secondary";
+  }
+  if (score >= 60) {
+    return "text-amber-600";
+  }
   return "text-destructive";
 }
 
 function getRankBadge(rank: number) {
   if (rank === 1) {
     return (
-      <Badge className="border-0 bg-primary/10 text-primary">Best Choice</Badge>
+      <Badge className="bg-primary/10 text-primary border-0">Best Choice</Badge>
     );
   }
-  if (rank <= 3) return <Badge variant="secondary">Great Option</Badge>;
+  if (rank <= 3) {
+    return <Badge variant="secondary">Great Option</Badge>;
+  }
   return <Badge variant="outline">Good Alternative</Badge>;
 }
 
@@ -53,12 +59,12 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
   const formattedDate = format(dateObj, "EEEE, MMMM d, yyyy");
 
   return (
-    <Card className={cn(rank === 1 && "border-2 border-primary")}>
+    <Card className={cn(rank === 1 && "border-primary border-2")}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 font-display">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">
+            <CardTitle className="font-display flex items-center gap-2">
+              <span className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-sm">
                 {rank}
               </span>
               {formattedDate}
@@ -72,16 +78,16 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between rounded-lg bg-muted p-3">
+        <div className="bg-muted flex items-center justify-between rounded-lg p-3">
           <div>
             <p className="text-muted-foreground text-sm">Total Stay Price</p>
-            <p className="font-bold text-2xl">
+            <p className="text-2xl font-bold">
               {priceInfo.stayTotal.toFixed(2)} {priceInfo.currency}
             </p>
           </div>
           <div className="text-right">
             <p className="text-muted-foreground text-sm">Per Night</p>
-            <p className="font-semibold text-lg">
+            <p className="text-lg font-semibold">
               {priceInfo.averagePerNight.toFixed(2)} {priceInfo.currency}
             </p>
           </div>
@@ -89,10 +95,10 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-primary" />
+            <Thermometer className="text-primary h-4 w-4" />
             <div>
               <p className="text-muted-foreground text-xs">Temperature</p>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {weatherData.temperature.min}° - {weatherData.temperature.max}
                 °C
               </p>
@@ -102,7 +108,7 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
             <Waves className="h-4 w-4 text-teal-500" />
             <div>
               <p className="text-muted-foreground text-xs">Sea Temp</p>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {weatherData.seaTemperature ?? 0}°C
               </p>
             </div>
@@ -111,16 +117,16 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
             <Droplets className="h-4 w-4 text-teal-500" />
             <div>
               <p className="text-muted-foreground text-xs">Rain</p>
-              <p className="font-medium text-sm">
+              <p className="text-sm font-medium">
                 {weatherData.precipitation.toFixed(1)}mm
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Wind className="h-4 w-4 text-muted-foreground" />
+            <Wind className="text-muted-foreground h-4 w-4" />
             <div>
               <p className="text-muted-foreground text-xs">Wind</p>
-              <p className="font-medium text-sm">{weatherData.windSpeed}km/h</p>
+              <p className="text-sm font-medium">{weatherData.windSpeed}km/h</p>
             </div>
           </div>
         </div>
@@ -141,9 +147,9 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
 
         <div className="grid grid-cols-3 gap-4 border-t pt-2">
           <div>
-            <p className="mb-1 text-muted-foreground text-xs">Price Rank</p>
+            <p className="text-muted-foreground mb-1 text-xs">Price Rank</p>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">
+              <span className="text-sm font-semibold">
                 #{analysis.priceRank}
               </span>
               <Progress
@@ -153,9 +159,9 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
             </div>
           </div>
           <div>
-            <p className="mb-1 text-muted-foreground text-xs">Weather Rank</p>
+            <p className="text-muted-foreground mb-1 text-xs">Weather Rank</p>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">
+              <span className="text-sm font-semibold">
                 #{analysis.weatherRank}
               </span>
               <Progress
@@ -165,11 +171,11 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
             </div>
           </div>
           <div>
-            <p className="mb-1 text-muted-foreground text-xs">Overall Score</p>
+            <p className="text-muted-foreground mb-1 text-xs">Overall Score</p>
             <div className="flex items-center gap-2">
               <span
                 className={cn(
-                  "font-bold text-sm",
+                  "text-sm font-bold",
                   getScoreColor(analysis.totalScore)
                 )}
               >
@@ -180,7 +186,7 @@ export function WeatherCard({ analysis, rank }: WeatherCardProps) {
           </div>
         </div>
 
-        <div className="rounded-lg bg-muted p-3">
+        <div className="bg-muted rounded-lg p-3">
           <p className="text-sm">{weatherData.recommendation}</p>
         </div>
       </CardContent>

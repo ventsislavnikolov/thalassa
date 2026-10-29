@@ -28,9 +28,9 @@ function buildPoints(priced: (PriceSnapshot & { price: number })[]): Point[] {
   const spanP = maxP - minP || 1;
 
   return priced.map((s, i) => ({
+    available: s.available,
     price: s.price,
     scrapedAt: s.scrapedAt,
-    available: s.available,
     x: PAD_X + ((times[i] - minT) / spanT) * (WIDTH - 2 * PAD_X),
     y: PAD_Y + (1 - (s.price - minP) / spanP) * (HEIGHT - 2 * PAD_Y),
   }));
@@ -44,7 +44,7 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
 
   if (priced.length === 0) {
     return (
-      <p className="py-6 text-center text-[#536365] text-sm">
+      <p className="py-6 text-center text-sm text-[#536365]">
         No price points recorded yet. The scraper stores a point every 2 hours
         when the price changes.
       </p>
@@ -52,9 +52,9 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
   }
 
   if (priced.length === 1) {
-    const only = priced[0];
+    const [only] = priced;
     return (
-      <p className="py-6 text-center text-[#738C8A] text-sm">
+      <p className="py-6 text-center text-sm text-[#738C8A]">
         One data point so far: {only.currency} {only.price.toLocaleString()}.
         The chart appears once the price changes.
       </p>

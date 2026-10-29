@@ -7,49 +7,5 @@
   ],
   "files": {
     "includes": ["!public"]
-  },
-  "linter": {
-    "rules": {
-      "correctness": {
-        "useParseIntRadix": "off",
-        "noUndeclaredVariables": "off",
-        "noUnusedFunctionParameters": "off",
-        "noNestedComponentDefinitions": "off"
-      },
-      "complexity": {
-        "noForEach": "off",
-        "useOptionalChain": "off",
-        "noUselessSwitchCase": "off",
-        "noExcessiveCognitiveComplexity": "off"
-      },
-      "performance": {
-        "useTopLevelRegex": "off",
-        "noNamespaceImport": "off"
-      },
-      "style": {
-        "useAtIndex": "off",
-        "useTemplate": "off",
-        "useImportType": "off",
-        "noMagicNumbers": "off",
-        "noNestedTernary": "off",
-        "noNonNullAssertion": "off",
-        "useBlockStatements": "off",
-        "useDefaultSwitchClause": "off",
-        "useFilenamingConvention": "off",
-        "useNodejsImportProtocol": "off",
-        "useConsistentTypeDefinitions": "off"
-      },
-      "suspicious": {
-        "useAwait": "off",
-        "noGlobalIsNan": "off",
-        "noExplicitAny": "off",
-        "noEvolvingTypes": "off",
-        "noArrayIndexKey": "off",
-        "noDocumentCookie": "off",
-        "noUnknownAtRules": "off",
-        "noEmptyBlockStatements": "off",
-        "noTemplateCurlyInString": "off"
-      }
-    }
   }
 }

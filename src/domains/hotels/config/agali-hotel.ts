@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const agaliHotel: HotelConfig = {
-  id: "paxos",
-  slug: "agali-hotel",
-  name: "Agali Hotel Paxos",
-  displayName: "Agali Hotel Paxos",
   baseUrl: "https://agalihotelpaxos.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "paxos",
+  displayName: "Agali Hotel Paxos",
+  id: "paxos",
   image: "/images/hotels/agali-hotel.avif",
+  locationSlug: "paxos",
+  name: "Agali Hotel Paxos",
+  slug: "agali-hotel",
+  strategyType: "avl",
 };
 
 export default agaliHotel;

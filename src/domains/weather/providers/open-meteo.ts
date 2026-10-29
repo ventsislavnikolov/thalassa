@@ -79,38 +79,38 @@ function createWeatherDataFromForecast(
   const weatherCode = dailyData.weathercode[index] ?? 0;
 
   const description = getWeatherDescription(weatherCode);
-  const seaTemperature = estimateSeaTemperature({ date, airTemp: avgTemp });
+  const seaTemperature = estimateSeaTemperature({ airTemp: avgTemp, date });
   const beachConditions = calculateBeachConditions({
-    temperature: avgTemp,
     precipitation,
+    temperature: avgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: avgTemp,
     precipitation,
-    windSpeed,
+    temperature: avgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: avgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: avgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode,
-    description,
-    seaTemperature,
     beachConditions,
+    date,
+    description,
+    humidity,
+    precipitation,
     recommendation,
     score,
+    seaTemperature,
+    temperature: { avg: avgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode,
+    windSpeed,
   };
 }
 
@@ -125,42 +125,42 @@ function createWeatherDataFromHistorical(
   const precipitation = dailyData.precipitation_sum[index] ?? 0;
   const windSpeed = dailyData.windspeed_10m_max[index] ?? 10;
   const humidity = dailyData.relative_humidity_2m[index] ?? 60;
-  const uvIndex = getUvForMonth(Number.parseInt(date.split("-")[1]));
+  const uvIndex = getUvForMonth(Number.parseInt(date.split("-")[1], 10));
   const weatherCode = dailyData.weathercode[index] ?? 0;
 
   const description = getWeatherDescription(weatherCode);
-  const seaTemperature = estimateSeaTemperature({ date, airTemp: avgTemp });
+  const seaTemperature = estimateSeaTemperature({ airTemp: avgTemp, date });
   const beachConditions = calculateBeachConditions({
-    temperature: avgTemp,
     precipitation,
+    temperature: avgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: avgTemp,
     precipitation,
-    windSpeed,
+    temperature: avgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: avgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: avgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode,
-    description,
-    seaTemperature,
     beachConditions,
+    date,
+    description,
+    humidity,
+    precipitation,
     recommendation: `${recommendation} (Historical estimate)`,
     score,
+    seaTemperature,
+    temperature: { avg: avgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode,
+    windSpeed,
   };
 }
 
@@ -184,195 +184,197 @@ function createClimateBasedWeatherData(
   const humidity = month >= 11 || month <= 3 ? 70 : 60;
 
   const seaTemperature = estimateSeaTemperature({
-    date,
     airTemp: adjustedAvgTemp,
+    date,
   });
   const beachConditions = calculateBeachConditions({
-    temperature: adjustedAvgTemp,
     precipitation,
+    temperature: adjustedAvgTemp,
     windSpeed,
   });
   const score = calculateBeachScore({
-    temperature: adjustedAvgTemp,
     precipitation,
-    windSpeed,
+    temperature: adjustedAvgTemp,
     uvIndex,
+    windSpeed,
   });
   const recommendation = generateWeatherRecommendation({
+    precipitation,
     score,
     temperature: adjustedAvgTemp,
-    precipitation,
     windSpeed,
   });
 
   return {
-    date,
-    temperature: { min: minTemp, max: maxTemp, avg: adjustedAvgTemp },
-    precipitation,
-    windSpeed,
-    humidity,
-    uvIndex,
-    weatherCode: precipitation > 2 ? 61 : 0,
-    description: precipitation > 2 ? "Light rain" : "Clear sky",
-    seaTemperature,
     beachConditions,
+    date,
+    description: precipitation > 2 ? "Light rain" : "Clear sky",
+    humidity,
+    precipitation,
     recommendation: `${recommendation} (Climate estimate)`,
     score,
+    seaTemperature,
+    temperature: { avg: adjustedAvgTemp, max: maxTemp, min: minTemp },
+    uvIndex,
+    weatherCode: precipitation > 2 ? 61 : 0,
+    windSpeed,
   };
 }
 
 function createFallbackWeatherData(date: string): WeatherData {
   const avgTemp = 25;
   return {
-    date,
-    temperature: { min: 22, max: 28, avg: avgTemp },
-    precipitation: 0,
-    windSpeed: 10,
-    humidity: 60,
-    uvIndex: 7,
-    weatherCode: 0,
-    description: "Clear sky",
-    seaTemperature: estimateSeaTemperature({ date, airTemp: avgTemp }),
     beachConditions: "Good for beach activities",
+    date,
+    description: "Clear sky",
+    humidity: 60,
+    precipitation: 0,
     recommendation: "Good weather conditions expected",
     score: 75,
+    seaTemperature: estimateSeaTemperature({ airTemp: avgTemp, date }),
+    temperature: { avg: avgTemp, max: 28, min: 22 },
+    uvIndex: 7,
+    weatherCode: 0,
+    windSpeed: 10,
   };
 }
 
-export class OpenMeteoProvider implements WeatherProvider {
-  async fetchForecast(
-    coordinates: Coordinates,
-    dates: string[],
-    timezone: string
-  ): Promise<Map<string, WeatherData>> {
-    const weatherMap = new Map<string, WeatherData>();
-    const dateGroups = groupDatesByMonth(dates);
+async function fetchHistoricalClimateData(
+  yearMonth: string,
+  dates: string[],
+  coordinates: Coordinates,
+  timezone: string
+): Promise<Map<string, WeatherData>> {
+  const [, month] = yearMonth.split("-");
+  const monthNum = Number.parseInt(month, 10);
+  const weatherMap = new Map<string, WeatherData>();
 
-    for (const [yearMonth, monthDates] of dateGroups.entries()) {
-      try {
-        const monthWeather = await this.fetchMonthWeather(
-          yearMonth,
-          monthDates,
-          coordinates,
-          timezone
-        );
-        for (const [date, weather] of monthWeather.entries()) {
-          weatherMap.set(date, weather);
-        }
-      } catch {
-        for (const date of monthDates) {
-          weatherMap.set(date, createFallbackWeatherData(date));
-        }
-      }
-    }
+  const currentYear = new Date().getFullYear();
+  const historicalYear = currentYear - 1;
 
-    return weatherMap;
-  }
+  const startDate = `${historicalYear}-${month}-01`;
+  const endDate = `${historicalYear}-${month}-${getDaysInMonth(historicalYear, monthNum)}`;
 
-  private async fetchMonthWeather(
-    yearMonth: string,
-    dates: string[],
-    coordinates: Coordinates,
-    timezone: string
-  ): Promise<Map<string, WeatherData>> {
-    const [year, month] = yearMonth.split("-");
-    const yearNum = Number.parseInt(year);
-    const monthNum = Number.parseInt(month);
-    const startDate = `${year}-${month}-01`;
-    const endDate = `${year}-${month}-${getDaysInMonth(yearNum, monthNum)}`;
-
-    const weatherMap = new Map<string, WeatherData>();
-
-    const now = new Date();
-    const maxForecastDate = new Date(
-      now.getTime() + FORECAST_RANGE_DAYS * 24 * 60 * 60 * 1000
-    );
-    const requestStartDate = new Date(startDate);
-
-    if (requestStartDate > maxForecastDate) {
-      return this.fetchHistoricalClimateData(
-        yearMonth,
-        dates,
-        coordinates,
-        timezone
-      );
-    }
-
-    const response = await axios.get(FORECAST_API_URL, {
+  try {
+    const { data } = await axios.get(ARCHIVE_API_URL, {
       params: {
+        daily: DAILY_ARCHIVE_PARAMS,
+        end_date: endDate,
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         start_date: startDate,
-        end_date: endDate,
-        daily: DAILY_FORECAST_PARAMS,
         timezone,
-        forecast_days: FORECAST_RANGE_DAYS,
       },
     });
-    const data = response.data;
 
     for (const date of dates) {
-      const dayIndex = data.daily.time.indexOf(date);
+      const dayOfMonth = Number.parseInt(date.split("-")[2], 10);
+      const historicalDate = `${historicalYear}-${month}-${dayOfMonth.toString().padStart(2, "0")}`;
+      const dayIndex = data.daily.time.indexOf(historicalDate);
+
       if (dayIndex >= 0) {
         weatherMap.set(
           date,
-          createWeatherDataFromForecast(date, data.daily, dayIndex)
+          createWeatherDataFromHistorical(date, data.daily, dayIndex)
         );
-      }
-    }
-
-    return weatherMap;
-  }
-
-  private async fetchHistoricalClimateData(
-    yearMonth: string,
-    dates: string[],
-    coordinates: Coordinates,
-    timezone: string
-  ): Promise<Map<string, WeatherData>> {
-    const [, month] = yearMonth.split("-");
-    const monthNum = Number.parseInt(month);
-    const weatherMap = new Map<string, WeatherData>();
-
-    const currentYear = new Date().getFullYear();
-    const historicalYear = currentYear - 1;
-
-    const startDate = `${historicalYear}-${month}-01`;
-    const endDate = `${historicalYear}-${month}-${getDaysInMonth(historicalYear, monthNum)}`;
-
-    try {
-      const response = await axios.get(ARCHIVE_API_URL, {
-        params: {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          start_date: startDate,
-          end_date: endDate,
-          daily: DAILY_ARCHIVE_PARAMS,
-          timezone,
-        },
-      });
-      const data = response.data;
-
-      for (const date of dates) {
-        const dayOfMonth = Number.parseInt(date.split("-")[2]);
-        const historicalDate = `${historicalYear}-${month}-${dayOfMonth.toString().padStart(2, "0")}`;
-        const dayIndex = data.daily.time.indexOf(historicalDate);
-
-        if (dayIndex >= 0) {
-          weatherMap.set(
-            date,
-            createWeatherDataFromHistorical(date, data.daily, dayIndex)
-          );
-        } else {
-          weatherMap.set(date, createClimateBasedWeatherData(date, monthNum));
-        }
-      }
-    } catch {
-      for (const date of dates) {
+      } else {
         weatherMap.set(date, createClimateBasedWeatherData(date, monthNum));
       }
     }
-
-    return weatherMap;
+  } catch {
+    for (const date of dates) {
+      weatherMap.set(date, createClimateBasedWeatherData(date, monthNum));
+    }
   }
+
+  return weatherMap;
+}
+
+async function fetchMonthWeather(
+  yearMonth: string,
+  dates: string[],
+  coordinates: Coordinates,
+  timezone: string
+): Promise<Map<string, WeatherData>> {
+  const [year, month] = yearMonth.split("-");
+  const yearNum = Number.parseInt(year, 10);
+  const monthNum = Number.parseInt(month, 10);
+  const startDate = `${year}-${month}-01`;
+  const endDate = `${year}-${month}-${getDaysInMonth(yearNum, monthNum)}`;
+
+  const weatherMap = new Map<string, WeatherData>();
+
+  const now = new Date();
+  const maxForecastDate = new Date(
+    now.getTime() + FORECAST_RANGE_DAYS * 24 * 60 * 60 * 1000
+  );
+  const requestStartDate = new Date(startDate);
+
+  if (requestStartDate > maxForecastDate) {
+    return fetchHistoricalClimateData(yearMonth, dates, coordinates, timezone);
+  }
+
+  const { data } = await axios.get(FORECAST_API_URL, {
+    params: {
+      daily: DAILY_FORECAST_PARAMS,
+      end_date: endDate,
+      forecast_days: FORECAST_RANGE_DAYS,
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      start_date: startDate,
+      timezone,
+    },
+  });
+
+  for (const date of dates) {
+    const dayIndex = data.daily.time.indexOf(date);
+    if (dayIndex >= 0) {
+      weatherMap.set(
+        date,
+        createWeatherDataFromForecast(date, data.daily, dayIndex)
+      );
+    }
+  }
+
+  return weatherMap;
+}
+
+async function fetchMonthWeatherOrFallback(
+  yearMonth: string,
+  dates: string[],
+  coordinates: Coordinates,
+  timezone: string
+): Promise<Map<string, WeatherData>> {
+  try {
+    return await fetchMonthWeather(yearMonth, dates, coordinates, timezone);
+  } catch {
+    return new Map(
+      dates.map((date) => [date, createFallbackWeatherData(date)])
+    );
+  }
+}
+
+async function fetchOpenMeteoForecast(
+  coordinates: Coordinates,
+  dates: string[],
+  timezone: string
+): Promise<Map<string, WeatherData>> {
+  const weatherMap = new Map<string, WeatherData>();
+  for (const [yearMonth, monthDates] of groupDatesByMonth(dates)) {
+    // biome-ignore lint/performance/noAwaitInLoops: /api/weather accepts any date range, so months are fetched one at a time rather than bursting Open-Meteo with one request per month
+    const monthWeather = await fetchMonthWeatherOrFallback(
+      yearMonth,
+      monthDates,
+      coordinates,
+      timezone
+    );
+    for (const [date, weather] of monthWeather) {
+      weatherMap.set(date, weather);
+    }
+  }
+  return weatherMap;
+}
+
+export class OpenMeteoProvider implements WeatherProvider {
+  readonly fetchForecast = fetchOpenMeteoForecast;
 }

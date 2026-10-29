@@ -25,11 +25,11 @@ export function MonthlySummary({ prices }: MonthlySummaryProps) {
 
   const monthlyStats = Object.entries(monthlyData)
     .map(([month, totals]) => ({
-      month,
-      lowest: Math.min(...totals),
-      highest: Math.max(...totals),
       average: totals.reduce((sum, p) => sum + p, 0) / totals.length,
       count: totals.length,
+      highest: Math.max(...totals),
+      lowest: Math.min(...totals),
+      month,
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 
@@ -47,13 +47,13 @@ export function MonthlySummary({ prices }: MonthlySummaryProps) {
               return (
                 <Card key={month}>
                   <CardContent className="p-4">
-                    <h4 className="mb-2 font-display font-semibold">
+                    <h4 className="font-display mb-2 font-semibold">
                       {monthName}
                     </h4>
                     <div className="space-y-1 text-sm">
                       <p>
                         Lowest:{" "}
-                        <span className="font-medium text-secondary">
+                        <span className="text-secondary font-medium">
                           {lowest.toFixed(2)} EUR
                         </span>
                       </p>
@@ -65,7 +65,7 @@ export function MonthlySummary({ prices }: MonthlySummaryProps) {
                       </p>
                       <p>
                         Highest:{" "}
-                        <span className="font-medium text-destructive">
+                        <span className="text-destructive font-medium">
                           {highest.toFixed(2)} EUR
                         </span>
                       </p>

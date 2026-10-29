@@ -2,7 +2,13 @@
 
 import { format } from "date-fns";
 import { Calendar, Hotel, Search, Settings2, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,24 +76,26 @@ export function SearchForm({
   const [hotels, setHotels] = useState<HotelConfig[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [formData, setFormData] = useState<SearchFormParams>({
-    checkin: format(new Date(), "yyyy-MM-dd"),
-    nights: 5,
     adults: 2,
+    checkin: format(new Date(), "yyyy-MM-dd"),
     children: 0,
-    room: "standard",
-    months: 0,
+    enableMonthsSearch: false,
     hotelIds: defaultHotel ? [defaultHotel] : DEFAULT_HOTEL_IDS,
     includeWeather: false,
     isYearSearch: false,
+    months: 0,
+    nights: 5,
+    room: "standard",
     weatherLocation: "pefkochori",
-    enableMonthsSearch: false,
   });
 
   useEffect(() => {
     fetch("/api/hotels")
       .then((res) => res.json())
       .then((data) => setHotels(data))
-      .catch(() => {});
+      .catch(() => {
+        // The hotel list only labels the selector; the form works without it
+      });
   }, []);
 
   useEffect(() => {
@@ -102,12 +110,15 @@ export function SearchForm({
     }
   }, [formData.hotelIds, formData.isYearSearch]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(formData);
-  };
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      onSearch(formData);
+    },
+    [formData, onSearch]
+  );
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = useCallback((date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
       setFormData((prev) => ({
@@ -115,7 +126,64 @@ export function SearchForm({
         checkin: format(date, "yyyy-MM-dd"),
       }));
     }
-  };
+  }, []);
+
+  const handleNightsChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) =>
+      setFormData((prev) => ({
+        ...prev,
+        nights: Number.parseInt(e.target.value, 10) || 0,
+      })),
+    []
+  );
+
+  const handleGuestsChange = useCallback(
+    (adults: number, childCount: number) =>
+      setFormData((prev) => ({ ...prev, adults, children: childCount })),
+    []
+  );
+
+  const handleHotelsChange = useCallback(
+    (ids: string[]) => setFormData((prev) => ({ ...prev, hotelIds: ids })),
+    []
+  );
+
+  const handleMonthsChange = useCallback(
+    (months: number) => setFormData((prev) => ({ ...prev, months })),
+    []
+  );
+
+  const handleMonthsToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({
+        ...prev,
+        enableMonthsSearch: checked,
+        months: checked ? 3 : 0,
+      })),
+    []
+  );
+
+  const handleWeatherLocationChange = useCallback(
+    (loc: string) => setFormData((prev) => ({ ...prev, weatherLocation: loc })),
+    []
+  );
+
+  const handleWeatherToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({ ...prev, includeWeather: checked })),
+    []
+  );
+
+  const handleYearToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({
+        ...prev,
+        enableMonthsSearch: checked,
+        isYearSearch: checked,
+        months: checked ? 12 : 0,
+      })),
+    []
+  );
 
   const isOnlyPortoCarras =
     formData.hotelIds.length === 1 && formData.hotelIds[0] === "portocarras";
@@ -123,16 +191,16 @@ export function SearchForm({
   return (
     <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-[#1e2a36] bg-[#0d1117]">
       {/* Form header */}
-      <div className="border-[#1e2a36] border-b px-6 py-5 sm:px-8">
+      <div className="border-b border-[#1e2a36] px-6 py-5 sm:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#2E5BB1]/15">
             <Search className="h-4 w-4 text-[#2E5BB1]" />
           </div>
           <div>
-            <h2 className="font-display text-[#F5F7F8] text-lg">
+            <h2 className="font-display text-lg text-[#F5F7F8]">
               Price Search
             </h2>
-            <p className="text-[#536365] text-xs">
+            <p className="text-xs text-[#536365]">
               Find the best rates across {hotels.length || 15} hotels
             </p>
           </div>
@@ -141,10 +209,10 @@ export function SearchForm({
 
       <form onSubmit={handleSubmit}>
         {/* Section: When & Duration */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               When
             </span>
           </div>
@@ -159,12 +227,7 @@ export function SearchForm({
                 id="nights"
                 max="30"
                 min="1"
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    nights: Number.parseInt(e.target.value, 10) || 0,
-                  }))
-                }
+                onChange={handleNightsChange}
                 type="number"
                 value={formData.nights || ""}
               />
@@ -173,47 +236,43 @@ export function SearchForm({
         </div>
 
         {/* Section: Guests */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Users className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Guests
             </span>
           </div>
           <GuestSelector
             adults={formData.adults}
             childCount={formData.children}
-            onChange={(adults, childCount) =>
-              setFormData((prev) => ({ ...prev, adults, children: childCount }))
-            }
+            onChange={handleGuestsChange}
           />
         </div>
 
         {/* Section: Hotels */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Hotel className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Hotels
             </span>
-            <span className="ml-auto rounded-md bg-[#2A4F58]/15 px-2 py-0.5 text-[#738C8A] text-[10px]">
+            <span className="ml-auto rounded-md bg-[#2A4F58]/15 px-2 py-0.5 text-[10px] text-[#738C8A]">
               {formData.hotelIds.length} selected
             </span>
           </div>
           <HotelSelector
             hotels={hotels}
-            onChange={(ids) =>
-              setFormData((prev) => ({ ...prev, hotelIds: ids }))
-            }
+            onChange={handleHotelsChange}
             selected={formData.hotelIds}
           />
         </div>
 
         {/* Section: Options */}
-        <div className="border-[#1e2a36] border-b px-6 py-6 sm:px-8">
+        <div className="border-b border-[#1e2a36] px-6 py-6 sm:px-8">
           <div className="mb-4 flex items-center gap-2">
             <Settings2 className="h-3.5 w-3.5 text-[#738C8A]" />
-            <span className="font-medium text-[#A3B2B5] text-xs uppercase tracking-wider">
+            <span className="text-xs font-medium tracking-wider text-[#A3B2B5] uppercase">
               Options
             </span>
           </div>
@@ -222,30 +281,11 @@ export function SearchForm({
             includeWeather={formData.includeWeather}
             isYearSearch={formData.isYearSearch}
             months={formData.months}
-            onMonthsChange={(months) =>
-              setFormData((prev) => ({ ...prev, months }))
-            }
-            onMonthsToggle={(checked) =>
-              setFormData((prev) => ({
-                ...prev,
-                enableMonthsSearch: checked,
-                months: checked ? 3 : 0,
-              }))
-            }
-            onWeatherLocationChange={(loc) =>
-              setFormData((prev) => ({ ...prev, weatherLocation: loc }))
-            }
-            onWeatherToggle={(checked) =>
-              setFormData((prev) => ({ ...prev, includeWeather: checked }))
-            }
-            onYearToggle={(checked) =>
-              setFormData((prev) => ({
-                ...prev,
-                isYearSearch: checked,
-                enableMonthsSearch: checked,
-                months: checked ? 12 : 0,
-              }))
-            }
+            onMonthsChange={handleMonthsChange}
+            onMonthsToggle={handleMonthsToggle}
+            onWeatherLocationChange={handleWeatherLocationChange}
+            onWeatherToggle={handleWeatherToggle}
+            onYearToggle={handleYearToggle}
             weatherLocation={formData.weatherLocation ?? "pefkochori"}
             yearSearchDisabled={isOnlyPortoCarras}
             yearSearchHint={
@@ -266,7 +306,7 @@ export function SearchForm({
           >
             {loading ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
                 Searching...
               </>
             ) : (
@@ -278,7 +318,7 @@ export function SearchForm({
           </Button>
 
           {formData.hotelIds.length === 0 && (
-            <p className="mt-3 text-center text-red-400 text-sm">
+            <p className="mt-3 text-center text-sm text-red-400">
               Please select at least one hotel to search
             </p>
           )}

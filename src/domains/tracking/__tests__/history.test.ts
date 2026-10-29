@@ -6,12 +6,12 @@ let seq = 0;
 function snap(price: number | null, available = price !== null): PriceSnapshot {
   seq += 1;
   return {
-    id: seq,
-    watchlistId: 1,
-    price,
-    currency: "EUR",
     available,
+    currency: "EUR",
+    id: seq,
+    price,
     scrapedAt: `2026-07-0${seq}T00:00:00Z`,
+    watchlistId: 1,
   };
 }
 

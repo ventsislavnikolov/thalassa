@@ -1,8 +1,8 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { type MouseEvent, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import type { HotelConfig } from "@/domains/hotels/types";
 
 interface HotelSelectorProps {
@@ -23,24 +23,30 @@ export function HotelSelector({
   const allSelected =
     visibleHotels.length > 0 && selected.length === visibleHotels.length;
 
-  const handleToggle = (hotelId: string) => {
-    onChange(
-      selected.includes(hotelId)
-        ? selected.filter((id) => id !== hotelId)
-        : [...selected, hotelId]
-    );
-  };
+  const handleToggle = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      const hotelId = event.currentTarget.value;
+      onChange(
+        selected.includes(hotelId)
+          ? selected.filter((id) => id !== hotelId)
+          : [...selected, hotelId]
+      );
+    },
+    [onChange, selected]
+  );
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     onChange(allSelected ? [] : visibleHotels.map((h) => h.id));
-  };
+  }, [allSelected, onChange, visibleHotels]);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-[#A3B2B5]">Hotels to Search</Label>
+        <span className="flex items-center gap-2 text-sm leading-none font-medium text-[#A3B2B5] select-none">
+          Hotels to Search
+        </span>
         <Button
-          className="h-auto border-[#1e2a36] bg-transparent px-2.5 py-1 text-[#738C8A] text-xs hover:bg-[#111820] hover:text-[#A3B2B5]"
+          className="h-auto border-[#1e2a36] bg-transparent px-2.5 py-1 text-xs text-[#738C8A] hover:bg-[#111820] hover:text-[#A3B2B5]"
           onClick={handleSelectAll}
           type="button"
           variant="outline"
@@ -59,8 +65,9 @@ export function HotelSelector({
                   : "border-[#1e2a36] bg-[#111820] text-[#536365] hover:border-[#293044] hover:text-[#A3B2B5]"
               }`}
               key={hotel.id}
-              onClick={() => handleToggle(hotel.id)}
+              onClick={handleToggle}
               type="button"
+              value={hotel.id}
             >
               <div
                 className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${

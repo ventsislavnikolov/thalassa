@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const paralosLifestyleBeach: HotelConfig = {
-  id: "paralos",
-  slug: "paralos-lifestyle-beach",
-  name: "Paralos Lifestyle Beach",
-  displayName: "Paralos Lifestyle Beach",
   baseUrl: "https://paraloslifestylebeach.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "amoudara",
+  displayName: "Paralos Lifestyle Beach",
+  id: "paralos",
   image: "/images/hotels/paralos-lifestyle-beach.jpg",
+  locationSlug: "amoudara",
+  name: "Paralos Lifestyle Beach",
+  slug: "paralos-lifestyle-beach",
+  strategyType: "avl",
 };
 
 export default paralosLifestyleBeach;

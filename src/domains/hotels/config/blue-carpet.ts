@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const blueCarpet: HotelConfig = {
-  id: "bluecarpet",
-  slug: "blue-carpet",
-  name: "Blue Carpet Suites",
-  displayName: "Blue Carpet Suites",
   baseUrl: "https://bluecarpetsuites.reserve-online.net",
-  strategyType: "calendar",
-  locationSlug: "pefkochori",
+  displayName: "Blue Carpet Suites",
+  id: "bluecarpet",
   image: "/images/hotels/blue-carpet.jpg",
+  locationSlug: "pefkochori",
+  name: "Blue Carpet Suites",
+  slug: "blue-carpet",
+  strategyType: "calendar",
 };
 
 export default blueCarpet;

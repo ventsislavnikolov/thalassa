@@ -1,17 +1,17 @@
 import type { PriceSnapshot, PriceTrend } from "./types";
 
 const EMPTY_TREND: PriceTrend = {
-  hasData: false,
+  changeFromFirstPct: null,
+  changeFromLowPct: null,
+  currency: "EUR",
   current: null,
   currentAvailable: false,
-  low: null,
-  high: null,
-  first: null,
-  changeFromLowPct: null,
-  changeFromFirstPct: null,
-  isAtLow: false,
   direction: "flat",
-  currency: "EUR",
+  first: null,
+  hasData: false,
+  high: null,
+  isAtLow: false,
+  low: null,
   pointCount: 0,
 };
 
@@ -45,7 +45,7 @@ export function computePriceTrend(snapshots: PriceSnapshot[]): PriceTrend {
   const prices = priced.map((s) => s.price);
   const low = Math.min(...prices);
   const high = Math.max(...prices);
-  const first = prices[0];
+  const [first] = prices;
   const previous = priced.length > 1 ? prices.at(-2) : undefined;
 
   let direction: PriceTrend["direction"] = "flat";
@@ -58,17 +58,17 @@ export function computePriceTrend(snapshots: PriceSnapshot[]): PriceTrend {
   }
 
   return {
-    hasData: true,
+    changeFromFirstPct: current === null ? null : pct(first, current),
+    changeFromLowPct: current === null ? null : pct(low, current),
+    currency: priced.at(-1)?.currency ?? "EUR",
     current,
     currentAvailable,
-    low,
-    high,
-    first,
-    changeFromLowPct: current === null ? null : pct(low, current),
-    changeFromFirstPct: current === null ? null : pct(first, current),
-    isAtLow: current !== null && current <= low,
     direction,
-    currency: priced.at(-1)?.currency ?? "EUR",
+    first,
+    hasData: true,
+    high,
+    isAtLow: current !== null && current <= low,
+    low,
     pointCount: priced.length,
   };
 }

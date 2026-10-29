@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const ouranoupolis: LocationConfig = {
-  slug: "ouranoupolis",
-  name: "Ouranoupolis",
-  region: "Halkidiki",
-  country: "Greece",
   coordinates: {
     latitude: 40.354,
     longitude: 23.951,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/ouranoupolis.jpg",
+  name: "Ouranoupolis",
+  region: "Halkidiki",
+  slug: "ouranoupolis",
+  timezone: "Europe/Athens",
 };
 
 export default ouranoupolis;

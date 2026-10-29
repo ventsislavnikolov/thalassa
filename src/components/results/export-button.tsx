@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import type { PriceResult } from "@/domains/scraping/types";
 
@@ -13,7 +14,7 @@ export function ExportButton({
   prices,
   filename = "hotel-prices.csv",
 }: ExportButtonProps) {
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const headers = ["Date", "Day", "Hotel", "Room Type", "Per Night", "Total"];
     const rows = prices.map((p) => [
       p.date,
@@ -32,7 +33,7 @@ export function ExportButton({
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-  };
+  }, [filename, prices]);
 
   return (
     <Button onClick={handleExport} size="sm" variant="outline">

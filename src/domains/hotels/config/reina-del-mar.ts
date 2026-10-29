@@ -1,15 +1,15 @@
 import type { HotelConfig } from "../types";
 
 const reinaDelMar: HotelConfig = {
-  id: "reinadelmar",
-  slug: "reina-del-mar",
-  name: "HVD Reina Del Mar",
-  displayName: "HVD Reina Del Mar",
-  description: "Ultra all inclusive resort on the Black Sea coast in Obzor.",
   baseUrl: "https://reservations.hvdhotels.com/hvd-reina-del-mar",
-  strategyType: "hvd",
-  locationSlug: "obzor",
+  description: "Ultra all inclusive resort on the Black Sea coast in Obzor.",
+  displayName: "HVD Reina Del Mar",
+  id: "reinadelmar",
   image: "/images/hotels/reina-del-mar.webp",
+  locationSlug: "obzor",
+  name: "HVD Reina Del Mar",
+  slug: "reina-del-mar",
+  strategyType: "hvd",
 };
 
 export default reinaDelMar;

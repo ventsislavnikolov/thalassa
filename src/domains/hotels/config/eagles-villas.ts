@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const eaglesVillas: HotelConfig = {
-  id: "eaglesvillas",
-  slug: "eagles-villas",
-  name: "Eagles Villas",
-  displayName: "Eagles Villas",
   baseUrl: "https://eaglesresort.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "ouranoupolis",
+  displayName: "Eagles Villas",
+  id: "eaglesvillas",
   image: "/images/hotels/eagles-villas.jpg",
+  locationSlug: "ouranoupolis",
+  name: "Eagles Villas",
+  slug: "eagles-villas",
+  strategyType: "avl",
 };
 
 export default eaglesVillas;

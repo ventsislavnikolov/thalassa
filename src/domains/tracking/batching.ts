@@ -30,12 +30,12 @@ export function groupEntriesForScraping(
       }
     } else {
       batches.set(key, {
+        adults: entry.adults,
+        checkin: entry.checkinDate,
+        children: entry.children,
+        entries: [entry],
         hotelSlug: entry.hotelSlug,
         nights: entry.nights,
-        adults: entry.adults,
-        children: entry.children,
-        checkin: entry.checkinDate,
-        entries: [entry],
       });
     }
   }
@@ -54,17 +54,17 @@ export function selectHotelsForRun(
   hotelsPerRun: number
 ): HotelRunSelection {
   if (allHotelSlugs.length === 0) {
-    return { selected: [], nextOffset: 0 };
+    return { nextOffset: 0, selected: [] };
   }
   const offset =
     ((hotelOffset % allHotelSlugs.length) + allHotelSlugs.length) %
     allHotelSlugs.length;
   const count = Math.min(hotelsPerRun, allHotelSlugs.length);
   const selected: string[] = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < count; i += 1) {
     selected.push(allHotelSlugs[(offset + i) % allHotelSlugs.length]);
   }
-  return { selected, nextOffset: (offset + count) % allHotelSlugs.length };
+  return { nextOffset: (offset + count) % allHotelSlugs.length, selected };
 }
 
 export interface MatchedSnapshot {
@@ -100,6 +100,7 @@ export async function runWithConcurrency<T>(
         const index = next;
         next += 1;
         try {
+          // biome-ignore lint/performance/noAwaitInLoops: each worker finishes a task before taking the next; that is what caps concurrency at `limit`
           results[index] = await tasks[index]();
         } catch {
           results[index] = null;

@@ -1,14 +1,14 @@
 import type { HotelConfig } from "../types";
 
 const acroSuites: HotelConfig = {
-  id: "acrowell",
-  slug: "acro-suites",
-  name: "Acro Suites",
-  displayName: "Acro Suites – A Wellbeing Resort",
   baseUrl: "https://acrosuites.reserve-online.net",
-  strategyType: "avl",
-  locationSlug: "crete",
+  displayName: "Acro Suites – A Wellbeing Resort",
+  id: "acrowell",
   image: "/images/hotels/acro-suites.avif",
+  locationSlug: "crete",
+  name: "Acro Suites",
+  slug: "acro-suites",
+  strategyType: "avl",
 };
 
 export default acroSuites;

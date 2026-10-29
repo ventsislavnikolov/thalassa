@@ -3,20 +3,20 @@ import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
-  variable: "--font-sans",
   subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 const dmSerifDisplay = DM_Serif_Display({
-  weight: "400",
-  variable: "--font-display",
   subsets: ["latin"],
+  variable: "--font-display",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
-  title: "Thalassa",
   description:
     "Find the best hotel deals across Greece and the Bulgarian Black Sea coast",
+  title: "Thalassa",
 };
 
 export default function RootLayout({

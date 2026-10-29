@@ -1,16 +1,16 @@
 import type { LocationConfig } from "../types";
 
 const thessaloniki: LocationConfig = {
-  slug: "thessaloniki",
-  name: "Thessaloniki",
-  region: "Central Macedonia",
-  country: "Greece",
   coordinates: {
     latitude: 40.63,
     longitude: 22.94,
   },
-  timezone: "Europe/Athens",
+  country: "Greece",
   image: "/images/locations/thessaloniki.jpg",
+  name: "Thessaloniki",
+  region: "Central Macedonia",
+  slug: "thessaloniki",
+  timezone: "Europe/Athens",
 };
 
 export default thessaloniki;
