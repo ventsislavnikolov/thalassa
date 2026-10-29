@@ -50,7 +50,7 @@ export const PriceFormat = {
 };
 
 export function parsePrice(raw: string): number | null {
-  if (!(raw && raw.trim())) {
+  if (!raw.trim()) {
     return null;
   }
 
@@ -91,7 +91,8 @@ export function parsePrice(raw: string): number | null {
       }
       break;
     }
-    case "plain": {
+    // "plain": the only format left
+    default: {
       normalized = stripped.replace(ALL_WHITESPACE, "").replace(/,/gu, "");
       break;
     }

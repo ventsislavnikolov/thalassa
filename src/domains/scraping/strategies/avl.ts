@@ -4,6 +4,7 @@ import type { HotelConfig, RoomType } from "@/domains/hotels/types";
 import { loadHtml, unwrapJsonHtml } from "../parsers/html-parser";
 import { parsePrice } from "../parsers/price-parser";
 import type {
+  FetchPricesParams,
   PriceResult,
   ScrapeResponse,
   ScrapingStrategy,
@@ -16,6 +17,8 @@ const USER_AGENT =
 const REQUEST_TIMEOUT = 30_000;
 const MIN_PRICE = 500;
 const MAX_PRICE = 50_000;
+const MAX_FALLBACK_PRICES = 10;
+const WHITESPACE_RUN = /\s+/gu;
 
 // HTML price extraction patterns for fallback parsing
 const HTML_PRICE_PATTERNS = [
@@ -40,10 +43,7 @@ function isReasonablePrice(price: number): boolean {
   return price >= MIN_PRICE && price <= MAX_PRICE;
 }
 
-function buildAvlFormData(
-  params: SearchParams,
-  hotel: HotelConfig
-): URLSearchParams {
+function buildAvlFormData(params: SearchParams): URLSearchParams {
   const checkinDate = parse(params.checkin, "yyyy-MM-dd", new Date());
   const checkoutDate = addDays(checkinDate, params.nights);
 
@@ -96,10 +96,14 @@ function parseDataPriceAttributes(
 
   $actual('tr[data-price][data-status="AVL"]').each((index, elem) => {
     const dataPriceValue = $actual(elem).attr("data-price");
-    if (!dataPriceValue) return;
+    if (!dataPriceValue) {
+      return;
+    }
 
     const priceValue = Number.parseFloat(dataPriceValue);
-    if (Number.isNaN(priceValue) || !isReasonablePrice(priceValue)) return;
+    if (Number.isNaN(priceValue) || !isReasonablePrice(priceValue)) {
+      return;
+    }
 
     const roomCode = $actual(elem).attr("data-room") || `room-${index + 1}`;
     const roomBody = $actual(elem).closest("tbody");
@@ -118,81 +122,93 @@ function parseDataPriceAttributes(
   return { prices, roomOptions };
 }
 
+interface TextPrices {
+  prices: PriceResult[];
+  roomOptions: RoomType[];
+}
+
+function extractTextPrice(text: string): number | null {
+  for (const pattern of EXTRACTION_PATTERNS) {
+    const priceMatch = text.match(pattern);
+    if (priceMatch) {
+      return parsePrice(priceMatch[1]);
+    }
+  }
+  return null;
+}
+
+/** Records the price, or the price read in thousands, if either is plausible. */
+function addReasonablePrice(
+  found: TextPrices,
+  priceValue: number,
+  params: SearchParams,
+  hotel: HotelConfig
+): void {
+  const price = [priceValue, priceValue * 1000].find(isReasonablePrice);
+  if (price === undefined) {
+    return;
+  }
+  const roomName = `Room ${found.prices.length + 1}`;
+  found.prices.push(createPriceResult(price, params, hotel));
+  found.roomOptions.push({
+    code: roomName.toLowerCase().replace(WHITESPACE_RUN, "-"),
+    name: roomName,
+  });
+}
+
+function collectPatternPrices(
+  actualHtml: string,
+  found: TextPrices,
+  params: SearchParams,
+  hotel: HotelConfig
+): void {
+  for (const pattern of HTML_PRICE_PATTERNS) {
+    for (const match of actualHtml.match(pattern) ?? []) {
+      const priceValue = extractTextPrice(match);
+      if (priceValue !== null) {
+        addReasonablePrice(found, priceValue, params, hotel);
+      }
+    }
+    if (found.prices.length > 0) {
+      return;
+    }
+  }
+}
+
+/** Nested fallback: look for prices in different HTML structures. */
+function collectFallbackPrices(
+  actualHtml: string,
+  found: TextPrices,
+  params: SearchParams,
+  hotel: HotelConfig
+): void {
+  for (const pattern of FALLBACK_PATTERNS) {
+    for (const match of actualHtml.match(pattern) ?? []) {
+      if (found.prices.length >= MAX_FALLBACK_PRICES) {
+        break;
+      }
+      const priceValue = parsePrice(match);
+      if (priceValue !== null) {
+        addReasonablePrice(found, priceValue, params, hotel);
+      }
+    }
+    if (found.prices.length > 0) {
+      return;
+    }
+  }
+}
+
 function parseHtmlTextPrices(
   actualHtml: string,
   params: SearchParams,
   hotel: HotelConfig
-): { prices: PriceResult[]; roomOptions: RoomType[] } {
-  const prices: PriceResult[] = [];
-  const roomOptions: RoomType[] = [];
-  let foundPrices = 0;
-
-  for (const pattern of HTML_PRICE_PATTERNS) {
-    const matches = actualHtml.match(pattern);
-    if (!(matches && matches.length > 0)) continue;
-
-    for (const match of matches) {
-      let priceMatch: RegExpMatchArray | null = null;
-      for (const extractPattern of EXTRACTION_PATTERNS) {
-        priceMatch = match.match(extractPattern);
-        if (priceMatch) break;
-      }
-
-      if (!priceMatch) continue;
-
-      const priceValue = parsePrice(priceMatch[1]);
-      if (priceValue === null) continue;
-
-      const pricesToTry = [priceValue, priceValue * 1000];
-      for (const testPrice of pricesToTry) {
-        if (isReasonablePrice(testPrice)) {
-          const roomName = `Room ${foundPrices + 1}`;
-          prices.push(createPriceResult(testPrice, params, hotel));
-          roomOptions.push({
-            code: roomName.toLowerCase().replace(/\s+/gu, "-"),
-            name: roomName,
-          });
-          foundPrices++;
-          break;
-        }
-      }
-    }
-
-    if (foundPrices > 0) break;
+): TextPrices {
+  const found: TextPrices = { prices: [], roomOptions: [] };
+  collectPatternPrices(actualHtml, found, params, hotel);
+  if (found.prices.length === 0) {
+    collectFallbackPrices(actualHtml, found, params, hotel);
   }
-
-  // Nested fallback: look for prices in different HTML structures
-  if (foundPrices === 0) {
-    for (const pattern of FALLBACK_PATTERNS) {
-      const matches = actualHtml.match(pattern);
-      if (!(matches && matches.length > 0)) continue;
-
-      for (const match of matches) {
-        if (foundPrices >= 10) break;
-
-        const priceValue = parsePrice(match);
-        if (priceValue === null) continue;
-
-        const pricesToTry = [priceValue, priceValue * 1000];
-        for (const testPrice of pricesToTry) {
-          if (isReasonablePrice(testPrice)) {
-            const roomName = `Room ${foundPrices + 1}`;
-            prices.push(createPriceResult(testPrice, params, hotel));
-            roomOptions.push({
-              code: roomName.toLowerCase().replace(/\s+/gu, "-"),
-              name: roomName,
-            });
-            foundPrices++;
-            break;
-          }
-        }
-      }
-
-      if (foundPrices > 0) break;
-    }
-  }
-
-  return { prices, roomOptions };
+  return found;
 }
 
 function parseAvlHtml(
@@ -231,39 +247,38 @@ function parseAvlHtml(
   };
 }
 
-export class AvlStrategy implements ScrapingStrategy {
-  type = "avl" as const;
+async function fetchAvlPrices({
+  hotel,
+  searchParams,
+  signal,
+}: FetchPricesParams): Promise<ScrapeResponse> {
+  const formData = buildAvlFormData(searchParams);
 
-  async fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel, searchParams, signal } = params;
-    const formData = buildAvlFormData(searchParams, hotel);
+  try {
+    const response = await axios.post(`${hotel.baseUrl}/avl`, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": USER_AGENT,
+      },
+      signal,
+      timeout: REQUEST_TIMEOUT,
+    });
 
-    try {
-      const response = await axios.post(`${hotel.baseUrl}/avl`, formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": USER_AGENT,
-        },
-        signal,
-        timeout: REQUEST_TIMEOUT,
-      });
+    const html =
+      typeof response.data === "string"
+        ? response.data
+        : JSON.stringify(response.data);
 
-      const html =
-        typeof response.data === "string"
-          ? response.data
-          : JSON.stringify(response.data);
-
-      return parseAvlHtml(html, searchParams, hotel);
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch AVL data for ${hotel.name}`,
-        hotel.id,
-        error
-      );
-    }
+    return parseAvlHtml(html, searchParams, hotel);
+  } catch (error) {
+    throw new ScrapingError(`Failed to fetch AVL data for ${hotel.name}`, {
+      cause: error,
+      hotelId: hotel.id,
+    });
   }
+}
+
+export class AvlStrategy implements ScrapingStrategy {
+  readonly fetchPrices = fetchAvlPrices;
+  type = "avl" as const;
 }

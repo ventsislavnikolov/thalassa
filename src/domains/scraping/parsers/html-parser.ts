@@ -1,10 +1,10 @@
-import * as cheerio from "cheerio";
+import { load } from "cheerio";
 import type { RoomType } from "@/domains/hotels/types";
 
-export type CheerioRoot = ReturnType<typeof cheerio.load>;
+export type CheerioRoot = ReturnType<typeof load>;
 
 export function loadHtml(html: string): CheerioRoot {
-  return cheerio.load(html);
+  return load(html);
 }
 
 export function extractRoomOptions($: CheerioRoot): RoomType[] {

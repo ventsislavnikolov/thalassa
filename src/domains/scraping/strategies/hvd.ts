@@ -4,6 +4,7 @@ import { buildHvdSearchUrl } from "@/domains/hotels/booking-url";
 import type { HotelConfig, RoomType } from "@/domains/hotels/types";
 import { loadHtml } from "../parsers/html-parser";
 import type {
+  FetchPricesParams,
   PriceResult,
   ScrapeResponse,
   ScrapingStrategy,
@@ -78,33 +79,31 @@ export function parseHvdHtml(
   return { hotelId: hotel.id, hotelName: hotel.name, prices, roomOptions };
 }
 
-export class HvdStrategy implements ScrapingStrategy {
-  type = "hvd" as const;
-
-  async fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel, searchParams, signal } = params;
-
-    try {
-      const response = await axios.get<string>(
-        buildHvdSearchUrl(hotel, searchParams),
-        {
-          headers: { "User-Agent": USER_AGENT },
-          responseType: "text",
-          signal,
-          timeout: REQUEST_TIMEOUT,
-        }
-      );
-      return parseHvdHtml(response.data, searchParams, hotel);
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch HVD data for ${hotel.name}`,
-        hotel.id,
-        error
-      );
-    }
+async function fetchHvdPrices({
+  hotel,
+  searchParams,
+  signal,
+}: FetchPricesParams): Promise<ScrapeResponse> {
+  try {
+    const response = await axios.get<string>(
+      buildHvdSearchUrl(hotel, searchParams),
+      {
+        headers: { "User-Agent": USER_AGENT },
+        responseType: "text",
+        signal,
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
+    return parseHvdHtml(response.data, searchParams, hotel);
+  } catch (error) {
+    throw new ScrapingError(`Failed to fetch HVD data for ${hotel.name}`, {
+      cause: error,
+      hotelId: hotel.id,
+    });
   }
+}
+
+export class HvdStrategy implements ScrapingStrategy {
+  readonly fetchPrices = fetchHvdPrices;
+  type = "hvd" as const;
 }

@@ -36,23 +36,27 @@ export interface ScrapeResponse {
   roomOptions: RoomType[];
 }
 
+export interface FetchPricesParams {
+  hotel: HotelConfig;
+  searchParams: SearchParams;
+  signal?: AbortSignal;
+}
+
 export interface ScrapingStrategy {
-  fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse>;
+  fetchPrices: (params: FetchPricesParams) => Promise<ScrapeResponse>;
   type: StrategyType;
+}
+
+export interface ScrapingErrorOptions extends ErrorOptions {
+  hotelId: string;
 }
 
 export class ScrapingError extends Error {
   readonly hotelId: string;
-  override readonly cause?: unknown;
 
-  constructor(message: string, hotelId: string, cause?: unknown) {
-    super(message);
+  constructor(message: string, { hotelId, ...options }: ScrapingErrorOptions) {
+    super(message, options);
     this.name = "ScrapingError";
     this.hotelId = hotelId;
-    this.cause = cause;
   }
 }

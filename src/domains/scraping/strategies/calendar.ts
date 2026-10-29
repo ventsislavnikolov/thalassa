@@ -4,6 +4,7 @@ import type { HotelConfig } from "@/domains/hotels/types";
 import { extractRoomOptions, loadHtml } from "../parsers/html-parser";
 import { parsePrice } from "../parsers/price-parser";
 import type {
+  FetchPricesParams,
   PriceResult,
   ScrapeResponse,
   ScrapingStrategy,
@@ -75,7 +76,9 @@ function matchPatterns(
 ): RegExpMatchArray | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) return match;
+    if (match) {
+      return match;
+    }
   }
   return null;
 }
@@ -94,7 +97,9 @@ function parseCalendarHtml(
     const date = $cell.attr("data-date");
     const title = $cell.attr("data-title") || "";
 
-    if (!date) return;
+    if (!date) {
+      return;
+    }
 
     const cellText = $cell.text() || "";
 
@@ -107,10 +112,14 @@ function parseCalendarHtml(
       priceMatch = matchPatterns(cellText, GENERAL_PRICE_PATTERNS);
     }
 
-    if (!priceMatch) return;
+    if (!priceMatch) {
+      return;
+    }
 
     const priceValue = parsePrice(priceMatch[1]);
-    if (priceValue === null) return;
+    if (priceValue === null) {
+      return;
+    }
 
     let stayTotal: number;
     let avgPerNight: number;
@@ -151,77 +160,77 @@ function parseCalendarHtml(
   };
 }
 
-export class CalendarStrategy implements ScrapingStrategy {
-  type = "calendar" as const;
+async function fetchCalendarPage({
+  hotel,
+  searchParams,
+  signal,
+}: FetchPricesParams): Promise<ScrapeResponse> {
+  const formData = buildFormData(searchParams);
 
-  async fetchPrices(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel } = params;
-    const initial = await this.fetchSingle(params);
-    const { roomOptions } = initial;
+  try {
+    const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": USER_AGENT,
+      },
+      signal,
+      timeout: REQUEST_TIMEOUT,
+    });
 
-    if (roomOptions.length === 0) return initial;
-
-    const allPrices: PriceResult[] = [];
-
-    for (const room of roomOptions) {
-      try {
-        const roomParams = {
-          ...params,
-          searchParams: { ...params.searchParams, room: room.code },
-        };
-        const response = await this.fetchSingle(roomParams);
-        const tagged = response.prices.map((p) => ({
-          ...p,
-          roomCode: room.code,
-          roomType: room.name,
-        }));
-        allPrices.push(...tagged);
-
-        if (room !== roomOptions[roomOptions.length - 1]) {
-          await delay(ROOM_FETCH_DELAY);
-        }
-      } catch {
-        // Continue with other rooms even if one fails
-      }
-    }
-
-    return {
+    return parseCalendarHtml(response.data, searchParams, hotel);
+  } catch (error) {
+    throw new ScrapingError(`Failed to fetch calendar data for ${hotel.name}`, {
+      cause: error,
       hotelId: hotel.id,
-      hotelName: hotel.name,
-      prices: allPrices,
-      roomOptions,
-    };
+    });
+  }
+}
+
+async function fetchCalendarPrices(
+  params: FetchPricesParams
+): Promise<ScrapeResponse> {
+  const { hotel } = params;
+  const initial = await fetchCalendarPage(params);
+  const { roomOptions } = initial;
+
+  if (roomOptions.length === 0) {
+    return initial;
   }
 
-  private async fetchSingle(params: {
-    hotel: HotelConfig;
-    searchParams: SearchParams;
-    signal?: AbortSignal;
-  }): Promise<ScrapeResponse> {
-    const { hotel, searchParams, signal } = params;
-    const formData = buildFormData(searchParams);
+  const allPrices: PriceResult[] = [];
 
+  for (const room of roomOptions) {
     try {
-      const response = await axios.post(`${hotel.baseUrl}/calendar`, formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": USER_AGENT,
-        },
-        signal,
-        timeout: REQUEST_TIMEOUT,
-      });
+      const roomParams = {
+        ...params,
+        searchParams: { ...params.searchParams, room: room.code },
+      };
+      // biome-ignore lint/performance/noAwaitInLoops: rooms are fetched one at a time, ROOM_FETCH_DELAY apart, to throttle requests to the live booking site
+      const response = await fetchCalendarPage(roomParams);
+      const tagged = response.prices.map((p) => ({
+        ...p,
+        roomCode: room.code,
+        roomType: room.name,
+      }));
+      allPrices.push(...tagged);
 
-      return parseCalendarHtml(response.data, searchParams, hotel);
-    } catch (error) {
-      throw new ScrapingError(
-        `Failed to fetch calendar data for ${hotel.name}`,
-        hotel.id,
-        error
-      );
+      if (room !== roomOptions.at(-1)) {
+        await delay(ROOM_FETCH_DELAY);
+      }
+    } catch {
+      // Continue with other rooms even if one fails
     }
   }
+
+  return {
+    hotelId: hotel.id,
+    hotelName: hotel.name,
+    prices: allPrices,
+    roomOptions,
+  };
+}
+
+export class CalendarStrategy implements ScrapingStrategy {
+  readonly fetchPrices = fetchCalendarPrices;
+  type = "calendar" as const;
 }

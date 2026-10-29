@@ -1,6 +1,10 @@
 import { addDays, format, parse } from "date-fns";
 import { getHotel } from "@/domains/hotels/registry";
-import type { RoomType, StrategyType } from "@/domains/hotels/types";
+import type {
+  HotelConfig,
+  RoomType,
+  StrategyType,
+} from "@/domains/hotels/types";
 import { AvlStrategy } from "./strategies/avl";
 import { CalendarStrategy } from "./strategies/calendar";
 import { HvdStrategy } from "./strategies/hvd";
@@ -30,6 +34,10 @@ function getHotelTimeout(): number {
   return process.env.VERCEL ? 15_000 : 30_000;
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     promise,
@@ -53,6 +61,7 @@ export async function scrapeHotels(
       const hotel = getHotel(hotelId);
       const strategy = getStrategy(hotel.strategyType);
 
+      // biome-ignore lint/performance/noAwaitInLoops: hotels are scraped one at a time to throttle requests to the live booking sites
       const response = await withTimeout(
         strategy.fetchPrices({ hotel, searchParams }),
         hotelTimeout
@@ -67,8 +76,7 @@ export async function scrapeHotels(
       }
       allRoomOptions.push(...response.roomOptions);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      errors.push({ error: message, hotel: hotelId });
+      errors.push({ error: errorMessage(error), hotel: hotelId });
     }
   }
 
@@ -79,81 +87,114 @@ export async function scrapeHotels(
   return { errors, results: sortedResults, roomOptions: allRoomOptions };
 }
 
+interface MultiMonthState {
+  allRoomOptions: RoomType[];
+  errors: ScrapeAllResult["errors"];
+  priceMap: Map<string, PriceResult>;
+}
+
+function multiMonthKey(price: PriceResult, hotel: HotelConfig): string {
+  return `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
+}
+
+async function scrapeInitialMonth(
+  hotelId: string,
+  hotel: HotelConfig,
+  searchParams: SearchParams,
+  state: MultiMonthState
+): Promise<void> {
+  try {
+    const initialResponse = await getStrategy(hotel.strategyType).fetchPrices({
+      hotel,
+      searchParams,
+    });
+
+    for (const price of initialResponse.prices) {
+      const key = multiMonthKey(price, hotel);
+      const existing = state.priceMap.get(key);
+      if (!existing || price.stayTotal < existing.stayTotal) {
+        state.priceMap.set(key, price);
+      }
+    }
+    state.allRoomOptions.push(...initialResponse.roomOptions);
+  } catch (error) {
+    state.errors.push({ error: errorMessage(error), hotel: hotelId });
+  }
+}
+
+function monthSearchParams(
+  searchParams: SearchParams,
+  checkinDate: Date
+): SearchParams {
+  return {
+    ...searchParams,
+    checkin: format(checkinDate, "yyyy-MM-dd"),
+    checkout: format(addDays(checkinDate, searchParams.nights), "yyyy-MM-dd"),
+  };
+}
+
+async function scrapeAdditionalMonths(
+  hotel: HotelConfig,
+  searchParams: SearchParams,
+  monthsToCheck: number,
+  state: MultiMonthState
+): Promise<void> {
+  const strategy = getStrategy(hotel.strategyType);
+  const startDate = parse(searchParams.checkin, "yyyy-MM-dd", new Date());
+  const daysToSkip = monthsToCheck > 6 ? 25 : 30;
+
+  for (let i = 1; i < monthsToCheck; i += 1) {
+    const monthParams = monthSearchParams(
+      searchParams,
+      addDays(startDate, i * daysToSkip)
+    );
+
+    try {
+      // biome-ignore lint/performance/noAwaitInLoops: months are fetched one at a time (100 ms apart on long searches) to throttle requests to the live booking sites
+      const response = await strategy.fetchPrices({
+        hotel,
+        searchParams: monthParams,
+      });
+
+      for (const price of response.prices) {
+        const key = multiMonthKey(price, hotel);
+        if (!state.priceMap.has(key)) {
+          state.priceMap.set(key, price);
+        }
+      }
+    } catch {
+      // Continue with next month even if one fails
+    }
+
+    // Rate limiting for long searches
+    if (monthsToCheck > 6) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+}
+
 export async function scrapeHotelsMultiMonth(
   hotelIds: string[],
   searchParams: SearchParams,
   monthsToCheck: number
 ): Promise<ScrapeAllResult> {
-  const priceMap = new Map<string, PriceResult>();
-  const allRoomOptions: RoomType[] = [];
-  const errors: { hotel: string; error: string }[] = [];
+  const state: MultiMonthState = {
+    allRoomOptions: [],
+    errors: [],
+    priceMap: new Map<string, PriceResult>(),
+  };
+  const { allRoomOptions, errors, priceMap } = state;
   const hotelTimeout = getHotelTimeout();
-  const daysToSkip = monthsToCheck > 6 ? 25 : 30;
 
   for (const hotelId of hotelIds) {
     const processHotel = async () => {
       const hotel = getHotel(hotelId);
-      const strategy = getStrategy(hotel.strategyType);
-
-      // Fetch initial month
-      try {
-        const initialResponse = await strategy.fetchPrices({
-          hotel,
-          searchParams,
-        });
-
-        for (const price of initialResponse.prices) {
-          const key = `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
-          const existing = priceMap.get(key);
-          if (!existing || price.stayTotal < existing.stayTotal) {
-            priceMap.set(key, price);
-          }
-        }
-        allRoomOptions.push(...initialResponse.roomOptions);
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
-        errors.push({ error: message, hotel: hotelId });
-      }
-
-      // Fetch additional months
-      const startDate = parse(searchParams.checkin, "yyyy-MM-dd", new Date());
-
-      for (let i = 1; i < monthsToCheck; i++) {
-        const currentDate = addDays(startDate, i * daysToSkip);
-        const monthParams: SearchParams = {
-          ...searchParams,
-          checkin: format(currentDate, "yyyy-MM-dd"),
-          checkout: format(
-            addDays(currentDate, searchParams.nights),
-            "yyyy-MM-dd"
-          ),
-        };
-
-        try {
-          const response = await strategy.fetchPrices({
-            hotel,
-            searchParams: monthParams,
-          });
-
-          for (const price of response.prices) {
-            const key = `${price.date}_${hotel.id}_${price.roomCode || "default"}`;
-            if (!priceMap.has(key)) {
-              priceMap.set(key, price);
-            }
-          }
-        } catch {
-          // Continue with next month even if one fails
-        }
-
-        // Rate limiting for long searches
-        if (monthsToCheck > 6) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-      }
+      await scrapeInitialMonth(hotelId, hotel, searchParams, state);
+      await scrapeAdditionalMonths(hotel, searchParams, monthsToCheck, state);
     };
 
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: hotels are scraped one at a time to throttle requests to the live booking sites
       await withTimeout(processHotel(), hotelTimeout);
     } catch {
       errors.push({ error: "Hotel processing timeout", hotel: hotelId });
