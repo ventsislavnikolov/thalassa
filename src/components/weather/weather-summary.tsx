@@ -9,7 +9,7 @@ interface WeatherSummaryProps {
 export function WeatherSummary({ analyses }: WeatherSummaryProps) {
   const sorted = [...analyses].sort((a, b) => a.overallRank - b.overallRank);
 
-  const bestOverall = sorted[0];
+  const [bestOverall] = sorted;
   const bestWeatherScore = Math.max(
     ...analyses.map((a) => a.weatherData.score)
   );

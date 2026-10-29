@@ -32,7 +32,9 @@ function parseSearchParams(params: URLSearchParams): ParsedParams | null {
   const checkin = params.get("checkin");
   const hotels = params.get("hotels");
 
-  if (!(checkin && hotels)) return null;
+  if (!(checkin && hotels)) {
+    return null;
+  }
 
   return {
     adults: Number.parseInt(params.get("adults") ?? "2", 10),
@@ -57,7 +59,9 @@ function ResultsPageContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!parsed) return;
+    if (!parsed) {
+      return;
+    }
 
     const controller = new AbortController();
 
@@ -81,7 +85,9 @@ function ResultsPageContent() {
         const data: ScrapeApiResponse = await response.json();
         setResults(data);
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
         setError(
           err instanceof Error ? err.message : "An unexpected error occurred"
         );
@@ -128,7 +134,7 @@ function ResultsPageContent() {
         </div>
 
         {/* Loading */}
-        {loading && (
+        {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="border-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2" />
@@ -140,16 +146,16 @@ function ResultsPageContent() {
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Error */}
-        {error && (
+        {error ? (
           <div className="mb-6">
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </div>
-        )}
+        ) : null}
 
         {/* Results */}
         {results && !loading && (
@@ -190,7 +196,9 @@ function ResultsPageContent() {
 
                 <PriceTable prices={results.results} showHotel={isMultiHotel} />
 
-                {isMultiMonth && <MonthlySummary prices={results.results} />}
+                {isMultiMonth ? (
+                  <MonthlySummary prices={results.results} />
+                ) : null}
 
                 <div className="flex justify-end">
                   <ExportButton

@@ -59,9 +59,9 @@ export default async function HotelDetailPage({
               </Badge>
               <Badge variant="secondary">{hotel.strategyType}</Badge>
             </div>
-            {hotel.description && (
+            {hotel.description ? (
               <p className="mb-8 text-lg text-white/80">{hotel.description}</p>
-            )}
+            ) : null}
             <Button asChild size="lg">
               <Link href={`/search?hotel=${hotel.slug}`}>Check Prices</Link>
             </Button>

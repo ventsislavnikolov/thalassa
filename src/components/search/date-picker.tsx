@@ -11,6 +11,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+function isPastDate(day: Date): boolean {
+  return day < new Date();
+}
+
 interface DatePickerProps {
   date: Date | undefined;
   onSelect: (date: Date | undefined) => void;
@@ -35,7 +39,7 @@ export function DatePicker({ date, onSelect }: DatePickerProps) {
         <PopoverContent align="start" className="w-auto p-0">
           <Calendar
             autoFocus
-            disabled={(d) => d < new Date()}
+            disabled={isPastDate}
             mode="single"
             onSelect={onSelect}
             selected={date}

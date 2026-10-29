@@ -11,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import type { ScrapeApiResponse } from "@/app/api/scrape/types";
 import { PageContainer } from "@/components/layout/page-container";
 import { ExportButton } from "@/components/results/export-button";
@@ -31,20 +31,27 @@ import { WeatherGrid } from "@/components/weather/weather-grid";
 import { WeatherSummary } from "@/components/weather/weather-summary";
 
 function deriveSearchMode(params: SearchFormParams): string {
-  if (params.isYearSearch) return "year";
-  if (params.enableMonthsSearch && params.months > 0) return "multi-month";
+  if (params.isYearSearch) {
+    return "year";
+  }
+  if (params.enableMonthsSearch && params.months > 0) {
+    return "multi-month";
+  }
   return "single";
 }
+
+const STAT_SKELETON_KEYS = ["lowest", "average", "highest"];
+const ROW_SKELETON_KEYS = ["row-1", "row-2", "row-3", "row-4", "row-5"];
 
 function ResultsSkeleton() {
   return (
     <div className="space-y-8">
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
+        {STAT_SKELETON_KEYS.map((key) => (
           <div
             className="rounded-xl border border-[#1e2a36] bg-[#111820] p-5"
-            key={i}
+            key={key}
           >
             <Skeleton className="mb-3 h-4 w-24 bg-[#1e2a36]" />
             <Skeleton className="mb-2 h-8 w-32 bg-[#1e2a36]" />
@@ -57,10 +64,10 @@ function ResultsSkeleton() {
         <div className="border-b border-[#1e2a36] p-5">
           <Skeleton className="h-5 w-40 bg-[#1e2a36]" />
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
+        {ROW_SKELETON_KEYS.map((key) => (
           <div
             className="flex items-center gap-4 border-b border-[#1e2a36] p-4 last:border-0"
-            key={i}
+            key={key}
           >
             <Skeleton className="h-4 w-24 bg-[#1e2a36]" />
             <Skeleton className="h-4 w-32 bg-[#1e2a36]" />
@@ -84,7 +91,7 @@ function SearchPageContent() {
     null
   );
 
-  const handleSearch = async (params: SearchFormParams) => {
+  const handleSearch = useCallback(async (params: SearchFormParams) => {
     setLoading(true);
     setError(null);
     setResults(null);
@@ -120,11 +127,11 @@ function SearchPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleModifySearch = () => {
+  const handleModifySearch = useCallback(() => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   const isMultiHotel =
     results !== null && results.meta.hotelsSearched.length > 1;
@@ -202,16 +209,16 @@ function SearchPageContent() {
 
         <PageContainer className="relative">
           {/* Error */}
-          {error && (
+          {error ? (
             <div className="mb-6 pt-8">
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             </div>
-          )}
+          ) : null}
 
           {/* Loading */}
-          {loading && (
+          {loading ? (
             <div className="pt-8">
               <div className="mb-6 flex items-center gap-3">
                 <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-[#2E5BB1]" />
@@ -221,7 +228,7 @@ function SearchPageContent() {
               </div>
               <ResultsSkeleton />
             </div>
-          )}
+          ) : null}
 
           {/* Empty state — no search yet */}
           {!(results || loading || error) && (
@@ -243,7 +250,7 @@ function SearchPageContent() {
           {results && !loading && (
             <div className="animate-fade-in-up space-y-8 pt-8">
               {/* Search Summary — sticky */}
-              {searchContext && (
+              {searchContext ? (
                 <div className="glass-noir sticky top-0 z-10 rounded-xl px-5 py-3.5">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2E5BB1]/15 px-3 py-1.5 text-[#6B9AE8]">
@@ -279,7 +286,7 @@ function SearchPageContent() {
                     </Button>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {results.results.length > 0 ? (
                 <>
@@ -300,7 +307,9 @@ function SearchPageContent() {
                     <PriceStats prices={results.results} />
                   </div>
 
-                  {isMultiHotel && <HotelComparison prices={results.results} />}
+                  {isMultiHotel ? (
+                    <HotelComparison prices={results.results} />
+                  ) : null}
 
                   <div>
                     <div className="mb-4 flex items-center gap-3">
@@ -322,7 +331,9 @@ function SearchPageContent() {
                     />
                   </div>
 
-                  {isMultiMonth && <MonthlySummary prices={results.results} />}
+                  {isMultiMonth ? (
+                    <MonthlySummary prices={results.results} />
+                  ) : null}
 
                   <div className="flex justify-end">
                     <ExportButton

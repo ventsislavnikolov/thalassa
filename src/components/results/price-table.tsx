@@ -2,7 +2,7 @@
 
 import { format, parse } from "date-fns";
 import { Download, Star } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +43,10 @@ export function PriceTable({
   onExport,
 }: PriceTableProps) {
   const [sortBy, setSortBy] = useState<SortKey>("price");
+  const handleSortChange = useCallback(
+    (value: string) => setSortBy(value as SortKey),
+    []
+  );
 
   const lowestPrice = Math.min(...prices.map((p) => p.stayTotal));
 
@@ -71,27 +75,24 @@ export function PriceTable({
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <Select
-              onValueChange={(v) => setSortBy(v as SortKey)}
-              value={sortBy}
-            >
+            <Select onValueChange={handleSortChange} value={sortBy}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="price">Sort by Price</SelectItem>
                 <SelectItem value="date">Sort by Date</SelectItem>
-                {showHotel && (
+                {showHotel ? (
                   <SelectItem value="hotel">Sort by Hotel</SelectItem>
-                )}
+                ) : null}
               </SelectContent>
             </Select>
-            {onExport && (
+            {onExport ? (
               <Button onClick={onExport} size="sm" variant="outline">
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
       </CardHeader>
@@ -102,7 +103,7 @@ export function PriceTable({
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Day</TableHead>
-                {showHotel && <TableHead>Hotel</TableHead>}
+                {showHotel ? <TableHead>Hotel</TableHead> : null}
                 <TableHead>Room Type</TableHead>
                 <TableHead>Per Night</TableHead>
                 <TableHead>Total Stay</TableHead>
@@ -110,25 +111,25 @@ export function PriceTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayPrices.map((price, index) => {
+              {displayPrices.map((price) => {
                 const dateObj = parse(price.date, "yyyy-MM-dd", new Date());
                 const formattedDate = format(dateObj, "MMM d, yyyy");
 
                 return (
                   <TableRow
-                    key={`${price.date}-${price.hotelId}-${price.roomCode ?? "default"}-${index}`}
+                    key={`${price.date}-${price.hotelId}-${price.roomCode ?? "default"}`}
                   >
                     <TableCell className="font-medium">
                       {formattedDate}
                     </TableCell>
                     <TableCell>{price.dayOfWeek}</TableCell>
-                    {showHotel && (
+                    {showHotel ? (
                       <TableCell>
                         <Badge variant="outline">
                           {price.hotelName.replace(" Suites", "")}
                         </Badge>
                       </TableCell>
-                    )}
+                    ) : null}
                     <TableCell className="text-sm">
                       {price.roomType ?? "Standard Room"}
                     </TableCell>

@@ -25,11 +25,21 @@ import { getAllLocations } from "@/domains/locations/registry";
 
 function getPropertyType(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes("villa")) return "Villa";
-  if (n.includes("suite")) return "Suites";
-  if (n.includes("palace")) return "Palace";
-  if (n.includes("maison")) return "Boutique";
-  if (n.includes("resort")) return "Resort";
+  if (n.includes("villa")) {
+    return "Villa";
+  }
+  if (n.includes("suite")) {
+    return "Suites";
+  }
+  if (n.includes("palace")) {
+    return "Palace";
+  }
+  if (n.includes("maison")) {
+    return "Boutique";
+  }
+  if (n.includes("resort")) {
+    return "Resort";
+  }
   return "Hotel";
 }
 

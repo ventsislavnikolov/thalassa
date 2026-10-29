@@ -32,8 +32,12 @@ function getWeatherIcon(description: string) {
 }
 
 function getScoreColor(score: number) {
-  if (score >= 80) return "text-secondary";
-  if (score >= 60) return "text-amber-600";
+  if (score >= 80) {
+    return "text-secondary";
+  }
+  if (score >= 60) {
+    return "text-amber-600";
+  }
   return "text-destructive";
 }
 
@@ -43,7 +47,9 @@ function getRankBadge(rank: number) {
       <Badge className="bg-primary/10 text-primary border-0">Best Choice</Badge>
     );
   }
-  if (rank <= 3) return <Badge variant="secondary">Great Option</Badge>;
+  if (rank <= 3) {
+    return <Badge variant="secondary">Great Option</Badge>;
+  }
   return <Badge variant="outline">Good Alternative</Badge>;
 }
 

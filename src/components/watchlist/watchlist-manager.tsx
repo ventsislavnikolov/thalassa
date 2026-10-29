@@ -1,7 +1,13 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +32,9 @@ interface FormState {
   roomType: string;
   targetPrice: string;
 }
+
+type TextField = "alertPctDrop" | "checkinDate" | "roomType" | "targetPrice";
+type NumberField = "adults" | "children" | "nights";
 
 const INITIAL_FORM: FormState = {
   adults: 2,
@@ -71,46 +80,49 @@ export function WatchlistManager() {
   const hotelName = (slug: string) =>
     hotels.find((h) => h.slug === slug)?.displayName ?? slug;
 
-  async function handleAdd(event: React.FormEvent) {
-    event.preventDefault();
-    if (!(form.hotelSlug && form.checkinDate)) {
-      setError("Pick a hotel and a check-in date");
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/watchlist", {
-        body: JSON.stringify({
-          adults: form.adults,
-          alertPctDrop: toNumberOrNull(form.alertPctDrop),
-          checkinDate: form.checkinDate,
-          children: form.children,
-          hotelSlug: form.hotelSlug,
-          nights: form.nights,
-          roomType: form.roomType.trim() || null,
-          targetPrice: toNumberOrNull(form.targetPrice),
-        }),
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-      if (!res.ok) {
-        throw new Error("Request failed");
+  const handleAdd = useCallback(
+    async (event: FormEvent) => {
+      event.preventDefault();
+      if (!(form.hotelSlug && form.checkinDate)) {
+        setError("Pick a hotel and a check-in date");
+        return;
       }
-      const created: WatchlistEntry = await res.json();
-      setEntries((prev) => [
-        created,
-        ...prev.filter((e) => e.id !== created.id),
-      ]);
-      setForm((prev) => ({ ...INITIAL_FORM, hotelSlug: prev.hotelSlug }));
-    } catch {
-      setError("Could not add entry");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+      setSubmitting(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/watchlist", {
+          body: JSON.stringify({
+            adults: form.adults,
+            alertPctDrop: toNumberOrNull(form.alertPctDrop),
+            checkinDate: form.checkinDate,
+            children: form.children,
+            hotelSlug: form.hotelSlug,
+            nights: form.nights,
+            roomType: form.roomType.trim() || null,
+            targetPrice: toNumberOrNull(form.targetPrice),
+          }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        if (!res.ok) {
+          throw new Error("Request failed");
+        }
+        const created: WatchlistEntry = await res.json();
+        setEntries((prev) => [
+          created,
+          ...prev.filter((e) => e.id !== created.id),
+        ]);
+        setForm((prev) => ({ ...INITIAL_FORM, hotelSlug: prev.hotelSlug }));
+      } catch {
+        setError("Could not add entry");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [form]
+  );
 
-  async function handleToggle(entry: WatchlistEntry) {
+  const handleToggle = useCallback(async (entry: WatchlistEntry) => {
     const active = !entry.active;
     setEntries((prev) =>
       prev.map((e) => (e.id === entry.id ? { ...e, active } : e))
@@ -124,22 +136,42 @@ export function WatchlistManager() {
         prev.map((e) => (e.id === entry.id ? { ...e, active: !active } : e))
       );
     });
-  }
+  }, []);
 
-  function handleUpdate(updated: WatchlistEntry) {
+  const handleUpdate = useCallback((updated: WatchlistEntry) => {
     setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
-  }
+  }, []);
 
-  async function handleDelete(id: number) {
-    const previous = entries;
-    setEntries((prev) => prev.filter((e) => e.id !== id));
-    const res = await fetch(`/api/watchlist/${id}`, {
-      method: "DELETE",
-    }).catch(() => null);
-    if (!res?.ok) {
-      setEntries(previous);
-    }
-  }
+  const handleDelete = useCallback(
+    async (id: number) => {
+      const previous = entries;
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+      const res = await fetch(`/api/watchlist/${id}`, {
+        method: "DELETE",
+      }).catch(() => null);
+      if (!res?.ok) {
+        setEntries(previous);
+      }
+    },
+    [entries]
+  );
+
+  const handleHotelChange = useCallback(
+    (hotelSlug: string) => setForm((p) => ({ ...p, hotelSlug })),
+    []
+  );
+
+  const handleTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const field = e.currentTarget.name as TextField;
+    const { value } = e.currentTarget;
+    setForm((p) => ({ ...p, [field]: value }));
+  }, []);
+
+  const handleNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const field = e.currentTarget.name as NumberField;
+    const value = Number(e.currentTarget.value);
+    setForm((p) => ({ ...p, [field]: value }));
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -148,12 +180,11 @@ export function WatchlistManager() {
         onSubmit={handleAdd}
       >
         <div className="space-y-1.5">
-          <Label className="text-[#A3B2B5]">Hotel</Label>
-          <Select
-            onValueChange={(v) => setForm((p) => ({ ...p, hotelSlug: v }))}
-            value={form.hotelSlug}
-          >
-            <SelectTrigger>
+          <Label className="text-[#A3B2B5]" htmlFor="hotelSlug">
+            Hotel
+          </Label>
+          <Select onValueChange={handleHotelChange} value={form.hotelSlug}>
+            <SelectTrigger id="hotelSlug">
               <SelectValue placeholder="Select a hotel" />
             </SelectTrigger>
             <SelectContent>
@@ -172,9 +203,8 @@ export function WatchlistManager() {
           </Label>
           <Input
             id="checkinDate"
-            onChange={(e) =>
-              setForm((p) => ({ ...p, checkinDate: e.target.value }))
-            }
+            name="checkinDate"
+            onChange={handleTextChange}
             type="date"
             value={form.checkinDate}
           />
@@ -188,9 +218,8 @@ export function WatchlistManager() {
             id="nights"
             max={30}
             min={1}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, nights: Number(e.target.value) }))
-            }
+            name="nights"
+            onChange={handleNumberChange}
             type="number"
             value={form.nights}
           />
@@ -204,9 +233,8 @@ export function WatchlistManager() {
             id="adults"
             max={8}
             min={1}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, adults: Number(e.target.value) }))
-            }
+            name="adults"
+            onChange={handleNumberChange}
             type="number"
             value={form.adults}
           />
@@ -220,9 +248,8 @@ export function WatchlistManager() {
             id="children"
             max={6}
             min={0}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, children: Number(e.target.value) }))
-            }
+            name="children"
+            onChange={handleNumberChange}
             type="number"
             value={form.children}
           />
@@ -234,9 +261,8 @@ export function WatchlistManager() {
           </Label>
           <Input
             id="roomType"
-            onChange={(e) =>
-              setForm((p) => ({ ...p, roomType: e.target.value }))
-            }
+            name="roomType"
+            onChange={handleTextChange}
             placeholder="Cheapest available"
             value={form.roomType}
           />
@@ -249,9 +275,8 @@ export function WatchlistManager() {
           <Input
             id="targetPrice"
             min={0}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, targetPrice: e.target.value }))
-            }
+            name="targetPrice"
+            onChange={handleTextChange}
             placeholder="e.g. 1800"
             type="number"
             value={form.targetPrice}
@@ -266,9 +291,8 @@ export function WatchlistManager() {
             id="alertPctDrop"
             max={90}
             min={1}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, alertPctDrop: e.target.value }))
-            }
+            name="alertPctDrop"
+            onChange={handleTextChange}
             placeholder="e.g. 10"
             type="number"
             value={form.alertPctDrop}

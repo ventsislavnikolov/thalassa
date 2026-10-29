@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, ChevronDown, LineChart, Loader2, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { type ChangeEvent, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,117 @@ function toNumberOrNull(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+interface HistoryPanelProps {
+  history: PriceHistoryResponse | null;
+  loading: boolean;
+}
+
+function HistoryPanel({ history, loading }: HistoryPanelProps) {
+  if (loading) {
+    return (
+      <p className="flex items-center gap-2 text-sm text-[#536365]">
+        <Loader2 className="size-4 animate-spin" /> Loading price history…
+      </p>
+    );
+  }
+  if (!history) {
+    return null;
+  }
+  if (history.trend.hasData) {
+    return (
+      <>
+        <PriceTrendStats trend={history.trend} />
+        <PriceHistoryChart snapshots={history.snapshots} />
+      </>
+    );
+  }
+  return (
+    <p className="flex items-center gap-2 py-2 text-sm text-[#536365]">
+      <LineChart className="size-4" /> No price data yet — the scraper records a
+      point every 2 hours when the price changes.
+    </p>
+  );
+}
+
+interface DealAlertsProps {
+  entry: WatchlistEntry;
+  onPctDropChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onSave: () => void;
+  onTargetChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  pctDrop: string;
+  saving: boolean;
+  target: string;
+}
+
+function DealAlerts({
+  entry,
+  onPctDropChange,
+  onSave,
+  onTargetChange,
+  pctDrop,
+  saving,
+  target,
+}: DealAlertsProps) {
+  return (
+    <div className="space-y-3 border-t border-[#1e2a36] pt-4">
+      <div className="flex items-center gap-2">
+        <Bell className="size-4 text-amber-400" />
+        <p className="text-sm font-medium text-[#A3B2B5]">Deal alerts</p>
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-[#738C8A]" htmlFor={`t-${entry.id}`}>
+            Target price (€)
+          </Label>
+          <Input
+            className="w-36"
+            id={`t-${entry.id}`}
+            min={0}
+            onChange={onTargetChange}
+            placeholder="none"
+            type="number"
+            value={target}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-[#738C8A]" htmlFor={`p-${entry.id}`}>
+            % drop
+          </Label>
+          <Input
+            className="w-28"
+            id={`p-${entry.id}`}
+            max={90}
+            min={1}
+            onChange={onPctDropChange}
+            placeholder="none"
+            type="number"
+            value={pctDrop}
+          />
+        </div>
+        <Button disabled={saving} onClick={onSave} type="button">
+          {saving ? <Loader2 className="size-4 animate-spin" /> : "Save alerts"}
+        </Button>
+      </div>
+      <p className="text-xs text-[#536365]">
+        {entry.alertedAt
+          ? `Last alerted ${new Date(entry.alertedAt).toLocaleString()}`
+          : "No alerts sent yet. Emailed once when a threshold is crossed."}
+      </p>
+    </div>
+  );
+}
+
+function describeStay(entry: WatchlistEntry): string {
+  return [
+    `${entry.checkinDate} · ${entry.nights} night`,
+    entry.nights === 1 ? "" : "s",
+    ` · ${entry.adults} adult`,
+    entry.adults === 1 ? "" : "s",
+    entry.children > 0 ? ` · ${entry.children} children` : "",
+    entry.roomType ? ` · ${entry.roomType}` : "",
+  ].join("");
+}
+
 export function WatchlistItem({
   entry,
   hotelName,
@@ -46,7 +157,7 @@ export function WatchlistItem({
 
   const hasAlert = entry.targetPrice !== null || entry.alertPctDrop !== null;
 
-  async function toggleExpanded() {
+  const toggleExpanded = useCallback(async () => {
     const next = !expanded;
     setExpanded(next);
     if (next && !history) {
@@ -60,9 +171,9 @@ export function WatchlistItem({
         setLoading(false);
       }
     }
-  }
+  }, [entry.id, expanded, history]);
 
-  async function saveAlerts() {
+  const saveAlerts = useCallback(async () => {
     setSavingAlerts(true);
     try {
       const res = await fetch(`/api/watchlist/${entry.id}`, {
@@ -79,7 +190,21 @@ export function WatchlistItem({
     } finally {
       setSavingAlerts(false);
     }
-  }
+  }, [entry.id, onUpdate, pctDrop, target]);
+
+  const handleToggle = useCallback(() => onToggle(entry), [entry, onToggle]);
+  const handleDelete = useCallback(
+    () => onDelete(entry.id),
+    [entry.id, onDelete]
+  );
+  const handleTargetChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setTarget(e.target.value),
+    []
+  );
+  const handlePctDropChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setPctDrop(e.target.value),
+    []
+  );
 
   return (
     <div className="border-b border-[#1e2a36] last:border-b-0">
@@ -99,28 +224,19 @@ export function WatchlistItem({
               {hotelName}
               {hasAlert ? <Bell className="size-3.5 text-amber-400" /> : null}
             </p>
-            <p className="text-sm text-[#738C8A]">
-              {entry.checkinDate} · {entry.nights} night
-              {entry.nights === 1 ? "" : "s"} · {entry.adults} adult
-              {entry.adults === 1 ? "" : "s"}
-              {entry.children > 0 ? ` · ${entry.children} children` : ""}
-              {entry.roomType ? ` · ${entry.roomType}` : ""}
-            </p>
+            <p className="text-sm text-[#738C8A]">{describeStay(entry)}</p>
           </div>
         </button>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Switch
-              checked={entry.active}
-              onCheckedChange={() => onToggle(entry)}
-            />
+            <Switch checked={entry.active} onCheckedChange={handleToggle} />
             <span className="text-xs text-[#738C8A]">
               {entry.active ? "Active" : "Paused"}
             </span>
           </div>
           <Button
             aria-label="Remove"
-            onClick={() => onDelete(entry.id)}
+            onClick={handleDelete}
             size="icon"
             variant="ghost"
           >
@@ -131,83 +247,16 @@ export function WatchlistItem({
 
       {expanded ? (
         <div className="space-y-5 border-t border-[#1e2a36] bg-[#070c10] px-5 py-5">
-          {loading ? (
-            <p className="flex items-center gap-2 text-sm text-[#536365]">
-              <Loader2 className="size-4 animate-spin" /> Loading price history…
-            </p>
-          ) : null}
-          {!loading && history?.trend.hasData ? (
-            <>
-              <PriceTrendStats trend={history.trend} />
-              <PriceHistoryChart snapshots={history.snapshots} />
-            </>
-          ) : null}
-          {!loading && history && !history.trend.hasData ? (
-            <p className="flex items-center gap-2 py-2 text-sm text-[#536365]">
-              <LineChart className="size-4" /> No price data yet — the scraper
-              records a point every 2 hours when the price changes.
-            </p>
-          ) : null}
-
-          <div className="space-y-3 border-t border-[#1e2a36] pt-4">
-            <div className="flex items-center gap-2">
-              <Bell className="size-4 text-amber-400" />
-              <p className="text-sm font-medium text-[#A3B2B5]">Deal alerts</p>
-            </div>
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="space-y-1.5">
-                <Label
-                  className="text-xs text-[#738C8A]"
-                  htmlFor={`t-${entry.id}`}
-                >
-                  Target price (€)
-                </Label>
-                <Input
-                  className="w-36"
-                  id={`t-${entry.id}`}
-                  min={0}
-                  onChange={(e) => setTarget(e.target.value)}
-                  placeholder="none"
-                  type="number"
-                  value={target}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label
-                  className="text-xs text-[#738C8A]"
-                  htmlFor={`p-${entry.id}`}
-                >
-                  % drop
-                </Label>
-                <Input
-                  className="w-28"
-                  id={`p-${entry.id}`}
-                  max={90}
-                  min={1}
-                  onChange={(e) => setPctDrop(e.target.value)}
-                  placeholder="none"
-                  type="number"
-                  value={pctDrop}
-                />
-              </div>
-              <Button
-                disabled={savingAlerts}
-                onClick={saveAlerts}
-                type="button"
-              >
-                {savingAlerts ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  "Save alerts"
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-[#536365]">
-              {entry.alertedAt
-                ? `Last alerted ${new Date(entry.alertedAt).toLocaleString()}`
-                : "No alerts sent yet. Emailed once when a threshold is crossed."}
-            </p>
-          </div>
+          <HistoryPanel history={history} loading={loading} />
+          <DealAlerts
+            entry={entry}
+            onPctDropChange={handlePctDropChange}
+            onSave={saveAlerts}
+            onTargetChange={handleTargetChange}
+            pctDrop={pctDrop}
+            saving={savingAlerts}
+            target={target}
+          />
         </div>
       ) : null}
     </div>

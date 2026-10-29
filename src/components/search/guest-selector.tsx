@@ -1,5 +1,6 @@
 "use client";
 
+import { type ChangeEvent, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -14,6 +15,18 @@ export function GuestSelector({
   childCount,
   onChange,
 }: GuestSelectorProps) {
+  const handleAdultsChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) =>
+      onChange(Number.parseInt(e.target.value, 10) || 0, childCount),
+    [childCount, onChange]
+  );
+
+  const handleChildrenChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) =>
+      onChange(adults, Number.parseInt(e.target.value, 10) || 0),
+    [adults, onChange]
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div className="space-y-2">
@@ -25,9 +38,7 @@ export function GuestSelector({
           id="adults"
           max="8"
           min="1"
-          onChange={(e) =>
-            onChange(Number.parseInt(e.target.value, 10) || 0, childCount)
-          }
+          onChange={handleAdultsChange}
           type="number"
           value={adults || ""}
         />
@@ -41,9 +52,7 @@ export function GuestSelector({
           id="children"
           max="6"
           min="0"
-          onChange={(e) =>
-            onChange(adults, Number.parseInt(e.target.value, 10) || 0)
-          }
+          onChange={handleChildrenChange}
           type="number"
           value={childCount || ""}
         />

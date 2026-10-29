@@ -2,7 +2,13 @@
 
 import { format } from "date-fns";
 import { Calendar, Hotel, Search, Settings2, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,7 +93,9 @@ export function SearchForm({
     fetch("/api/hotels")
       .then((res) => res.json())
       .then((data) => setHotels(data))
-      .catch(() => {});
+      .catch(() => {
+        // The hotel list only labels the selector; the form works without it
+      });
   }, []);
 
   useEffect(() => {
@@ -102,12 +110,15 @@ export function SearchForm({
     }
   }, [formData.hotelIds, formData.isYearSearch]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(formData);
-  };
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      onSearch(formData);
+    },
+    [formData, onSearch]
+  );
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = useCallback((date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
       setFormData((prev) => ({
@@ -115,7 +126,64 @@ export function SearchForm({
         checkin: format(date, "yyyy-MM-dd"),
       }));
     }
-  };
+  }, []);
+
+  const handleNightsChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) =>
+      setFormData((prev) => ({
+        ...prev,
+        nights: Number.parseInt(e.target.value, 10) || 0,
+      })),
+    []
+  );
+
+  const handleGuestsChange = useCallback(
+    (adults: number, childCount: number) =>
+      setFormData((prev) => ({ ...prev, adults, children: childCount })),
+    []
+  );
+
+  const handleHotelsChange = useCallback(
+    (ids: string[]) => setFormData((prev) => ({ ...prev, hotelIds: ids })),
+    []
+  );
+
+  const handleMonthsChange = useCallback(
+    (months: number) => setFormData((prev) => ({ ...prev, months })),
+    []
+  );
+
+  const handleMonthsToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({
+        ...prev,
+        enableMonthsSearch: checked,
+        months: checked ? 3 : 0,
+      })),
+    []
+  );
+
+  const handleWeatherLocationChange = useCallback(
+    (loc: string) => setFormData((prev) => ({ ...prev, weatherLocation: loc })),
+    []
+  );
+
+  const handleWeatherToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({ ...prev, includeWeather: checked })),
+    []
+  );
+
+  const handleYearToggle = useCallback(
+    (checked: boolean) =>
+      setFormData((prev) => ({
+        ...prev,
+        enableMonthsSearch: checked,
+        isYearSearch: checked,
+        months: checked ? 12 : 0,
+      })),
+    []
+  );
 
   const isOnlyPortoCarras =
     formData.hotelIds.length === 1 && formData.hotelIds[0] === "portocarras";
@@ -159,12 +227,7 @@ export function SearchForm({
                 id="nights"
                 max="30"
                 min="1"
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    nights: Number.parseInt(e.target.value, 10) || 0,
-                  }))
-                }
+                onChange={handleNightsChange}
                 type="number"
                 value={formData.nights || ""}
               />
@@ -183,9 +246,7 @@ export function SearchForm({
           <GuestSelector
             adults={formData.adults}
             childCount={formData.children}
-            onChange={(adults, childCount) =>
-              setFormData((prev) => ({ ...prev, adults, children: childCount }))
-            }
+            onChange={handleGuestsChange}
           />
         </div>
 
@@ -202,9 +263,7 @@ export function SearchForm({
           </div>
           <HotelSelector
             hotels={hotels}
-            onChange={(ids) =>
-              setFormData((prev) => ({ ...prev, hotelIds: ids }))
-            }
+            onChange={handleHotelsChange}
             selected={formData.hotelIds}
           />
         </div>
@@ -222,30 +281,11 @@ export function SearchForm({
             includeWeather={formData.includeWeather}
             isYearSearch={formData.isYearSearch}
             months={formData.months}
-            onMonthsChange={(months) =>
-              setFormData((prev) => ({ ...prev, months }))
-            }
-            onMonthsToggle={(checked) =>
-              setFormData((prev) => ({
-                ...prev,
-                enableMonthsSearch: checked,
-                months: checked ? 3 : 0,
-              }))
-            }
-            onWeatherLocationChange={(loc) =>
-              setFormData((prev) => ({ ...prev, weatherLocation: loc }))
-            }
-            onWeatherToggle={(checked) =>
-              setFormData((prev) => ({ ...prev, includeWeather: checked }))
-            }
-            onYearToggle={(checked) =>
-              setFormData((prev) => ({
-                ...prev,
-                enableMonthsSearch: checked,
-                isYearSearch: checked,
-                months: checked ? 12 : 0,
-              }))
-            }
+            onMonthsChange={handleMonthsChange}
+            onMonthsToggle={handleMonthsToggle}
+            onWeatherLocationChange={handleWeatherLocationChange}
+            onWeatherToggle={handleWeatherToggle}
+            onYearToggle={handleYearToggle}
             weatherLocation={formData.weatherLocation ?? "pefkochori"}
             yearSearchDisabled={isOnlyPortoCarras}
             yearSearchHint={

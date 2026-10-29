@@ -29,27 +29,46 @@ function Stat({
   );
 }
 
+const DIRECTION_STYLES = {
+  down: { color: "text-green-400", Icon: ArrowDownRight },
+  flat: { color: "text-[#738C8A]", Icon: ArrowRight },
+  up: { color: "text-red-400", Icon: ArrowUpRight },
+} as const;
+
+function LowIndicator({
+  changeLow,
+  isAtLow,
+}: {
+  changeLow: number | null;
+  isAtLow: boolean;
+}) {
+  if (isAtLow) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
+        <Trophy className="size-3.5" /> At historical low
+      </span>
+    );
+  }
+  if (changeLow === null) {
+    return null;
+  }
+  return (
+    <span className="text-[#738C8A]">
+      <span className="text-[#A3B2B5]">+{changeLow.toFixed(1)}%</span> above the
+      historical low
+    </span>
+  );
+}
+
 export function PriceTrendStats({ trend }: PriceTrendStatsProps) {
   if (!trend.hasData) {
     return null;
   }
 
-  const { currency } = trend;
-  const changeLow = trend.changeFromLowPct;
-  const direction = trend.direction;
+  const { changeFromLowPct: changeLow, currency, direction } = trend;
 
-  const DirectionIcon =
-    direction === "down"
-      ? ArrowDownRight
-      : direction === "up"
-        ? ArrowUpRight
-        : ArrowRight;
-  const directionColor =
-    direction === "down"
-      ? "text-green-400"
-      : direction === "up"
-        ? "text-red-400"
-        : "text-[#738C8A]";
+  const { color: directionColor, Icon: DirectionIcon } =
+    DIRECTION_STYLES[direction];
 
   return (
     <div className="space-y-3">
@@ -73,16 +92,7 @@ export function PriceTrendStats({ trend }: PriceTrendStatsProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        {trend.isAtLow ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
-            <Trophy className="size-3.5" /> At historical low
-          </span>
-        ) : changeLow === null ? null : (
-          <span className="text-[#738C8A]">
-            <span className="text-[#A3B2B5]">+{changeLow.toFixed(1)}%</span>{" "}
-            above the historical low
-          </span>
-        )}
+        <LowIndicator changeLow={changeLow} isAtLow={trend.isAtLow} />
 
         {direction === "flat" ? null : (
           <span

@@ -52,7 +52,7 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
   }
 
   if (priced.length === 1) {
-    const only = priced[0];
+    const [only] = priced;
     return (
       <p className="py-6 text-center text-sm text-[#738C8A]">
         One data point so far: {only.currency} {only.price.toLocaleString()}.
