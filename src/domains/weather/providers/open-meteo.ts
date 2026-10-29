@@ -359,14 +359,15 @@ async function fetchOpenMeteoForecast(
   dates: string[],
   timezone: string
 ): Promise<Map<string, WeatherData>> {
-  const monthResults = await Promise.all(
-    Array.from(groupDatesByMonth(dates), ([yearMonth, monthDates]) =>
-      fetchMonthWeatherOrFallback(yearMonth, monthDates, coordinates, timezone)
-    )
-  );
-
   const weatherMap = new Map<string, WeatherData>();
-  for (const monthWeather of monthResults) {
+  for (const [yearMonth, monthDates] of groupDatesByMonth(dates)) {
+    // biome-ignore lint/performance/noAwaitInLoops: /api/weather accepts any date range, so months are fetched one at a time rather than bursting Open-Meteo with one request per month
+    const monthWeather = await fetchMonthWeatherOrFallback(
+      yearMonth,
+      monthDates,
+      coordinates,
+      timezone
+    );
     for (const [date, weather] of monthWeather) {
       weatherMap.set(date, weather);
     }

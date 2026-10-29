@@ -48,25 +48,25 @@ export async function GET(request: NextRequest) {
   const watchlist = await getAllWatchlist();
   const byId = new Map(watchlist.map((entry) => [entry.id, entry]));
 
-  const watched = events.flatMap((event) => {
+  const items: DigestItem[] = [];
+  for (const event of events) {
     const entry = byId.get(event.watchlistId);
-    return entry ? [{ entry, event }] : [];
-  });
-  const items: DigestItem[] = await Promise.all(
-    watched.map(async ({ entry, event }) => {
-      const stats = await getPriceStats(entry.id);
-      return {
-        avgPrice: stats.avg,
-        bookingUrl: bookingUrl(entry),
-        entry,
-        hotelName: getHotel(entry.hotelSlug).displayName,
-        minPrice: event.minPrice ?? stats.min,
-        previousPrice: event.previousPrice,
-        price: event.price,
-        reasons: event.reasons,
-      };
-    })
-  );
+    if (!entry) {
+      continue;
+    }
+    // biome-ignore lint/performance/noAwaitInLoops: the undigested queue can hold hundreds of events; one stats query at a time keeps the Neon load bounded
+    const stats = await getPriceStats(entry.id);
+    items.push({
+      avgPrice: stats.avg,
+      bookingUrl: bookingUrl(entry),
+      entry,
+      hotelName: getHotel(entry.hotelSlug).displayName,
+      minPrice: event.minPrice ?? stats.min,
+      previousPrice: event.previousPrice,
+      price: event.price,
+      reasons: event.reasons,
+    });
+  }
 
   const today = format(new Date(), "yyyy-MM-dd");
   const content = buildDigest(items, today);
