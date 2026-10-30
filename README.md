@@ -159,7 +159,7 @@ pnpm start        # Start production server
 pnpm lint         # Lint and format check (Ultracite/Biome)
 pnpm fix          # Auto-fix lint and format issues
 pnpm typecheck    # Run TypeScript checks
-pnpm test         # Run unit tests once (Vitest)
+pnpm test         # Run unit tests once with coverage (fails below 90%)
 pnpm test:watch   # Run unit tests in watch mode
 pnpm ci:local     # Lint, typecheck, test and build, as CI runs them
 ```

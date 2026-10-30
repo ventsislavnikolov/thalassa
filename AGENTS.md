@@ -11,7 +11,8 @@ It runs on Vercel. Domain model and glossary: `CONTEXT.md`.
 - Scraping with axios and Cheerio; validation with Zod; dates with date-fns.
 - Neon Postgres (`@neondatabase/serverless`) for tracking only; email through
   the Resend REST API.
-- Vitest for unit tests; Biome through ultracite for lint and format.
+- Vitest (jsdom and Testing Library for components) for unit tests; Biome
+  through ultracite for lint and format.
 
 ## Layout
 
@@ -19,7 +20,8 @@ It runs on Vercel. Domain model and glossary: `CONTEXT.md`.
   routes (`api/scrape`, `api/hotels`, `api/weather`, `api/watchlist`,
   `api/cron/*`).
 - `src/domains/`: hotels, locations, scraping, weather, analysis, tracking.
-  Config and pure logic, tests in each `__tests__/`.
+  Config and pure logic, tests in each `__tests__/`; pages, API routes and
+  components keep theirs in a `__tests__/` beside them too.
 - `src/components/`: UI grouped by concern; `ui/` holds the shadcn primitives.
 - `public/images/`: hotel and location images.
 - `scripts/install-git-hooks.mjs`: installs lefthook on `pnpm install`.
@@ -31,7 +33,8 @@ Use pnpm. Node comes from `.nvmrc`.
 - `pnpm dev`: dev server with Turbopack.
 - `pnpm lint` / `pnpm fix`: ultracite (Biome) check / auto-fix.
 - `pnpm typecheck`: `tsc --noEmit`.
-- `pnpm test`: Vitest once; `pnpm test:watch` to watch.
+- `pnpm test`: Vitest once with coverage; fails below 90% lines, statements,
+  branches or functions. `pnpm test:watch` watches, without coverage.
 - `pnpm build`: production build.
 - `pnpm ci:local`: lint, typecheck, test and build, fail-fast, as CI runs them.
 
@@ -44,6 +47,10 @@ typecheck, test and build on every push to `main`.
 - Biome via ultracite is the only linter and formatter; do not add ESLint.
 - `/api/scrape` and `/api/cron/scrape` hit the live booking sites. Do not run
   real scrapes in loops; unit tests stay network-free.
+- Coverage stays at 90% or more on all four metrics (`vitest.config.ts`). It
+  measures every file under `src/`, except the shadcn primitives in
+  `components/ui/`, route layouts and type-only files. Component tests start
+  with `// @vitest-environment jsdom`; no coverage-ignore comments.
 - `GET /api/cron/scrape` (every 2 hours) and `GET /api/cron/digest` (daily,
   18:00 UTC) are called by cron-job.org with `Bearer CRON_SECRET`, not by
   `vercel.json`. Renaming them or changing their auth silently stops scheduled

@@ -10,7 +10,7 @@
     "lint": "ultracite check",
     "prepare": "node scripts/install-git-hooks.mjs",
     "start": "next start",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
