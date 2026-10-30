@@ -8,6 +8,17 @@ export default defineConfig({
     },
   },
   test: {
+    coverage: {
+      exclude: [
+        "src/components/ui/**",
+        "src/app/**/layout.tsx",
+        "src/app/api/scrape/types.ts",
+        "src/domains/{analysis,hotels,locations,tracking,weather}/types.ts",
+      ],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "v8",
+      reporter: ["text-summary", "text", "json-summary"],
+    },
     environment: "node",
     globals: true,
   },
