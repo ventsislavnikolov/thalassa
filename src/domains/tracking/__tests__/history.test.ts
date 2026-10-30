@@ -50,6 +50,17 @@ describe("computePriceTrend", () => {
     expect(trend.isAtLow).toBe(false);
   });
 
+  it("reports no change from a zero first price instead of dividing by zero", () => {
+    const trend = computePriceTrend([snap(0), snap(150)]);
+    expect(trend.changeFromFirstPct).toBe(0);
+    expect(trend.changeFromLowPct).toBe(0);
+  });
+
+  it("stays flat when the price did not move", () => {
+    const trend = computePriceTrend([snap(150), snap(150)]);
+    expect(trend.direction).toBe("flat");
+  });
+
   it("treats a currently-unavailable latest snapshot as no current price", () => {
     const trend = computePriceTrend([snap(200), snap(150), snap(null, false)]);
     expect(trend.currentAvailable).toBe(false);
