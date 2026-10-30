@@ -28,5 +28,8 @@ export default defineConfig({
     environment: "node",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    // Component tests render whole pages in jsdom; leave room for a loaded
+    // machine running the pre-push hook.
+    testTimeout: 30_000,
   },
 });

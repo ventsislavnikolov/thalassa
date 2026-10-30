@@ -6,10 +6,10 @@ import HomePage from "../page";
 
 const hotelCount = getAllHotels().length;
 
+// Text queries keep this large page fast; role queries compute styles for
+// every element in jsdom.
 function hotelCard(name: string): HTMLElement {
-  return screen
-    .getByRole("heading", { level: 3, name })
-    .closest("a") as HTMLElement;
+  return screen.getByText(name, { selector: "h3" }).closest("a") as HTMLElement;
 }
 
 describe("HomePage", () => {
@@ -17,7 +17,7 @@ describe("HomePage", () => {
     render(<HomePage />);
 
     expect(
-      screen.getByRole("heading", { name: `Compare ${hotelCount} Hotels` })
+      screen.getByText(`Compare ${hotelCount} Hotels`, { selector: "h2" })
     ).toBeTruthy();
     expect(
       screen.getByText(`Live prices from ${hotelCount} hotels`)
@@ -54,7 +54,7 @@ describe("HomePage", () => {
     const count = getAllHotels().filter((h) =>
       slugs.includes(h.locationSlug)
     ).length;
-    const tile = screen.getByRole("heading", { level: 3, name: region })
+    const tile = screen.getByText(region, { selector: "h3" })
       .parentElement as HTMLElement;
     expect(
       within(tile).getByText(count === 1 ? "1 hotel" : `${count} hotels`)
