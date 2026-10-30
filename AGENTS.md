@@ -33,6 +33,7 @@ Use pnpm. Node comes from `.nvmrc`.
 - `pnpm typecheck`: `tsc --noEmit`.
 - `pnpm test`: Vitest once; `pnpm test:watch` to watch.
 - `pnpm build`: production build.
+- `pnpm ci:local`: lint, typecheck, test and build, fail-fast, as CI runs them.
 
 Git hooks (lefthook): pre-commit runs Biome on staged files (check only),
 commit-msg runs commitlint, pre-push runs `pnpm build`. CI runs lint,

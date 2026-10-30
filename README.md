@@ -159,8 +159,9 @@ pnpm start        # Start production server
 pnpm lint         # Lint and format check (Ultracite/Biome)
 pnpm fix          # Auto-fix lint and format issues
 pnpm typecheck    # Run TypeScript checks
-pnpm clean        # Clean build cache
-pnpm setup        # Install deps + build
+pnpm test         # Run unit tests once (Vitest)
+pnpm test:watch   # Run unit tests in watch mode
+pnpm ci:local     # Lint, typecheck, test and build, as CI runs them
 ```
 
 ### Package Management

@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "ci:local": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "dev": "next dev --turbopack",
-    "env:pull": "npx ultracite env:pull",
-    "fix": "npx ultracite fix",
-    "lint": "npx ultracite check",
+    "fix": "ultracite fix",
+    "lint": "ultracite check",
     "prepare": "node scripts/install-git-hooks.mjs",
     "start": "next start",
     "test": "vitest run",
