@@ -1,9 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { getAllHotels, getHotel, getHotelsByStrategy } from "../registry";
+import {
+  getAllHotelIds,
+  getAllHotels,
+  getHotel,
+  getHotelsByStrategy,
+} from "../registry";
 
 describe("hotels registry", () => {
   it("returns all visible hotels", () => {
     expect(getAllHotels()).toHaveLength(27);
+  });
+
+  it("lists the ids of visible hotels only", () => {
+    const ids = getAllHotelIds();
+    expect(ids).toEqual(getAllHotels().map((h) => h.id));
+    expect(ids).toContain("bluecarpet");
+    expect(ids).not.toContain(getHotel("excelsior").id);
   });
 
   it("gets hotel by id", () => {
