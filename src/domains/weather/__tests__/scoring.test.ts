@@ -91,6 +91,37 @@ describe("calculateBeachScore", () => {
     expect(score).toBe(65);
   });
 
+  it("scores each band edge between ideal and worst", () => {
+    // 18-20 °C, 3-5 mm rain, 20-25 km/h wind, UV 9: the lowest non-zero bands.
+    const score = calculateBeachScore({
+      precipitation: 4,
+      temperature: 19,
+      uvIndex: 9,
+      windSpeed: 22,
+    });
+    expect(score).toBe(20 + 5 + 5 + 5);
+  });
+
+  it("gives the middle rain and wind bands their points", () => {
+    const score = calculateBeachScore({
+      precipitation: 2,
+      temperature: 26,
+      uvIndex: 5,
+      windSpeed: 18,
+    });
+    expect(score).toBe(40 + 15 + 10 + 10);
+  });
+
+  it("gives no rain, wind or UV points beyond the last band", () => {
+    const score = calculateBeachScore({
+      precipitation: 6,
+      temperature: 26,
+      uvIndex: 0,
+      windSpeed: 30,
+    });
+    expect(score).toBe(40);
+  });
+
   it("clamps score to 0-100 range", () => {
     const score = calculateBeachScore({
       precipitation: 0,
