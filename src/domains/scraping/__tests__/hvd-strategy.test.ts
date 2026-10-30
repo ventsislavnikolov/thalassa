@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import axios from "axios";
+import { describe, expect, it, vi } from "vitest";
 import type { HotelConfig } from "@/domains/hotels/types";
-import { parseHvdHtml } from "../strategies/hvd";
-import type { SearchParams } from "../types";
+import { HvdStrategy, parseHvdHtml } from "../strategies/hvd";
+import { ScrapingError, type SearchParams } from "../types";
+
+vi.mock("axios", () => ({ default: { get: vi.fn() } }));
 
 const hotel: HotelConfig = {
   baseUrl: "https://reservations.hvdhotels.com/hvd-reina-del-mar",
@@ -96,6 +99,50 @@ describe("parseHvdHtml", () => {
       hotelName: "HVD Reina Del Mar",
       prices: [],
       roomOptions: [],
+    });
+  });
+});
+
+describe("HvdStrategy", () => {
+  const get = vi.mocked(axios.get);
+  const strategy = new HvdStrategy();
+
+  it("fetches the search page for the stay and parses its room cards", async () => {
+    get.mockResolvedValueOnce({
+      data: card(4286, "Park view", '<div class="price">€1200.00</div>'),
+    });
+
+    const result = await strategy.fetchPrices({ hotel, searchParams: params });
+
+    const [url] = get.mock.calls[0];
+    expect(url).toContain(
+      "https://reservations.hvdhotels.com/hvd-reina-del-mar/search/?"
+    );
+    expect(url).toContain("dates=2026-09-06%7E2026-09-12");
+    expect(result.prices.map((p) => p.stayTotal)).toEqual([1200]);
+  });
+
+  it("skips cards whose price is zero or unreadable", () => {
+    const html =
+      card(1, "Zero", '<div class="price">€0.00</div>') +
+      card(2, "Text", '<div class="price">on request</div>');
+
+    expect(parseHvdHtml(html, params, hotel).prices).toEqual([]);
+  });
+
+  it("wraps request failures in a ScrapingError", async () => {
+    const cause = new Error("timeout");
+    get.mockRejectedValueOnce(cause);
+
+    const error = await strategy
+      .fetchPrices({ hotel, searchParams: params })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ScrapingError);
+    expect(error).toMatchObject({
+      cause,
+      hotelId: "reinadelmar",
+      message: "Failed to fetch HVD data for HVD Reina Del Mar",
     });
   });
 });

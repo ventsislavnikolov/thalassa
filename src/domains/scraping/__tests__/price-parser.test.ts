@@ -103,6 +103,14 @@ describe("parsePrice", () => {
       expect(parsePrice("abc")).toBeNull();
     });
 
+    it("returns null for a bare currency symbol", () => {
+      expect(parsePrice("€")).toBeNull();
+    });
+
+    it("parses space-grouped thousands without decimals", () => {
+      expect(parsePrice("2 347")).toBe(2347);
+    });
+
     it("returns null for whitespace only", () => {
       expect(parsePrice("   ")).toBeNull();
     });
@@ -136,6 +144,10 @@ describe("PriceFormat.detect", () => {
 
   it("detects plain format (dot decimal, no commas)", () => {
     expect(PriceFormat.detect("123.45")).toBe("us");
+  });
+
+  it("detects plain for space-grouped thousands", () => {
+    expect(PriceFormat.detect("2 347")).toBe("plain");
   });
 
   it("detects plain for comma as thousands only", () => {
