@@ -17,8 +17,9 @@ commit-msg:
     - name: commitlint
       run: pnpm exec commitlint --edit {1}
 
-# pre-push: the production build, so a push never breaks the deploy.
+# pre-push: `pnpm ci:local`, the same fail-fast checks CI runs, so a push
+# never breaks main or the deploy.
 pre-push:
   jobs:
-    - name: build
-      run: pnpm build
+    - name: ci-local
+      run: pnpm ci:local
