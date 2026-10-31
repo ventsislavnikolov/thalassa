@@ -22,6 +22,7 @@ const requestSchema = z.object({
   months: z.number().min(1).max(12).optional(),
   nights: z.number().min(1).max(30).default(5),
   searchMode: z.enum(["single", "multi-month", "year"]).default("single"),
+  weatherLocation: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       searchMode,
       months,
       includeWeather,
+      weatherLocation,
     } = parsed.data;
 
     const hotelIds = hotelSlugs.map((s) => getHotel(s).id);
@@ -90,8 +92,9 @@ export async function POST(request: NextRequest) {
         const topPrices = result.results.slice(0, 5);
         const dates = topPrices.map((p) => p.date);
 
-        const firstHotel = getHotel(hotelIds[0]);
-        const location = getLocation(firstHotel.locationSlug);
+        const location = getLocation(
+          weatherLocation ?? getHotel(hotelIds[0]).locationSlug
+        );
 
         const weatherMap = await provider.fetchForecast(
           location.coordinates,

@@ -176,9 +176,31 @@ describe("watchlist queries", () => {
     returns([watchlistRow]);
     returns([]);
 
-    expect(await updateWatchlistAlerts(7, 1500, 10)).toEqual(watchlistEntry);
-    expect(queries[0].values).toEqual([1500, 10, 7]);
-    expect(await updateWatchlistAlerts(99, null, null)).toBeNull();
+    expect(
+      await updateWatchlistAlerts(7, { alertPctDrop: 10, targetPrice: 1500 })
+    ).toEqual(watchlistEntry);
+    expect(queries[0].values).toEqual([false, 1500, false, 10, 7]);
+    expect(
+      await updateWatchlistAlerts(99, { alertPctDrop: null, targetPrice: null })
+    ).toBeNull();
+    expect(queries[1].values).toEqual([false, null, false, null, 99]);
+  });
+
+  it("keeps the alert threshold it is not given", async () => {
+    returns([watchlistRow]);
+    returns([watchlistRow]);
+
+    await updateWatchlistAlerts(7, { targetPrice: 1200 });
+    await updateWatchlistAlerts(7, { alertPctDrop: 15 });
+
+    expect(queries[0].text).toContain(
+      "target_price = CASE WHEN $::boolean THEN target_price ELSE $ END"
+    );
+    expect(queries[0].text).toContain(
+      "alert_pct_drop = CASE WHEN $::boolean THEN alert_pct_drop ELSE $ END"
+    );
+    expect(queries[0].values).toEqual([false, 1200, true, null, 7]);
+    expect(queries[1].values).toEqual([true, null, false, 15, 7]);
   });
 
   it("stamps the alert time", async () => {

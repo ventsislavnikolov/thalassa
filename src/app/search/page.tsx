@@ -108,6 +108,7 @@ function SearchPageContent() {
           months: params.months || undefined,
           nights: params.nights,
           searchMode: deriveSearchMode(params),
+          weatherLocation: params.weatherLocation,
         }),
         headers: { "Content-Type": "application/json" },
         method: "POST",

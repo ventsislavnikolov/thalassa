@@ -195,6 +195,20 @@ describe("WatchlistManager", () => {
     await waitFor(() => expect(screen.getByText("Paused")).toBeTruthy());
   });
 
+  it("resumes a stay when the server rejects the pause", async () => {
+    serve([entry()], {
+      "PATCH /api/watchlist/7": () =>
+        Promise.resolve(Response.json({ error: "Not found" }, { status: 404 })),
+    });
+    const user = await renderManager();
+
+    await user.click(screen.getByRole("switch"));
+
+    await waitFor(() => expect(requests("PATCH")).toHaveLength(1));
+    expect(await screen.findByText("Active")).toBeTruthy();
+    expect(screen.getByRole("switch")).toHaveProperty("ariaChecked", "true");
+  });
+
   it("removes a stay", async () => {
     serve([entry()], {
       "DELETE /api/watchlist/7": () =>

@@ -190,6 +190,19 @@ describe("POST /api/scrape", () => {
     expect(body.weather[0].priceInfo.date).toBe("2026-07-01");
   });
 
+  it("forecasts the weather location chosen in the search", async () => {
+    single.mockResolvedValueOnce(scraped([price("2026-07-04", 1000)]));
+    fetchForecast.mockResolvedValueOnce(new Map());
+
+    await post({ ...search, includeWeather: true, weatherLocation: "kavala" });
+
+    expect(fetchForecast).toHaveBeenCalledWith(
+      { latitude: 40.05, longitude: 23.55 },
+      ["2026-07-04"],
+      "Europe/Athens"
+    );
+  });
+
   it("still answers with prices when the weather lookup fails", async () => {
     single.mockResolvedValueOnce(scraped([price("2026-07-04", 1000)]));
     fetchForecast.mockRejectedValueOnce(new Error("Open-Meteo down"));

@@ -63,7 +63,7 @@ export default async function HotelDetailPage({
               <p className="mb-8 text-lg text-white/80">{hotel.description}</p>
             ) : null}
             <Button asChild size="lg">
-              <Link href={`/search?hotel=${hotel.slug}`}>Check Prices</Link>
+              <Link href={`/search?hotel=${hotel.id}`}>Check Prices</Link>
             </Button>
           </div>
         </PageContainer>
@@ -99,7 +99,7 @@ export default async function HotelDetailPage({
                   to find you the best deals.
                 </p>
                 <Button asChild variant="outline">
-                  <Link href={`/search?hotel=${hotel.slug}`}>
+                  <Link href={`/search?hotel=${hotel.id}`}>
                     Search Available Dates
                   </Link>
                 </Button>

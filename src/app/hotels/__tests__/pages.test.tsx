@@ -41,7 +41,7 @@ describe("HotelDetailPage", () => {
     );
   });
 
-  it("shows the hotel, its location and links to search it", async () => {
+  it("shows the hotel, its location and links to search it by id", async () => {
     render(await detail("blue-carpet"));
 
     expect(
@@ -51,7 +51,7 @@ describe("HotelDetailPage", () => {
     expect(screen.getByText(REGION_AND_COUNTRY)).toBeTruthy();
     for (const name of ["Check Prices", "Search Available Dates"]) {
       expect(screen.getByRole("link", { name }).getAttribute("href")).toBe(
-        "/search?hotel=blue-carpet"
+        "/search?hotel=bluecarpet"
       );
     }
   });

@@ -80,6 +80,7 @@ describe("SearchPage", () => {
       includeWeather: false,
       nights: 5,
       searchMode: "single",
+      weatherLocation: "pefkochori",
     });
     respond(
       Response.json(
@@ -135,6 +136,10 @@ describe("SearchPage", () => {
 
     await user.click(screen.getByRole("switch", { name: "Year-long Search" }));
     await user.click(screen.getByRole("switch", { name: "Weather Analysis" }));
+    await user.click(screen.getByRole("combobox"));
+    await user.click(
+      screen.getByRole("option", { name: "Kavala (Myra Hotel)" })
+    );
     await user.click(screen.getByRole("button", { name: "Select All" }));
     await search(user);
 
@@ -144,6 +149,7 @@ describe("SearchPage", () => {
       includeWeather: true,
       months: 12,
       searchMode: "year",
+      weatherLocation: "kavala",
     });
     expect(screen.getByText("2 hotels")).toBeTruthy();
     expect(
