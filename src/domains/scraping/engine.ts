@@ -196,8 +196,8 @@ export async function scrapeHotelsMultiMonth(
     try {
       // biome-ignore lint/performance/noAwaitInLoops: hotels are scraped one at a time to throttle requests to the live booking sites
       await withTimeout(processHotel(), hotelTimeout);
-    } catch {
-      errors.push({ error: "Hotel processing timeout", hotel: hotelId });
+    } catch (error) {
+      errors.push({ error: errorMessage(error), hotel: hotelId });
     }
   }
 

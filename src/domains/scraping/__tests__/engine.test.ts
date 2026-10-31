@@ -256,6 +256,23 @@ describe("scrapeHotelsMultiMonth", () => {
     expect(result.results.map((p) => p.date)).toEqual(["2026-08-30"]);
   });
 
+  it("reports an unknown hotel as not found, not as a timeout", async () => {
+    fetchPrices.mockImplementation(({ hotel }) =>
+      Promise.resolve(response(hotel, []))
+    );
+
+    const result = await scrapeHotelsMultiMonth(
+      ["nope", "cocooning"],
+      searchParams,
+      2
+    );
+
+    expect(result.errors).toEqual([
+      { error: "Hotel not found: nope", hotel: "nope" },
+    ]);
+    expect(fetchPrices).toHaveBeenCalledTimes(2);
+  });
+
   it("drops a hotel that runs past its time budget", async () => {
     vi.useFakeTimers();
     vi.stubEnv("VERCEL", "1");
