@@ -127,15 +127,16 @@ export function WatchlistManager() {
     setEntries((prev) =>
       prev.map((e) => (e.id === entry.id ? { ...e, active } : e))
     );
-    await fetch(`/api/watchlist/${entry.id}`, {
+    const res = await fetch(`/api/watchlist/${entry.id}`, {
       body: JSON.stringify({ active }),
       headers: { "Content-Type": "application/json" },
       method: "PATCH",
-    }).catch(() => {
+    }).catch(() => null);
+    if (!res?.ok) {
       setEntries((prev) =>
         prev.map((e) => (e.id === entry.id ? { ...e, active: !active } : e))
       );
-    });
+    }
   }, []);
 
   const handleUpdate = useCallback((updated: WatchlistEntry) => {
