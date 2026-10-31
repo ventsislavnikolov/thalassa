@@ -73,6 +73,34 @@ describe("buildDigest", () => {
     expect(text.indexOf("Big Drop")).toBeLessThan(text.indexOf("Small Drop"));
   });
 
+  it("describes a one-night stay with children in singular and plural", () => {
+    const content = buildDigest(
+      [item({ entry: entry({ adults: 1, children: 2, nights: 1 }) })],
+      "2026-08-29"
+    );
+    expect(content?.text).toContain("2026-10-03, 1 night, 1 adult, 2 children");
+    expect(content?.html).toContain("1 night, 1 adult, 2 children");
+  });
+
+  it("puts items without a previous price after those with a drop", () => {
+    const content = buildDigest(
+      [
+        item({ hotelName: "New Listing", previousPrice: null }),
+        item({ hotelName: "Dropped", previousPrice: 1200 }),
+      ],
+      "2026-08-29"
+    );
+    const text = content?.text ?? "";
+    expect(text.indexOf("Dropped")).toBeLessThan(text.indexOf("New Listing"));
+    expect(text).toContain("was –, low");
+  });
+
+  it("leaves out the reasons list when there are none", () => {
+    const content = buildDigest([item({ reasons: [] })], "2026-08-29");
+    expect(content?.html).not.toContain("<ul");
+    expect(content?.text).not.toContain("•");
+  });
+
   it("escapes HTML in hotel names", () => {
     const content = buildDigest(
       [item({ hotelName: "Hotel <Fancy> & Spa" })],

@@ -41,6 +41,15 @@ describe("selectResultForEntry", () => {
     expect(picked?.roomCode).toBe("std");
   });
 
+  it("matches a tracked room by its name too", () => {
+    const named = result({ roomType: "Garden Suite", stayTotal: 400 });
+    const picked = selectResultForEntry(
+      [result({ roomType: "Double", stayTotal: 150 }), named],
+      "Garden Suite"
+    );
+    expect(picked).toBe(named);
+  });
+
   it("falls back to cheapest when the tracked room is absent", () => {
     const picked = selectResultForEntry(
       [
