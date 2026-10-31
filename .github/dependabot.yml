@@ -1,8 +1,10 @@
 # Dependabot version updates.
 # https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 #
-# Updates are grouped so one run opens a handful of PRs, not one per package:
-# every PR runs CI, and a long tail of them queues up without being reviewed.
+# GitHub Actions updates are grouped into one pull request. npm updates
+# open one pull request per package (or per named group below), so each
+# can be reviewed and merged on its own; open-pull-requests-limit caps
+# how many wait at once.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -26,9 +28,6 @@ updates:
     commit-message:
       prefix: chore
       include: scope
-    groups:
-      minor-and-patch:
-        update-types: [ minor, patch ]
     ignore:
       - dependency-name: "@types/node"
         update-types: [ "version-update:semver-major" ]
