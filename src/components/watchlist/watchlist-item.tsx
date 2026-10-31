@@ -168,6 +168,9 @@ export function WatchlistItem({
       setLoading(true);
       try {
         const res = await fetch(`/api/watchlist/${entry.id}/history`);
+        if (!res.ok) {
+          throw new Error("Request failed");
+        }
         setHistory(await res.json());
       } catch {
         setHistory(null);

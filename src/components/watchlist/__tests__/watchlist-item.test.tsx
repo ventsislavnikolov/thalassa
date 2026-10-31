@@ -115,16 +115,26 @@ describe("WatchlistItem", () => {
     expect(await screen.findByText(NO_DATA)).toBeTruthy();
   });
 
-  it("still offers deal alerts when the history cannot load", async () => {
-    fetchMock.mockRejectedValueOnce(new Error("offline"));
-    const { user } = renderItem();
+  it.each([
+    ["cannot be sent", () => Promise.reject(new Error("offline"))],
+    [
+      "is rejected",
+      () =>
+        Promise.resolve(Response.json({ error: "Not found" }, { status: 404 })),
+    ],
+  ])(
+    "still offers deal alerts when the history %s",
+    async (_label, respond) => {
+      fetchMock.mockImplementationOnce(respond);
+      const { user } = renderItem();
 
-    await expand(user);
+      await expand(user);
 
-    expect(await screen.findByText("Deal alerts")).toBeTruthy();
-    expect(screen.queryByText("Loading price history…")).toBeNull();
-    expect(screen.queryByText(NO_DATA)).toBeNull();
-  });
+      expect(await screen.findByText("Deal alerts")).toBeTruthy();
+      expect(screen.queryByText("Loading price history…")).toBeNull();
+      expect(screen.queryByText(NO_DATA)).toBeNull();
+    }
+  );
 
   it("saves new alert thresholds", async () => {
     fetchMock.mockRejectedValueOnce(new Error("no history"));
