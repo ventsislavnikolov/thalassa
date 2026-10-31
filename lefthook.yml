@@ -9,7 +9,7 @@ pre-commit:
   jobs:
     - name: biome
       run: pnpm exec biome check --no-errors-on-unmatched {staged_files}
-      glob: "*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc,css}"
+      glob: "*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc,css,yml,yaml}"
 
 # commit-msg: conventional commits (commitlint.config.*).
 commit-msg:
@@ -23,3 +23,9 @@ pre-push:
   jobs:
     - name: ci-local
       run: pnpm ci:local
+      # Skipped when every pushed file is docs or GitHub config: those
+      # cannot break the build, and CI on main still checks everything.
+      exclude:
+        - ".github/**"
+        - "docs/**"
+        - "*.md"
