@@ -64,6 +64,7 @@ function HistoryPanel({ history, loading }: HistoryPanelProps) {
 
 interface DealAlertsProps {
   entry: WatchlistEntry;
+  error: string | null;
   onPctDropChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onSave: () => void;
   onTargetChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -74,6 +75,7 @@ interface DealAlertsProps {
 
 function DealAlerts({
   entry,
+  error,
   onPctDropChange,
   onSave,
   onTargetChange,
@@ -120,6 +122,7 @@ function DealAlerts({
         <Button disabled={saving} onClick={onSave} type="button">
           {saving ? <Loader2 className="size-4 animate-spin" /> : "Save alerts"}
         </Button>
+        {error ? <span className="text-sm text-red-400">{error}</span> : null}
       </div>
       <p className="text-xs text-[#536365]">
         {entry.alertedAt
@@ -154,6 +157,7 @@ export function WatchlistItem({
   const [target, setTarget] = useState(entry.targetPrice?.toString() ?? "");
   const [pctDrop, setPctDrop] = useState(entry.alertPctDrop?.toString() ?? "");
   const [savingAlerts, setSavingAlerts] = useState(false);
+  const [alertsError, setAlertsError] = useState<string | null>(null);
 
   const hasAlert = entry.targetPrice !== null || entry.alertPctDrop !== null;
 
@@ -175,6 +179,7 @@ export function WatchlistItem({
 
   const saveAlerts = useCallback(async () => {
     setSavingAlerts(true);
+    setAlertsError(null);
     try {
       const res = await fetch(`/api/watchlist/${entry.id}`, {
         body: JSON.stringify({
@@ -184,9 +189,12 @@ export function WatchlistItem({
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
-      if (res.ok) {
-        onUpdate((await res.json()) as WatchlistEntry);
+      if (!res.ok) {
+        throw new Error("Request failed");
       }
+      onUpdate((await res.json()) as WatchlistEntry);
+    } catch {
+      setAlertsError("Could not save alerts");
     } finally {
       setSavingAlerts(false);
     }
@@ -250,6 +258,7 @@ export function WatchlistItem({
           <HistoryPanel history={history} loading={loading} />
           <DealAlerts
             entry={entry}
+            error={alertsError}
             onPctDropChange={handlePctDropChange}
             onSave={saveAlerts}
             onTargetChange={handleTargetChange}

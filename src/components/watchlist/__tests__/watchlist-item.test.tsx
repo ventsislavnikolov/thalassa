@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WatchlistEntry } from "@/domains/tracking/types";
@@ -10,6 +10,7 @@ const fetchMock = vi.fn<typeof fetch>();
 const NO_DATA = /No price data yet/u;
 const LAST_ALERTED = /^Last alerted /u;
 const COCOONING = /Cocooning Suites/u;
+const SAVE_FAILED = "Could not save alerts";
 
 function renderItem(tracked: WatchlistEntry = entry()) {
   const handlers = {
@@ -155,7 +156,7 @@ describe("WatchlistItem", () => {
     expect(onUpdate).toHaveBeenCalledWith(saved);
   });
 
-  it("clears blank or invalid thresholds and ignores a rejected save", async () => {
+  it("clears blank or invalid thresholds and reports a rejected save", async () => {
     fetchMock.mockRejectedValueOnce(new Error("no history"));
     fetchMock.mockResolvedValueOnce(
       Response.json({ error: "Not found" }, { status: 404 })
@@ -186,6 +187,27 @@ describe("WatchlistItem", () => {
       targetPrice: null,
     });
     expect(onUpdate).not.toHaveBeenCalled();
+    expect(await screen.findByText(SAVE_FAILED)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Save alerts" })).toBeTruthy();
+  });
+
+  it("reports a save that cannot be sent, and clears it on retry", async () => {
+    fetchMock.mockRejectedValueOnce(new Error("no history"));
+    fetchMock.mockRejectedValueOnce(new Error("offline"));
+    const saved = entry({ targetPrice: 1200 });
+    fetchMock.mockResolvedValueOnce(Response.json(saved));
+    const { onUpdate, user } = renderItem();
+    await expand(user);
+    fireEvent.change(screen.getByLabelText("Target price (€)"), {
+      target: { value: "1200" },
+    });
+
+    await user.click(screen.getByRole("button", { name: "Save alerts" }));
+    expect(await screen.findByText(SAVE_FAILED)).toBeTruthy();
+    expect(onUpdate).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Save alerts" }));
+    await waitFor(() => expect(onUpdate).toHaveBeenCalledWith(saved));
+    expect(screen.queryByText(SAVE_FAILED)).toBeNull();
   });
 });
