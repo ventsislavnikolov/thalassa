@@ -137,15 +137,19 @@ export async function setWatchlistActive(
   return rows.length > 0 ? mapWatchlist(rows[0]) : null;
 }
 
+/** An omitted threshold keeps its stored value; null clears it. */
 export async function updateWatchlistAlerts(
   id: number,
-  targetPrice: number | null,
-  alertPctDrop: number | null
+  {
+    alertPctDrop,
+    targetPrice,
+  }: Pick<NewWatchlistEntry, "alertPctDrop" | "targetPrice">
 ): Promise<WatchlistEntry | null> {
   const sql = getSql();
   const rows = (await sql`
     UPDATE watchlist
-    SET target_price = ${targetPrice}, alert_pct_drop = ${alertPctDrop}
+    SET target_price = CASE WHEN ${targetPrice === undefined}::boolean THEN target_price ELSE ${targetPrice ?? null} END,
+        alert_pct_drop = CASE WHEN ${alertPctDrop === undefined}::boolean THEN alert_pct_drop ELSE ${alertPctDrop ?? null} END
     WHERE id = ${id}
     RETURNING id, hotel_slug, checkin_date::text, nights, adults, children,
               room_type, active, created_at::text, target_price::text,

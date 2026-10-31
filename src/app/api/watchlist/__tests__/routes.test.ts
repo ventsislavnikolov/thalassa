@@ -204,7 +204,10 @@ describe("PATCH /api/watchlist/[id]", () => {
     );
 
     expect(await response.json()).toEqual(alerted);
-    expect(updateWatchlistAlerts).toHaveBeenCalledWith(7, 1200, 10);
+    expect(updateWatchlistAlerts).toHaveBeenCalledWith(7, {
+      alertPctDrop: 10,
+      targetPrice: 1200,
+    });
     expect(setWatchlistActive).not.toHaveBeenCalled();
   });
 
@@ -216,8 +219,22 @@ describe("PATCH /api/watchlist/[id]", () => {
       idParams("7")
     );
 
-    expect(updateWatchlistAlerts).toHaveBeenCalledWith(7, null, null);
+    expect(updateWatchlistAlerts).toHaveBeenCalledWith(7, {
+      alertPctDrop: null,
+      targetPrice: null,
+    });
   });
+
+  it.each([{ targetPrice: 1200 }, { alertPctDrop: 10 }])(
+    "leaves the other threshold alone for %o",
+    async (body) => {
+      vi.mocked(updateWatchlistAlerts).mockResolvedValueOnce(entry);
+
+      await PATCH(jsonRequest("PATCH", body), idParams("7"));
+
+      expect(updateWatchlistAlerts).toHaveBeenCalledWith(7, body);
+    }
+  );
 
   it("answers 404 for an unknown entry", async () => {
     vi.mocked(setWatchlistActive).mockResolvedValueOnce(null);

@@ -68,11 +68,10 @@ export async function PATCH(
     entry = await setWatchlistActive(id, data.active);
   }
   if (data.targetPrice !== undefined || data.alertPctDrop !== undefined) {
-    entry = await updateWatchlistAlerts(
-      id,
-      data.targetPrice ?? null,
-      data.alertPctDrop ?? null
-    );
+    entry = await updateWatchlistAlerts(id, {
+      alertPctDrop: data.alertPctDrop,
+      targetPrice: data.targetPrice,
+    });
   }
 
   if (!entry) {
