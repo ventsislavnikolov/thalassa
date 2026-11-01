@@ -129,9 +129,9 @@ interface TextPrices {
 
 function extractTextPrice(text: string): number | null {
   for (const pattern of EXTRACTION_PATTERNS) {
-    const priceMatch = text.match(pattern);
-    if (priceMatch) {
-      return parsePrice(priceMatch[1]);
+    const priceText = text.match(pattern)?.[1];
+    if (priceText !== undefined) {
+      return parsePrice(priceText);
     }
   }
   return null;

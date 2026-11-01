@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WeatherData } from "@/domains/weather/types";
+import { requireDefined } from "@/lib/assert";
 import { GET } from "../route";
 
 const fetchForecast = vi.hoisted(() =>
@@ -70,7 +71,10 @@ describe("GET /api/weather", () => {
       "2026-07-02",
       "2026-07-03",
     ]);
-    const [coordinates, , timezone] = fetchForecast.mock.calls[0];
+    const [coordinates, , timezone] = requireDefined(
+      fetchForecast.mock.calls[0],
+      "the fetchForecast call"
+    );
     expect(coordinates).toEqual({
       latitude: expect.any(Number),
       longitude: expect.any(Number),

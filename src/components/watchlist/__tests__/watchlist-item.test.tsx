@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WatchlistEntry } from "@/domains/tracking/types";
+import { requireDefined } from "@/lib/assert";
 import { WatchlistItem } from "../watchlist-item";
 import { entry, snapshot, trend } from "./fixtures";
 
@@ -156,7 +157,10 @@ describe("WatchlistItem", () => {
     });
     await user.click(screen.getByRole("button", { name: "Save alerts" }));
 
-    const [url, init] = fetchMock.mock.calls[1];
+    const [url, init] = requireDefined(
+      fetchMock.mock.calls[1],
+      "the second fetch call"
+    );
     expect(url).toBe("/api/watchlist/7");
     expect(init?.method).toBe("PATCH");
     expect(JSON.parse(String(init?.body))).toEqual({
@@ -192,7 +196,14 @@ describe("WatchlistItem", () => {
     });
     await user.click(screen.getByRole("button", { name: "Save alerts" }));
 
-    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toEqual({
+    expect(
+      JSON.parse(
+        String(
+          requireDefined(fetchMock.mock.calls[1], "the second fetch call")[1]
+            ?.body
+        )
+      )
+    ).toEqual({
       alertPctDrop: null,
       targetPrice: null,
     });

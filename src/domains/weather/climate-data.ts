@@ -5,6 +5,13 @@ export interface MonthlyClimate {
   windSpeed: number;
 }
 
+const JULY_CLIMATE: MonthlyClimate = {
+  maxTemp: 33,
+  minTemp: 24,
+  precipitation: 0.5,
+  windSpeed: 10,
+};
+
 export const CHALKIDIKI_CLIMATE: Record<number, MonthlyClimate> = {
   1: { maxTemp: 12, minTemp: 5, precipitation: 8, windSpeed: 15 },
   2: { maxTemp: 14, minTemp: 6, precipitation: 6, windSpeed: 14 },
@@ -12,7 +19,7 @@ export const CHALKIDIKI_CLIMATE: Record<number, MonthlyClimate> = {
   4: { maxTemp: 21, minTemp: 12, precipitation: 3, windSpeed: 12 },
   5: { maxTemp: 26, minTemp: 17, precipitation: 2, windSpeed: 11 },
   6: { maxTemp: 31, minTemp: 22, precipitation: 1, windSpeed: 10 },
-  7: { maxTemp: 33, minTemp: 24, precipitation: 0.5, windSpeed: 10 },
+  7: JULY_CLIMATE,
   8: { maxTemp: 33, minTemp: 24, precipitation: 0.5, windSpeed: 10 },
   9: { maxTemp: 28, minTemp: 20, precipitation: 2, windSpeed: 11 },
   10: { maxTemp: 23, minTemp: 15, precipitation: 4, windSpeed: 12 },
@@ -36,7 +43,7 @@ export const UV_BY_MONTH: Record<number, number> = {
 };
 
 export function getClimateForMonth(month: number): MonthlyClimate {
-  return CHALKIDIKI_CLIMATE[month] ?? CHALKIDIKI_CLIMATE[7];
+  return CHALKIDIKI_CLIMATE[month] ?? JULY_CLIMATE;
 }
 
 export function getUvForMonth(month: number): number {

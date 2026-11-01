@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import {
   DEFAULT_WINDOW,
   generateWindowDates,
@@ -34,14 +35,18 @@ describe("generateWindowDates", () => {
       expect(new Date(d.checkinDate).getDay()).toBe(6);
       expect(d.nights).toBe(7);
     }
-    expect(dates[0].checkinDate >= "2026-09-12").toBe(true);
+    expect(
+      requireDefined(dates[0], "the first date").checkinDate >= "2026-09-12"
+    ).toBe(true);
     expect((dates.at(-1)?.checkinDate ?? "") <= "2026-11-27").toBe(true);
   });
 
   it("respects window boundaries inclusively", () => {
     // min boundary: today+14 = 2026-09-12 is itself a Saturday
     const dates = generateWindowDates("2026-08-29", DEFAULT_WINDOW);
-    expect(dates[0].checkinDate).toBe("2026-09-12");
+    expect(requireDefined(dates[0], "the first date").checkinDate).toBe(
+      "2026-09-12"
+    );
     // 11 Saturdays between day 14 and day 90
     expect(dates).toHaveLength(11);
   });

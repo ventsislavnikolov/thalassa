@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getHotel } from "@/domains/hotels/registry";
 import type { WatchlistEntry } from "@/domains/tracking/types";
+import { requireDefined } from "@/lib/assert";
 import { WatchlistManager } from "../watchlist-manager";
 import { entry } from "./fixtures";
 
@@ -46,6 +47,10 @@ async function renderManager() {
 
 function requests(method: string) {
   return fetchMock.mock.calls.filter(([, init]) => init?.method === method);
+}
+
+function firstRequest(method: string) {
+  return requireDefined(requests(method)[0], `a ${method} request`);
 }
 
 beforeEach(() => {
@@ -127,7 +132,7 @@ describe("WatchlistManager", () => {
     });
     await user.click(screen.getByRole("button", { name: "Add to watchlist" }));
 
-    const [[, init]] = requests("POST");
+    const [, init] = firstRequest("POST");
     expect(JSON.parse(String(init?.body))).toEqual({
       adults: 3,
       alertPctDrop: 10,
@@ -140,7 +145,9 @@ describe("WatchlistManager", () => {
     });
     // The upserted entry replaces its old row at the top of the list.
     const stays = await screen.findAllByText(STAY);
-    expect(stays[0].textContent).toContain("Sea Suite");
+    expect(requireDefined(stays[0], "the first stay").textContent).toContain(
+      "Sea Suite"
+    );
     expect(screen.getAllByText(ANY_STAY)).toHaveLength(2);
     expect(screen.getByLabelText<HTMLInputElement>("Check-in").value).toBe("");
     expect(screen.getByLabelText<HTMLInputElement>("Adults").value).toBe("2");
@@ -166,7 +173,7 @@ describe("WatchlistManager", () => {
     await user.click(screen.getByRole("button", { name: "Add to watchlist" }));
 
     expect(await screen.findByText("Could not add entry")).toBeTruthy();
-    const [[, init]] = requests("POST");
+    const [, init] = firstRequest("POST");
     expect(JSON.parse(String(init?.body))).toMatchObject({
       alertPctDrop: null,
       roomType: null,
@@ -186,7 +193,7 @@ describe("WatchlistManager", () => {
 
     await user.click(screen.getByRole("switch"));
     expect(await screen.findByText("Paused")).toBeTruthy();
-    const [[url, init]] = requests("PATCH");
+    const [url, init] = firstRequest("PATCH");
     expect(url).toBe("/api/watchlist/7");
     expect(JSON.parse(String(init?.body))).toEqual({ active: false });
 

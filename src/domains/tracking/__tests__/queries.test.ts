@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import {
   addWatchlistEntry,
   deactivateExpired,
@@ -36,6 +37,10 @@ vi.mock("../db", () => ({
       return Promise.resolve(results.shift() ?? []);
     },
 }));
+
+function query(index: number) {
+  return requireDefined(queries[index], `query ${index}`);
+}
 
 function returns(rows: unknown[]) {
   results.push(rows);
@@ -100,14 +105,14 @@ describe("watchlist queries", () => {
       watchlistEntry,
       { ...watchlistEntry, alertPctDrop: null, id: 8, targetPrice: null },
     ]);
-    expect(queries[0].text).toContain("FROM watchlist ORDER BY created_at");
+    expect(query(0).text).toContain("FROM watchlist ORDER BY created_at");
   });
 
   it("lists only active entries", async () => {
     returns([watchlistRow]);
 
     expect(await getActiveWatchlist()).toEqual([watchlistEntry]);
-    expect(queries[0].text).toContain("WHERE active = TRUE");
+    expect(query(0).text).toContain("WHERE active = TRUE");
   });
 
   it("upserts a new entry with defaults for optional fields", async () => {
@@ -122,8 +127,8 @@ describe("watchlist queries", () => {
     });
 
     expect(created).toEqual(watchlistEntry);
-    expect(queries[0].text).toContain("ON CONFLICT");
-    expect(queries[0].values).toEqual([
+    expect(query(0).text).toContain("ON CONFLICT");
+    expect(query(0).values).toEqual([
       "cocooning",
       "2026-07-04",
       7,
@@ -151,7 +156,7 @@ describe("watchlist queries", () => {
       targetPrice: 1200,
     });
 
-    expect(queries[0].values.slice(5)).toEqual(["STE", 1200, 5, "auto"]);
+    expect(query(0).values.slice(5)).toEqual(["STE", 1200, 5, "auto"]);
   });
 
   it("reports whether a delete removed a row", async () => {
@@ -160,7 +165,7 @@ describe("watchlist queries", () => {
 
     expect(await deleteWatchlistEntry(7)).toBe(true);
     expect(await deleteWatchlistEntry(99)).toBe(false);
-    expect(queries[1].values).toEqual([99]);
+    expect(query(1).values).toEqual([99]);
   });
 
   it("returns the updated entry, or null when the id is unknown", async () => {
@@ -168,7 +173,7 @@ describe("watchlist queries", () => {
     returns([]);
 
     expect(await setWatchlistActive(7, false)).toEqual(watchlistEntry);
-    expect(queries[0].values).toEqual([false, 7]);
+    expect(query(0).values).toEqual([false, 7]);
     expect(await setWatchlistActive(99, true)).toBeNull();
   });
 
@@ -179,11 +184,11 @@ describe("watchlist queries", () => {
     expect(
       await updateWatchlistAlerts(7, { alertPctDrop: 10, targetPrice: 1500 })
     ).toEqual(watchlistEntry);
-    expect(queries[0].values).toEqual([false, 1500, false, 10, 7]);
+    expect(query(0).values).toEqual([false, 1500, false, 10, 7]);
     expect(
       await updateWatchlistAlerts(99, { alertPctDrop: null, targetPrice: null })
     ).toBeNull();
-    expect(queries[1].values).toEqual([false, null, false, null, 99]);
+    expect(query(1).values).toEqual([false, null, false, null, 99]);
   });
 
   it("keeps the alert threshold it is not given", async () => {
@@ -193,21 +198,21 @@ describe("watchlist queries", () => {
     await updateWatchlistAlerts(7, { targetPrice: 1200 });
     await updateWatchlistAlerts(7, { alertPctDrop: 15 });
 
-    expect(queries[0].text).toContain(
+    expect(query(0).text).toContain(
       "target_price = CASE WHEN $::boolean THEN target_price ELSE $ END"
     );
-    expect(queries[0].text).toContain(
+    expect(query(0).text).toContain(
       "alert_pct_drop = CASE WHEN $::boolean THEN alert_pct_drop ELSE $ END"
     );
-    expect(queries[0].values).toEqual([false, 1200, true, null, 7]);
-    expect(queries[1].values).toEqual([true, null, false, 15, 7]);
+    expect(query(0).values).toEqual([false, 1200, true, null, 7]);
+    expect(query(1).values).toEqual([true, null, false, 15, 7]);
   });
 
   it("stamps the alert time", async () => {
     await markAlerted(7);
 
-    expect(queries[0].text).toContain("SET alerted_at = now()");
-    expect(queries[0].values).toEqual([7]);
+    expect(query(0).text).toContain("SET alerted_at = now()");
+    expect(query(0).values).toEqual([7]);
   });
 
   it("skips the database when no hotels are asked for", async () => {
@@ -221,14 +226,14 @@ describe("watchlist queries", () => {
     expect(await getActiveWatchlistForHotels(["cocooning"])).toEqual([
       watchlistEntry,
     ]);
-    expect(queries[0].values).toEqual([["cocooning"]]);
+    expect(query(0).values).toEqual([["cocooning"]]);
   });
 
   it("counts the entries it deactivated", async () => {
     returns([{ id: 1 }, { id: 2 }]);
 
     expect(await deactivateExpired("2026-07-01")).toBe(2);
-    expect(queries[0].values).toEqual(["2026-07-01"]);
+    expect(query(0).values).toEqual(["2026-07-01"]);
   });
 });
 
@@ -270,7 +275,7 @@ describe("snapshot queries", () => {
       scrapedAt: "2026-06-02 08:00:00+00",
       watchlistId: 7,
     });
-    expect(queries[0].values).toEqual([7, 1499.5, "EUR", true]);
+    expect(query(0).values).toEqual([7, 1499.5, "EUR", true]);
   });
 
   it("lists snapshots oldest first with a default limit of 500", async () => {
@@ -282,7 +287,7 @@ describe("snapshot queries", () => {
       [3, 1499.5],
       [4, null],
     ]);
-    expect(queries[0].values).toEqual([7, 500]);
+    expect(query(0).values).toEqual([7, 500]);
   });
 
   it("converts price stats to numbers", async () => {
@@ -295,6 +300,27 @@ describe("snapshot queries", () => {
       min: 1100,
     });
     expect(await getPriceStats(8)).toEqual({ avg: null, count: 0, min: null });
+  });
+
+  it("fails instead of inventing stats when the aggregate returns no row", async () => {
+    await expect(getPriceStats(7)).rejects.toThrow(
+      "Expected the price stats row to be defined"
+    );
+  });
+
+  it("fails when an insert returns no row", async () => {
+    await expect(
+      insertSnapshot(7, { available: true, currency: "EUR", price: 1499.5 })
+    ).rejects.toThrow("Expected the inserted snapshot row to be defined");
+    await expect(
+      addWatchlistEntry({
+        adults: 2,
+        checkinDate: "2026-07-04",
+        children: 0,
+        hotelSlug: "cocooning",
+        nights: 7,
+      })
+    ).rejects.toThrow("Expected the upserted watchlist row to be defined");
   });
 });
 
@@ -310,7 +336,7 @@ describe("cron state", () => {
   it("stores the value as JSON", async () => {
     await setCronState("scrape", { cursor: 4 });
 
-    expect(queries[0].values).toEqual(["scrape", '{"cursor":4}']);
+    expect(query(0).values).toEqual(["scrape", '{"cursor":4}']);
   });
 });
 
@@ -324,7 +350,7 @@ describe("alert events", () => {
       watchlistId: 7,
     });
 
-    expect(queries[0].values).toEqual([
+    expect(query(0).values).toEqual([
       7,
       1150,
       1300,
@@ -386,6 +412,6 @@ describe("alert events", () => {
     expect(queries).toEqual([]);
 
     await markEventsDigested([5, 6]);
-    expect(queries[0].values).toEqual([[5, 6]]);
+    expect(query(0).values).toEqual([[5, 6]]);
   });
 });

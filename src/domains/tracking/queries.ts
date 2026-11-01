@@ -1,3 +1,4 @@
+import { requireDefined } from "@/lib/assert";
 import { getSql } from "./db";
 import type {
   AlertEvent,
@@ -112,7 +113,7 @@ export async function addWatchlistEntry(
               room_type, active, created_at::text, target_price::text,
               alert_pct_drop, alerted_at::text, source
   `) as WatchlistRow[];
-  return mapWatchlist(rows[0]);
+  return mapWatchlist(requireDefined(rows[0], "the upserted watchlist row"));
 }
 
 export async function deleteWatchlistEntry(id: number): Promise<boolean> {
@@ -134,7 +135,8 @@ export async function setWatchlistActive(
               room_type, active, created_at::text, target_price::text,
               alert_pct_drop, alerted_at::text, source
   `) as WatchlistRow[];
-  return rows.length > 0 ? mapWatchlist(rows[0]) : null;
+  const [row] = rows;
+  return row ? mapWatchlist(row) : null;
 }
 
 /** An omitted threshold keeps its stored value; null clears it. */
@@ -155,7 +157,8 @@ export async function updateWatchlistAlerts(
               room_type, active, created_at::text, target_price::text,
               alert_pct_drop, alerted_at::text, source
   `) as WatchlistRow[];
-  return rows.length > 0 ? mapWatchlist(rows[0]) : null;
+  const [row] = rows;
+  return row ? mapWatchlist(row) : null;
 }
 
 export async function markAlerted(id: number): Promise<void> {
@@ -173,10 +176,10 @@ export async function getLatestSnapshot(
     ORDER BY scraped_at DESC
     LIMIT 1
   `) as { available: boolean; price: string | null }[];
-  if (rows.length === 0) {
+  const [row] = rows;
+  if (!row) {
     return null;
   }
-  const [row] = rows;
   return {
     available: row.available,
     price: row.price === null ? null : Number(row.price),
@@ -193,7 +196,7 @@ export async function insertSnapshot(
     VALUES (${watchlistId}, ${snapshot.price}, ${snapshot.currency}, ${snapshot.available})
     RETURNING id, watchlist_id, price::text, currency, available, scraped_at::text
   `) as SnapshotRow[];
-  return mapSnapshot(rows[0]);
+  return mapSnapshot(requireDefined(rows[0], "the inserted snapshot row"));
 }
 
 export async function getActiveWatchlistForHotels(
@@ -231,7 +234,7 @@ export async function getPriceStats(watchlistId: number): Promise<PriceStats> {
     FROM price_snapshots
     WHERE watchlist_id = ${watchlistId} AND available AND price IS NOT NULL
   `) as { avg: string | null; count: number | string; min: string | null }[];
-  const [row] = rows;
+  const row = requireDefined(rows[0], "the price stats row");
   return {
     avg: row.avg === null ? null : Number(row.avg),
     count: Number(row.count),
@@ -244,7 +247,8 @@ export async function getCronState<T>(key: string): Promise<T | null> {
   const rows = (await sql`
     SELECT value FROM cron_state WHERE key = ${key}
   `) as { value: T }[];
-  return rows.length > 0 ? rows[0].value : null;
+  const [row] = rows;
+  return row ? row.value : null;
 }
 
 export async function setCronState(key: string, value: unknown): Promise<void> {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
 import type { HotelConfig } from "@/domains/hotels/types";
+import { requireDefined } from "@/lib/assert";
 import { HvdStrategy, parseHvdHtml } from "../strategies/hvd";
 import { ScrapingError, type SearchParams } from "../types";
 
@@ -66,7 +67,9 @@ describe("parseHvdHtml", () => {
       roomType: "Standard double room with park view",
       stayTotal: 1821.6,
     });
-    expect(prices[0].averagePerNight).toBeCloseTo(303.6);
+    expect(
+      requireDefined(prices[0], "the first price").averagePerNight
+    ).toBeCloseTo(303.6);
     expect(roomOptions).toEqual([
       { code: "4286", name: "Standard double room with park view" },
       { code: "4287", name: "Standard double room with partial sea view" },
@@ -87,7 +90,7 @@ describe("parseHvdHtml", () => {
     const { prices } = parseHvdHtml(html, params, hotel);
 
     expect(prices).toHaveLength(1);
-    expect(prices[0].stayTotal).toBe(790.4);
+    expect(requireDefined(prices[0], "the first price").stayTotal).toBe(790.4);
   });
 
   it("skips room cards without a price and returns empty for no cards", () => {
@@ -114,7 +117,7 @@ describe("HvdStrategy", () => {
 
     const result = await strategy.fetchPrices({ hotel, searchParams: params });
 
-    const [url] = get.mock.calls[0];
+    const [url] = requireDefined(get.mock.calls[0], "the GET call");
     expect(url).toContain(
       "https://reservations.hvdhotels.com/hvd-reina-del-mar/search/?"
     );

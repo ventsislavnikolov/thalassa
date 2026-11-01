@@ -125,7 +125,7 @@ function createWeatherDataFromHistorical(
   const precipitation = dailyData.precipitation_sum[index] ?? 0;
   const windSpeed = dailyData.windspeed_10m_max[index] ?? 10;
   const humidity = dailyData.relative_humidity_2m[index] ?? 60;
-  const uvIndex = getUvForMonth(Number.parseInt(date.split("-")[1], 10));
+  const uvIndex = getUvForMonth(Number.parseInt(date.slice(5, 7), 10));
   const weatherCode = dailyData.weathercode[index] ?? 0;
 
   const description = getWeatherDescription(weatherCode);
@@ -245,7 +245,7 @@ async function fetchHistoricalClimateData(
   coordinates: Coordinates,
   timezone: string
 ): Promise<Map<string, WeatherData>> {
-  const [, month] = yearMonth.split("-");
+  const month = yearMonth.slice(5, 7);
   const monthNum = Number.parseInt(month, 10);
   const weatherMap = new Map<string, WeatherData>();
 
@@ -268,7 +268,7 @@ async function fetchHistoricalClimateData(
     });
 
     for (const date of dates) {
-      const dayOfMonth = Number.parseInt(date.split("-")[2], 10);
+      const dayOfMonth = Number.parseInt(date.slice(8, 10), 10);
       const historicalDate = `${historicalYear}-${month}-${dayOfMonth.toString().padStart(2, "0")}`;
       const dayIndex = data.daily.time.indexOf(historicalDate);
 
@@ -296,7 +296,8 @@ async function fetchMonthWeather(
   coordinates: Coordinates,
   timezone: string
 ): Promise<Map<string, WeatherData>> {
-  const [year, month] = yearMonth.split("-");
+  const year = yearMonth.slice(0, 4);
+  const month = yearMonth.slice(5, 7);
   const yearNum = Number.parseInt(year, 10);
   const monthNum = Number.parseInt(month, 10);
   const startDate = `${year}-${month}-01`;

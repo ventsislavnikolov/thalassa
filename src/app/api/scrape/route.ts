@@ -12,6 +12,7 @@ import {
 } from "@/domains/scraping/engine";
 import type { SearchParams } from "@/domains/scraping/types";
 import { OpenMeteoProvider } from "@/domains/weather/providers/open-meteo";
+import { requireDefined } from "@/lib/assert";
 
 const requestSchema = z.object({
   adults: z.number().min(1).max(8).default(2),
@@ -93,7 +94,10 @@ export async function POST(request: NextRequest) {
         const dates = topPrices.map((p) => p.date);
 
         const location = getLocation(
-          weatherLocation ?? getHotel(hotelIds[0]).locationSlug
+          weatherLocation ??
+            getHotel(
+              requireDefined(hotelIds[0], "a hotel id, the schema requires one")
+            ).locationSlug
         );
 
         const weatherMap = await provider.fetchForecast(

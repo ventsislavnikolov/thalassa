@@ -60,11 +60,14 @@ export function selectHotelsForRun(
     ((hotelOffset % allHotelSlugs.length) + allHotelSlugs.length) %
     allHotelSlugs.length;
   const count = Math.min(hotelsPerRun, allHotelSlugs.length);
-  const selected: string[] = [];
-  for (let i = 0; i < count; i += 1) {
-    selected.push(allHotelSlugs[(offset + i) % allHotelSlugs.length]);
-  }
-  return { nextOffset: (offset + count) % allHotelSlugs.length, selected };
+  const rotated = [
+    ...allHotelSlugs.slice(offset),
+    ...allHotelSlugs.slice(0, offset),
+  ];
+  return {
+    nextOffset: (offset + count) % allHotelSlugs.length,
+    selected: rotated.slice(0, count),
+  };
 }
 
 export interface MatchedSnapshot {
@@ -92,16 +95,14 @@ export async function runWithConcurrency<T>(
   limit: number
 ): Promise<(T | null)[]> {
   const results: (T | null)[] = new Array(tasks.length).fill(null);
-  let next = 0;
+  const queue = tasks.entries();
   const workers = Array.from(
     { length: Math.max(1, Math.min(limit, tasks.length)) },
     async () => {
-      while (next < tasks.length) {
-        const index = next;
-        next += 1;
+      for (const [index, task] of queue) {
         try {
           // biome-ignore lint/performance/noAwaitInLoops: each worker finishes a task before taking the next; that is what caps concurrency at `limit`
-          results[index] = await tasks[index]();
+          results[index] = await task();
         } catch {
           results[index] = null;
         }

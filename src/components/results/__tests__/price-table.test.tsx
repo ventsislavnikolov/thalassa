@@ -2,6 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { PriceTable } from "../price-table";
 import { price } from "./fixtures";
 
@@ -19,11 +20,16 @@ const prices = [
   price({ date: "2026-07-06", hotelName: "Agali Hotel", stayTotal: 1500 }),
 ];
 
+function cellText(row: HTMLElement, column: number) {
+  const cell = within(row).getAllByRole("cell")[column];
+  return requireDefined(cell, `the cell in column ${column}`).textContent;
+}
+
 function dates() {
   return screen
     .getAllByRole("row")
     .slice(1)
-    .map((row) => within(row).getAllByRole("cell")[0].textContent);
+    .map((row) => cellText(row, 0));
 }
 
 describe("PriceTable", () => {
@@ -31,12 +37,13 @@ describe("PriceTable", () => {
     render(<PriceTable prices={prices} />);
 
     expect(dates()).toEqual(["Jul 4, 2026", "Jul 10, 2026", "Jul 6, 2026"]);
-    const [best, , last] = screen.getAllByRole("row").slice(1);
+    const rows = screen.getAllByRole("row").slice(1);
+    const best = requireDefined(rows[0], "the best row");
+    const last = requireDefined(rows[2], "the last row");
     expect(within(best).getByText("Best Price")).toBeTruthy();
     expect(within(best).getByText("Sea Suite")).toBeTruthy();
     expect(within(best).getByText("200.00 EUR")).toBeTruthy();
-    const rating = (row: HTMLElement) =>
-      within(row).getAllByRole("cell")[5].textContent;
+    const rating = (row: HTMLElement) => cellText(row, 5);
     // The lowest-rate star is an icon; other rows show a dash.
     expect(rating(best)).toBe("");
     expect(rating(last)).toBe("-");
@@ -62,7 +69,7 @@ describe("PriceTable", () => {
     const hotels = screen
       .getAllByRole("row")
       .slice(1)
-      .map((row) => within(row).getAllByRole("cell")[2].textContent);
+      .map((row) => cellText(row, 2));
     // " Suites" is dropped from hotel badges.
     expect(hotels).toEqual(["Agali Hotel", "Cocooning", "Maritima Villas"]);
   });

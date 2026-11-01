@@ -7,6 +7,7 @@ import {
 } from "@/domains/scraping/engine";
 import type { PriceResult } from "@/domains/scraping/types";
 import type { WeatherData } from "@/domains/weather/types";
+import { requireDefined } from "@/lib/assert";
 import { POST } from "../route";
 
 const fetchForecast = vi.hoisted(() =>
@@ -176,7 +177,10 @@ describe("POST /api/scrape", () => {
       searchMode: "multi-month",
     });
 
-    const [, dates, timezone] = fetchForecast.mock.calls[0];
+    const [, dates, timezone] = requireDefined(
+      fetchForecast.mock.calls[0],
+      "the fetchForecast call"
+    );
     expect(dates).toEqual([
       "2026-07-01",
       "2026-07-02",

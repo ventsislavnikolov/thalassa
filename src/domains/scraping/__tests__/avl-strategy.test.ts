@@ -1,6 +1,7 @@
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { HotelConfig } from "@/domains/hotels/types";
+import { requireDefined } from "@/lib/assert";
 import { AvlStrategy } from "../strategies/avl";
 import { ScrapingError, type SearchParams } from "../types";
 
@@ -49,7 +50,7 @@ describe("AvlStrategy", () => {
 
     await fetchPrices({ ...searchParams, children: 1, currency: "BGN" });
 
-    const [url, body] = post.mock.calls[0];
+    const [url, body] = requireDefined(post.mock.calls[0], "the POST call");
     expect(url).toBe("https://example.reserve-online.net/avl");
     const form = body as URLSearchParams;
     expect(form.get("checkin")).toBe("2026-07-04");
@@ -66,7 +67,10 @@ describe("AvlStrategy", () => {
 
     await fetchPrices();
 
-    const form = post.mock.calls[0][1] as URLSearchParams;
+    const form = requireDefined(
+      post.mock.calls[0],
+      "the POST call"
+    )[1] as URLSearchParams;
     expect(form.get("children")).toBe("0");
     expect(form.get("cur_iso")).toBe("EUR");
   });
@@ -175,7 +179,9 @@ describe("AvlStrategy", () => {
     const result = await fetchPrices();
 
     expect(result.prices).toHaveLength(10);
-    expect(result.prices[0].stayTotal).toBe(1000);
+    expect(requireDefined(result.prices[0], "the first price").stayTotal).toBe(
+      1000
+    );
   });
 
   it("returns no prices when the page has no plausible amount", async () => {

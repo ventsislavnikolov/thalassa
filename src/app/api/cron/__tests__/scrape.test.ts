@@ -18,6 +18,7 @@ import {
   setCronState,
 } from "@/domains/tracking/queries";
 import type { WatchlistEntry } from "@/domains/tracking/types";
+import { requireDefined } from "@/lib/assert";
 import { GET } from "../scrape/route";
 
 vi.mock("@/domains/scraping/engine");
@@ -139,7 +140,7 @@ describe("GET /api/cron/scrape bookkeeping", () => {
     const upserts = vi.mocked(addWatchlistEntry).mock.calls;
     // Saturdays 14-90 days ahead of 2026-06-01, for every visible hotel.
     expect(upserts).toHaveLength(hotelSlugs.length * 11);
-    expect(upserts[0][0]).toEqual({
+    expect(requireDefined(upserts[0], "the first upsert")[0]).toEqual({
       adults: 2,
       checkinDate: "2026-06-20",
       children: 0,
@@ -317,7 +318,10 @@ describe("GET /api/cron/scrape custom alerts", () => {
 
     const summary = await run();
 
-    const [email] = vi.mocked(sendEmail).mock.calls[0];
+    const [email] = requireDefined(
+      vi.mocked(sendEmail).mock.calls[0],
+      "the sendEmail call"
+    );
     expect(email.subject).toBe(
       "Deal alert: Cocooning Suites → EUR 1,400 for 2026-07-04"
     );

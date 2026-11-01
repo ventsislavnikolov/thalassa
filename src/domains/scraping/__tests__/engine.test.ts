@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HotelConfig } from "@/domains/hotels/types";
+import { requireDefined } from "@/lib/assert";
 import { scrapeHotels, scrapeHotelsMultiMonth } from "../engine";
 import type {
   FetchPricesParams,
@@ -235,9 +236,12 @@ describe("scrapeHotelsMultiMonth", () => {
     await vi.advanceTimersByTimeAsync(1);
     await pending;
 
-    expect(fetchPrices.mock.calls[1][0].searchParams.checkin).toBe(
-      "2026-07-26"
-    );
+    expect(
+      requireDefined(
+        fetchPrices.mock.calls[1],
+        "the second fetchPrices call"
+      )[0].searchParams.checkin
+    ).toBe("2026-07-26");
   });
 
   it("records a failed first month and skips failed later months", async () => {

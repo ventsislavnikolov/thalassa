@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const current = new Date(from);
     const end = new Date(to);
     while (current <= end) {
-      dates.push(current.toISOString().split("T")[0]);
+      dates.push(current.toISOString().slice(0, 10));
       current.setDate(current.getDate() + 1);
     }
 

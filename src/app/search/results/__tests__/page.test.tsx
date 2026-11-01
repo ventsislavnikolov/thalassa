@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { analysis, price, scrapeResponse } from "../../__tests__/fixtures";
 import ResultsPage from "../page";
 
@@ -23,7 +24,11 @@ function respond(body: unknown, status = 200) {
 }
 
 function requestBody(call = 0) {
-  return JSON.parse(String(fetchMock.mock.calls[call][1]?.body));
+  return JSON.parse(
+    String(
+      requireDefined(fetchMock.mock.calls[call], "the fetch call")[1]?.body
+    )
+  );
 }
 
 beforeEach(() => {
@@ -93,7 +98,7 @@ describe("ResultsPage", () => {
             searchDuration: 800,
             totalResults: 2,
           },
-          weather: [analysis(results[0])],
+          weather: [analysis(requireDefined(results[0], "the first result"))],
         })
       );
       show(
@@ -166,7 +171,10 @@ describe("ResultsPage", () => {
 
     expect(await screen.findByText("Best Prices Found")).toBeTruthy();
     expect(requestBody(1).checkin).toBe("2026-07-11");
-    expect(fetchMock.mock.calls[0][1]?.signal?.aborted).toBe(true);
+    expect(
+      requireDefined(fetchMock.mock.calls[0], "the first fetch call")[1]?.signal
+        ?.aborted
+    ).toBe(true);
     await waitFor(() =>
       expect(screen.queryByText("Searching for the best prices...")).toBeNull()
     );

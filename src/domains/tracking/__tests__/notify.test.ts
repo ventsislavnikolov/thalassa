@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { sendEmail } from "../notify";
 
 const content = { html: "<p>Deal</p>", subject: "Deal alert", text: "Deal" };
@@ -38,7 +39,10 @@ describe("sendEmail", () => {
 
     expect(await sendEmail(content)).toBe("sent");
 
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = requireDefined(
+      fetchMock.mock.calls[0],
+      "the fetch call"
+    );
     expect(url).toBe("https://api.resend.com/emails");
     expect(init?.method).toBe("POST");
     expect(init?.headers).toMatchObject({

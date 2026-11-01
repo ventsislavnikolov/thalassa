@@ -1,4 +1,5 @@
 import type { PriceSnapshot } from "@/domains/tracking/types";
+import { requireDefined } from "@/lib/assert";
 
 interface PriceHistoryChartProps {
   snapshots: PriceSnapshot[];
@@ -27,11 +28,11 @@ function buildPoints(priced: (PriceSnapshot & { price: number })[]): Point[] {
   const spanT = maxT - minT || 1;
   const spanP = maxP - minP || 1;
 
-  return priced.map((s, i) => ({
+  return priced.map((s) => ({
     available: s.available,
     price: s.price,
     scrapedAt: s.scrapedAt,
-    x: PAD_X + ((times[i] - minT) / spanT) * (WIDTH - 2 * PAD_X),
+    x: PAD_X + ((Date.parse(s.scrapedAt) - minT) / spanT) * (WIDTH - 2 * PAD_X),
     y: PAD_Y + (1 - (s.price - minP) / spanP) * (HEIGHT - 2 * PAD_Y),
   }));
 }
@@ -42,7 +43,9 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
       s.available && s.price !== null
   );
 
-  if (priced.length === 0) {
+  const [only, second] = priced;
+
+  if (only === undefined) {
     return (
       <p className="py-6 text-center text-sm text-[#536365]">
         No price points recorded yet. The scraper stores a point every 2 hours
@@ -51,8 +54,7 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
     );
   }
 
-  if (priced.length === 1) {
-    const [only] = priced;
+  if (second === undefined) {
     return (
       <p className="py-6 text-center text-sm text-[#738C8A]">
         One data point so far: {only.currency} {only.price.toLocaleString()}.
@@ -66,10 +68,11 @@ export function PriceHistoryChart({ snapshots }: PriceHistoryChartProps) {
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
     .join(" ");
   const baseline = HEIGHT - PAD_Y;
-  const areaPath = `${linePath} L ${points.at(-1)?.x.toFixed(1)} ${baseline} L ${points[0].x.toFixed(1)} ${baseline} Z`;
+  const earliest = requireDefined(points[0], "the earliest chart point");
+  const latest = requireDefined(points.at(-1), "the latest chart point");
+  const areaPath = `${linePath} L ${latest.x.toFixed(1)} ${baseline} L ${earliest.x.toFixed(1)} ${baseline} Z`;
 
   const lowest = points.reduce((a, b) => (b.price < a.price ? b : a));
-  const latest = points.at(-1) as Point;
 
   return (
     <svg

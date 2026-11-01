@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PriceResult } from "@/domains/scraping/types";
+import { requireDefined } from "@/lib/assert";
 import {
   groupEntriesForScraping,
   matchResultsToEntries,
@@ -100,15 +101,17 @@ describe("matchResultsToEntries", () => {
         result({ date: "2026-10-03", stayTotal: 700 }),
         result({ date: "2026-10-10", stayTotal: 900 }),
       ],
-      batch
+      requireDefined(batch, "the scrape batch")
     );
-    expect(matched[0].snapshot).toEqual({
+    expect(requireDefined(matched[0], "the first match").snapshot).toEqual({
       available: true,
       currency: "EUR",
       price: 700,
     });
-    expect(matched[1].snapshot.price).toBe(900);
-    expect(matched[2].snapshot).toEqual({
+    expect(requireDefined(matched[1], "the second match").snapshot.price).toBe(
+      900
+    );
+    expect(requireDefined(matched[2], "the third match").snapshot).toEqual({
       available: false,
       currency: "EUR",
       price: null,
@@ -124,9 +127,11 @@ describe("matchResultsToEntries", () => {
         result({ roomCode: "STD", stayTotal: 500 }),
         result({ roomCode: "SUITE", stayTotal: 800 }),
       ],
-      batch
+      requireDefined(batch, "the scrape batch")
     );
-    expect(matched[0].snapshot.price).toBe(800);
+    expect(requireDefined(matched[0], "the first match").snapshot.price).toBe(
+      800
+    );
   });
 });
 
