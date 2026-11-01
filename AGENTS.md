@@ -40,7 +40,7 @@ Use pnpm. Node comes from `.nvmrc`.
 
 Git hooks (lefthook): pre-commit runs Biome on staged files (check only),
 commit-msg runs commitlint, pre-push runs `pnpm ci:local`. CI runs lint,
-typecheck, test and build on every push to `main`.
+typecheck, test and build on every push to `main`, then the release.
 
 ## Rules
 
@@ -67,9 +67,13 @@ typecheck, test and build on every push to `main`.
 - Branch from `main` as `<type>/<topic>` (e.g. `fix/pr-template-comment`).
 - Conventional commits: `<type>(<scope>): <subject>`, imperative, at most 50
   characters. `commitlint.config.js` only relaxes body line length, so the
-  format is a convention, not enforced.
+  format is a convention, not enforced, but it sets the release version.
 - Open PRs with `.github/pull_request_template.md`, filling every section.
-- Vercel builds from GitHub; merging to `main` deploys production.
+- Release: semantic-release on every push to `main` that passes CI
+  (`release.config.mjs`); breaking changes major, `feat` minor, `fix` and
+  `perf` patch. It commits `package.json` and `CHANGELOG.md` with `[skip ci]`.
+- Vercel builds from GitHub; merging to `main` deploys production. Vercel
+  ignores `[skip ci]`, so a release commit deploys production once more.
 - Env vars live in Vercel; local values go in `.env.local` (names in
   `.env.example`).
 
