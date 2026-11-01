@@ -2,6 +2,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { HotelComparison } from "../hotel-comparison";
 import { MonthlySummary } from "../monthly-summary";
 import { PriceStats } from "../price-stats";
@@ -81,7 +82,8 @@ describe("MonthlySummary", () => {
       "July 2026",
       "August 2026",
     ]);
-    const july = months[0].parentElement as HTMLElement;
+    const july = requireDefined(months[0], "the July heading")
+      .parentElement as HTMLElement;
     expect(july.textContent).toContain("Lowest: 1000.00 EUR");
     expect(july.textContent).toContain("Average: 1200.00 EUR");
     expect(july.textContent).toContain("Highest: 1400.00 EUR");

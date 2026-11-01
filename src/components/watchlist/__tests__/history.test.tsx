@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { PriceHistoryChart } from "../price-history-chart";
 import { PriceTrendStats } from "../price-trend-stats";
 import { snapshot, trend } from "./fixtures";
@@ -59,7 +60,10 @@ describe("PriceHistoryChart", () => {
     expect(titles).toHaveLength(5);
     expect(titles).toContain("Lowest: 1,100");
     expect(titles).toContain("Latest: 1,300");
-    const line = container.querySelectorAll("path")[1].getAttribute("d");
+    const line = requireDefined(
+      container.querySelectorAll("path")[1],
+      "the line path"
+    ).getAttribute("d");
     // Highest price at the top (y=18), lowest at the bottom (y=142).
     expect(line).toBe("M 10.0 18.0 L 203.3 142.0 L 590.0 80.0");
   });
@@ -74,9 +78,12 @@ describe("PriceHistoryChart", () => {
       />
     );
 
-    expect(container.querySelectorAll("path")[1].getAttribute("d")).toBe(
-      "M 10.0 142.0 L 10.0 142.0"
-    );
+    expect(
+      requireDefined(
+        container.querySelectorAll("path")[1],
+        "the line path"
+      ).getAttribute("d")
+    ).toBe("M 10.0 142.0 L 10.0 142.0");
   });
 });
 

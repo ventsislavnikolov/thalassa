@@ -8,6 +8,7 @@ import {
   markEventsDigested,
 } from "@/domains/tracking/queries";
 import type { AlertEvent, WatchlistEntry } from "@/domains/tracking/types";
+import { requireDefined } from "@/lib/assert";
 import { GET } from "../digest/route";
 
 vi.mock("@/domains/tracking/queries");
@@ -106,7 +107,10 @@ describe("GET /api/cron/digest", () => {
     const response = await call(`Bearer ${SECRET}`);
 
     expect(await response.json()).toEqual({ events: 2, sent: true });
-    const [content] = vi.mocked(sendEmail).mock.calls[0];
+    const [content] = requireDefined(
+      vi.mocked(sendEmail).mock.calls[0],
+      "the sendEmail call"
+    );
     expect(content.subject).toBe("Price digest 2026-06-10: 1 deal spotted");
     expect(content.text).toContain("Cocooning Suites");
     expect(content.text).toContain("low EUR 1,100");
@@ -126,7 +130,10 @@ describe("GET /api/cron/digest", () => {
 
     await call(`Bearer ${SECRET}`);
 
-    const [content] = vi.mocked(sendEmail).mock.calls[0];
+    const [content] = requireDefined(
+      vi.mocked(sendEmail).mock.calls[0],
+      "the sendEmail call"
+    );
     expect(content.text).toContain("low EUR 1,050");
   });
 

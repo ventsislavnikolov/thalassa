@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getHotel } from "@/domains/hotels/registry";
+import { requireDefined } from "@/lib/assert";
 import SearchPage from "../page";
 import { analysis, price, scrapeResponse } from "./fixtures";
 
@@ -128,7 +129,7 @@ describe("SearchPage", () => {
               searchDuration: 900,
               totalResults: 2,
             },
-            weather: [analysis(results[0])],
+            weather: [analysis(requireDefined(results[0], "the first result"))],
           })
         )
       );

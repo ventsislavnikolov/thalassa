@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PriceResult } from "@/domains/scraping/types";
 import type { WeatherData } from "@/domains/weather/types";
+import { requireDefined } from "@/lib/assert";
 import {
   analyzeDeals,
   calculateCombinedScore,
@@ -115,8 +116,10 @@ describe("analyzeDeals", () => {
 
     const results = analyzeDeals(prices, weatherMap, 3);
     for (let i = 0; i < results.length - 1; i += 1) {
-      expect(results[i].totalScore).toBeGreaterThanOrEqual(
-        results[i + 1].totalScore
+      expect(
+        requireDefined(results[i], "this result").totalScore
+      ).toBeGreaterThanOrEqual(
+        requireDefined(results[i + 1], "the next result").totalScore
       );
     }
   });
@@ -129,8 +132,8 @@ describe("analyzeDeals", () => {
     ]);
 
     const results = analyzeDeals(prices, weatherMap, 2);
-    expect(results[0].overallRank).toBe(1);
-    expect(results[1].overallRank).toBe(2);
+    expect(requireDefined(results[0], "the first result").overallRank).toBe(1);
+    expect(requireDefined(results[1], "the second result").overallRank).toBe(2);
   });
 
   it("assigns correct price ranks", () => {
@@ -196,6 +199,8 @@ describe("analyzeDeals", () => {
 
     const results = analyzeDeals(prices, weatherMap, 2);
     expect(results).toHaveLength(1);
-    expect(results[0].priceInfo.date).toBe("2025-07-01");
+    expect(requireDefined(results[0], "the first result").priceInfo.date).toBe(
+      "2025-07-01"
+    );
   });
 });

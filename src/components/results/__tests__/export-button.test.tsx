@@ -2,6 +2,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { requireDefined } from "@/lib/assert";
 import { ExportButton } from "../export-button";
 import { price } from "./fixtures";
 
@@ -39,7 +40,11 @@ async function exportCsv(filename?: string) {
   );
   await user.click(screen.getByRole("button", { name: "Export CSV" }));
 
-  return { blob: blobs[0], link: clicked[0], revoke };
+  return {
+    blob: requireDefined(blobs[0], "the exported blob"),
+    link: requireDefined(clicked[0], "the clicked link"),
+    revoke,
+  };
 }
 
 describe("ExportButton", () => {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HotelConfig } from "@/domains/hotels/types";
+import { requireDefined } from "@/lib/assert";
 import { CalendarStrategy } from "../strategies/calendar";
 import { ScrapingError, type SearchParams } from "../types";
 
@@ -60,7 +61,7 @@ describe("CalendarStrategy", () => {
       room: "DBL",
     });
 
-    const [url, body] = post.mock.calls[0];
+    const [url, body] = requireDefined(post.mock.calls[0], "the POST call");
     expect(url).toBe("https://example.reserve-online.net/calendar");
     const form = body as URLSearchParams;
     expect(Object.fromEntries(form)).toMatchObject({
@@ -81,7 +82,10 @@ describe("CalendarStrategy", () => {
 
     await fetchPrices();
 
-    const form = post.mock.calls[0][1] as URLSearchParams;
+    const form = requireDefined(
+      post.mock.calls[0],
+      "the POST call"
+    )[1] as URLSearchParams;
     expect(Object.fromEntries(form)).toMatchObject({
       children: "0",
       cur_iso: "EUR",
@@ -140,7 +144,9 @@ describe("CalendarStrategy", () => {
 
     const result = await fetchPrices();
 
-    expect(result.prices[0].stayTotal).toBe(expected);
+    expect(requireDefined(result.prices[0], "the first price").stayTotal).toBe(
+      expected
+    );
   });
 
   it("fetches each room in turn and tags its prices", async () => {

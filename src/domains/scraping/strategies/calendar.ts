@@ -112,11 +112,12 @@ function parseCalendarHtml(
       priceMatch = matchPatterns(cellText, GENERAL_PRICE_PATTERNS);
     }
 
-    if (!priceMatch) {
+    const priceText = priceMatch?.[1];
+    if (priceText === undefined) {
       return;
     }
 
-    const priceValue = parsePrice(priceMatch[1]);
+    const priceValue = parsePrice(priceText);
     if (priceValue === null) {
       return;
     }

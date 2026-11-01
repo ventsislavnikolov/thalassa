@@ -19,11 +19,11 @@ const WHITESPACE_RUN = /\s+/gu;
 const TRAILING_AMOUNT = /(?<amount>[\d.]+)$/u;
 
 function parseCardPrice(text: string): number | null {
-  const match = text.replace(WHITESPACE_RUN, "").match(TRAILING_AMOUNT);
-  if (!match) {
+  const amount = text.replace(WHITESPACE_RUN, "").match(TRAILING_AMOUNT)?.[1];
+  if (amount === undefined) {
     return null;
   }
-  const value = Number.parseFloat(match[1]);
+  const value = Number.parseFloat(amount);
   return Number.isNaN(value) || value <= 0 ? null : value;
 }
 

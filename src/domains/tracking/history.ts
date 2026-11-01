@@ -34,7 +34,10 @@ export function computePriceTrend(snapshots: PriceSnapshot[]): PriceTrend {
       s.available && s.price !== null
   );
 
-  if (priced.length === 0) {
+  const prices = priced.map((s) => s.price);
+  const [first] = prices;
+
+  if (first === undefined) {
     return EMPTY_TREND;
   }
 
@@ -42,10 +45,8 @@ export function computePriceTrend(snapshots: PriceSnapshot[]): PriceTrend {
   const currentAvailable = latest?.available ?? false;
   const current = currentAvailable ? (latest?.price ?? null) : null;
 
-  const prices = priced.map((s) => s.price);
   const low = Math.min(...prices);
   const high = Math.max(...prices);
-  const [first] = prices;
   const previous = priced.length > 1 ? prices.at(-2) : undefined;
 
   let direction: PriceTrend["direction"] = "flat";

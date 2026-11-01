@@ -24,10 +24,12 @@ function computeHotelStats(prices: PriceResult[]): Record<string, HotelStats> {
   const groups: Record<string, { name: string; totals: number[] }> = {};
 
   for (const price of prices) {
-    if (!groups[price.hotelId]) {
-      groups[price.hotelId] = { name: price.hotelName, totals: [] };
-    }
-    groups[price.hotelId].totals.push(price.stayTotal);
+    const group = groups[price.hotelId] ?? {
+      name: price.hotelName,
+      totals: [],
+    };
+    group.totals.push(price.stayTotal);
+    groups[price.hotelId] = group;
   }
 
   const stats: Record<string, HotelStats> = {};
