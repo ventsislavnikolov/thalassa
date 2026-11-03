@@ -70,7 +70,7 @@
     "ultracite": "8.1.0",
     "vitest": "^5.0.5"
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": ">=26.13.0 <27"
   }
